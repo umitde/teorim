@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kütüphane | Teorim</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Kart Hover Efektleri için CSS */
+        .card-icon { transition: all 0.5s ease; }
+        
+        /* Fizik İkonu Hareketi: Hafif sallanma */
+        .group:hover .icon-fizik { 
+            transform: rotate(15deg) scale(1.1); 
+        }
+        
+        /* Kimya İkonu Hareketi: Fokurdama efekti (Yukarı kayma) */
+        .group:hover .icon-kimya { 
+            transform: translateY(-8px) scale(1.1); 
+        }
+        
+        /* Matematik İkonu Hareketi: Dönme */
+        .group:hover .icon-mat { 
+            transform: rotate(-12deg) scale(1.1); 
+        }
+
+        /* Biyoloji İkonu Hareketi: Canlanma (Scale) */
+        .group:hover .icon-bio { 
+            transform: scale(1.15); 
+        }
+    </style>
+</head>  
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <header class="bg-white/90 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+            <a href="index.html" class="flex items-center gap-2 text-slate-500 hover:text-slate-800 transition-colors py-2 pr-4 rounded-lg hover:bg-slate-50">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                <span class="font-medium text-sm hidden sm:block">Ana Sayfa</span>
+            </a>
+
+            <div class="absolute left-1/2 transform -translate-x-1/2">
+                <img src="logo.png" alt="Teorim Logo" class="h-8 object-contain">
+            </div>
+
+            <div class="w-10"></div> 
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-6 py-12 w-full flex-grow">
+        
+        <div class="text-center mb-16">
+            <h1 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Ne keşfetmek istersiniz?</h1>
+            <p class="text-slate-500 font-light text-lg">Alanınızı seçin ve simülasyonları incelemeye başlayın.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+
+            <a href="dersler/fizik.html" class="group relative bg-white rounded-3xl p-8 border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-orange-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-150 duration-700 ease-out"></div>
+                
+                <div class="relative z-10 flex items-start justify-between">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-800 mb-2 group-hover:text-orange-600 transition-colors">Fizik</h2>
+                        <p class="text-slate-500 text-sm leading-relaxed max-w-[200px]">Kuvvet, hareket, enerji ve elektrik simülasyonları.</p>
+                    </div>
+                    <div class="icon-fizik text-orange-500 bg-orange-100 p-4 rounded-2xl">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="mt-8 flex items-center text-orange-600 font-medium text-sm opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-2 group-hover:translate-y-0">
+                    İncele <span class="ml-2">→</span>
+                </div>
+            </a>
+
+            <a href="dersler/kimya.html" class="group relative bg-white rounded-3xl p-8 border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-purple-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-150 duration-700 ease-out"></div>
+                
+                <div class="relative z-10 flex items-start justify-between">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-800 mb-2 group-hover:text-purple-600 transition-colors">Kimya</h2>
+                        <p class="text-slate-500 text-sm leading-relaxed max-w-[200px]">Atomlar, moleküller ve tepkime simülasyonları.</p>
+                    </div>
+                    <div class="icon-kimya text-purple-600 bg-purple-100 p-4 rounded-2xl">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M10 2v7.31"></path>
+                            <path d="M14 2v7.31"></path>
+                            <path d="M8.5 2h7"></path>
+                            <path d="M14 9.3a6.5 6.5 0 1 1-4 0"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="mt-8 flex items-center text-purple-600 font-medium text-sm opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-2 group-hover:translate-y-0">
+                    İncele <span class="ml-2">→</span>
+                </div>
+            </a>
+
+            <a href="dersler/matematik.html" class="group relative bg-white rounded-3xl p-8 border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-150 duration-700 ease-out"></div>
+                
+                <div class="relative z-10 flex items-start justify-between">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-800 mb-2 group-hover:text-blue-600 transition-colors">Matematik</h2>
+                        <p class="text-slate-500 text-sm leading-relaxed max-w-[200px]">Fonksiyonlar, geometri ve analitik düzlem.</p>
+                    </div>
+                    <div class="icon-mat text-blue-600 bg-blue-100 p-4 rounded-2xl">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 3v18h18"></path>
+                            <path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="mt-8 flex items-center text-blue-600 font-medium text-sm opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-2 group-hover:translate-y-0">
+                    İncele <span class="ml-2">→</span>
+                </div>
+            </a>
+
+            <a href="dersler/biyoloji.html" class="group relative bg-white rounded-3xl p-8 border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-150 duration-700 ease-out"></div>
+                
+                <div class="relative z-10 flex items-start justify-between">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-800 mb-2 group-hover:text-emerald-600 transition-colors">Biyoloji</h2>
+                        <p class="text-slate-500 text-sm leading-relaxed max-w-[200px]">DNA, hücre yapısı ve ekosistem simülasyonları.</p>
+                    </div>
+                    <div class="icon-bio text-emerald-600 bg-emerald-100 p-4 rounded-2xl">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="mt-8 flex items-center text-emerald-600 font-medium text-sm opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-2 group-hover:translate-y-0">
+                    İncele <span class="ml-2">→</span>
+                </div>
+            </a>
+
+        </div>
+    </main>
+
+    <footer class="bg-white border-t border-slate-100 py-8 text-center text-slate-400 text-sm">
+        &copy; 2026 Teorim Kütüphanesi
+    </footer>
+
+</body>
+</html>
