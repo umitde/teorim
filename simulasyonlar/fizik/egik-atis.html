@@ -13,6 +13,16 @@
 </head>
 <body class="bg-slate-100 flex h-screen">
 
+    <div id="mobile-warning">
+    <div class="mb-6">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-orange-500 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+        </svg>
+    </div>
+    <h2 class="text-xl font-bold mb-2">En İyi Deneyim İçin</h2>
+    <p class="text-slate-400">Lütfen cihazınızı yan çevirin veya bir tablet/bilgisayar kullanın.</p>
+    </div>
+
     <div class="control-panel w-80 h-full border-r border-slate-200 p-6 flex flex-col gap-6 shadow-xl z-10">
         <div class="flex items-center gap-3 mb-4">
             <a href="../../dersler/fizik.html" class="p-2 hover:bg-orange-100 rounded-full text-orange-600 transition">
@@ -207,6 +217,32 @@
 
         ctx.restore();
         requestAnimationFrame(update);
+    }
+
+    /* Mobil Uyarı Katmanı Stili */
+#mobile-warning {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: #1e293b; /* Slate-800 */
+    color: white;
+    z-index: 9999;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+}
+
+/* Sadece dikey mobil ekranlarda göster */
+@media (max-width: 768px) and (orientation: portrait) {
+    #mobile-warning {
+        display: flex;
+    }
+    body {
+        overflow: hidden;
+    }
     }
 
     // Event Listeners (Döngünün dışında)
