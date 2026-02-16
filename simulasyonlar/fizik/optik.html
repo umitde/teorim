@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Optik Stüdyo | Teorim</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --bg-app: #f8fafc;
+            --bg-panel: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --col-accent: #f97316; /* Teorim Turuncusu */
+            --border: #e2e8f0;
+            --radius: 16px;
+        }
+
+        body { 
+            margin: 0; padding: 0; background: var(--bg-app); 
+            color: var(--text-main); font-family: 'Inter', sans-serif; 
+            height: 100vh; display: flex; overflow: hidden; 
+        }
+
+        /* SOL PANEL */
+        aside { 
+            width: 320px; flex-shrink: 0; background: var(--bg-panel); 
+            border-right: 1px solid var(--border); padding: 24px; 
+            display: flex; flex-direction: column; gap: 20px; 
+            z-index: 20; box-shadow: 4px 0 20px rgba(0,0,0,0.03);
+            overflow-y: auto;
+        }
+
+        .logo { font-size: 1.5rem; font-weight: 800; letter-spacing: -1px; }
+        .logo span { color: var(--col-accent); }
+
+        .section-title {
+            font-size: 0.7rem; font-weight: 800; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 1px;
+            margin-bottom: 8px; border-bottom: 1px solid var(--border); padding-bottom: 4px;
+        }
+
+        /* ARAÇLAR */
+        .tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .tool-btn {
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+            background: #ffffff; border: 1px solid var(--border); padding: 12px;
+            border-radius: var(--radius); cursor: pointer; transition: all 0.2s;
+            font-weight: 700; font-size: 0.75rem;
+        }
+        .tool-btn:hover { border-color: var(--col-accent); color: var(--col-accent); transform: translateY(-2px); }
+
+        /* ÖZELLİKLER */
+        .properties-panel {
+            background: #fff7ed; padding: 18px; border-radius: var(--radius); 
+            border: 1px solid #ffedd5; display: none;
+        }
+
+        .prop-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-size: 0.8rem; font-weight: 700; }
+        input[type="range"] { flex: 1; margin-left: 12px; accent-color: var(--col-accent); cursor: pointer; }
+
+        .btn-group { display: flex; gap: 4px; background: #f1f5f9; padding: 4px; border-radius: 10px; margin-bottom: 12px; }
+        .btn-group button { flex: 1; border: none; padding: 8px; border-radius: 7px; font-weight: 700; font-size: 0.7rem; cursor: pointer; transition: 0.2s; }
+        .btn-active { background: var(--col-accent) !important; color: white !important; }
+
+        /* SAĞ PANEL */
+        main { flex: 1; position: relative; background: #f8fafc; }
+        canvas { display: block; width: 100%; height: 100%; }
+
+        .top-controls {
+            position: absolute; top: 20px; right: 20px; 
+            background: rgba(255,255,255,0.9); padding: 10px 20px; 
+            border-radius: 30px; border: 1px solid var(--border); display: flex; gap: 10px;
+        }
+        
+        .tip-box {
+            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: var(--text-main); color: white; padding: 8px 20px; border-radius: 30px;
+            font-size: 0.8rem; pointer-events: none; opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+
+<aside>
+    <div class="flex items-center gap-3 mb-4">
+        <a href="../../dersler/fizik.html" class="p-2 hover:bg-orange-100 rounded-full text-orange-600 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+        </a>
+        <h1 class="font-bold text-xl text-slate-800">Optik</h1>
+    </div>
+    <div class="section-title">Optik Elemanlar</div>
+    <div class="tools-grid">
+        <button class="tool-btn" onclick="app.addLens(150)"><span>🔍</span>İnce Kenarlı</button>
+        <button class="tool-btn" onclick="app.addLens(-150)"><span>👓</span>Kalın Kenarlı</button>
+        <button class="tool-btn" onclick="app.addMirror()"><span>🪞</span>Düz Ayna</button>
+        <button class="tool-btn" onclick="app.addBlock()"><span>⬛</span>Engel</button>
+    </div>
+
+    <div class="section-title">Işık Kaynağı</div>
+    <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200">
+        <div class="btn-group">
+            <button id="btnSrcParallel" class="btn-active" onclick="app.setSourceType('parallel')">Paralel</button>
+            <button id="btnSrcPoint" onclick="app.setSourceType('point')">Noktasal</button>
+        </div>
+        <div class="prop-row">
+            <span>Işın: <span id="valRayCount" class="text-orange-500">5</span></span>
+            <input type="range" id="slRayCount" min="1" max="25" value="5">
+        </div>
+        <div class="prop-row">
+            <span>Genişlik:</span>
+            <input type="range" id="slSpread" min="20" max="200" value="80">
+        </div>
+    </div>
+
+    <div class="properties-panel" id="propPanel">
+        <div class="section-title" style="border:none; color:var(--col-accent)">Obje Ayarları</div>
+        <div id="propFocalGroup" class="prop-row">
+            <span>Odak (f): <span id="valF">150</span></span>
+            <input type="range" id="slF" min="50" max="300" step="10">
+        </div>
+        <div class="prop-row">
+            <span>Boyut:</span>
+            <input type="range" id="slH" min="40" max="250" step="10">
+        </div>
+        <div class="prop-row">
+            <span>Döndür (°):</span>
+            <input type="range" id="slRot" min="-90" max="90" step="5" value="0">
+        </div>
+        <button class="w-full py-2 bg-rose-100 text-rose-600 font-bold rounded-lg text-[10px] mt-2 hover:bg-rose-600 hover:text-white transition" onclick="app.deleteSelected()">SİL</button>
+    </div>
+
+    <div style="margin-top:auto;">
+         <button class="w-full py-3 border border-slate-200 rounded-xl font-bold text-slate-400 text-xs hover:bg-slate-50 transition" onclick="app.resetScene()">SAHNEYİ TEMİZLE</button>
+    </div>
+</aside>
+
+<main id="container">
+    <div class="top-controls">
+        <span class="text-[10px] font-bold text-slate-500 uppercase">Odakları Göster</span>
+        <input type="checkbox" checked onchange="app.showFocals = this.checked">
+    </div>
+    <div class="tip-box font-bold">Işık ve mercekleri sürükleyerek dene!</div>
+    <canvas id="simCanvas"></canvas>
+</main>
+
+<script>
+const app = {
+    canvas: document.getElementById('simCanvas'),
+    ctx: null,
+    width: 0, height: 0,
+    objects: [],
+    source: { x: 80, y: 300, type: 'parallel', rayCount: 5, spread: 80 }, 
+    selectedObj: null,
+    isDragging: false,
+    dragOffset: {x:0, y:0},
+    showFocals: true,
+
+    init() {
+        this.ctx = this.canvas.getContext('2d');
+        this.resize();
+        window.addEventListener('resize', () => this.resize());
+        this.resetScene();
+        this.setupEvents();
+        this.setupUIListeners();
+        this.loop();
+    },
+
+    resize() {
+        const el = document.getElementById('container');
+        this.width = this.canvas.width = el.clientWidth;
+        this.height = this.canvas.height = el.clientHeight;
+        this.source.y = this.height / 2;
+    },
+
+    resetScene() {
+        this.objects = [{ id: 1, type: 'lens', x: this.width/2, y: this.height/2, f: 150, h: 140, rot: 0 }];
+        this.selectObject(null);
+    },
+
+    setupUIListeners() {
+        document.getElementById('slRayCount').oninput = (e) => {
+            this.source.rayCount = parseInt(e.target.value);
+            document.getElementById('valRayCount').innerText = this.source.rayCount;
+        };
+        document.getElementById('slSpread').oninput = (e) => this.source.spread = parseInt(e.target.value);
+        document.getElementById('slF').oninput = (e) => {
+            if(this.selectedObj && this.selectedObj.type === 'lens') {
+                this.selectedObj.f = parseInt(e.target.value) * Math.sign(this.selectedObj.f);
+                document.getElementById('valF').innerText = Math.abs(this.selectedObj.f);
+            }
+        };
+        document.getElementById('slH').oninput = (e) => { if(this.selectedObj) this.selectedObj.h = parseInt(e.target.value); };
+        document.getElementById('slRot').oninput = (e) => { if(this.selectedObj) this.selectedObj.rot = (e.target.value * Math.PI / 180); };
+    },
+
+    setSourceType(type) {
+        this.source.type = type;
+        document.getElementById('btnSrcParallel').className = type === 'parallel' ? 'btn-active' : '';
+        document.getElementById('btnSrcPoint').className = type === 'point' ? 'btn-active' : '';
+    },
+
+    addLens(f) { this.objects.push({ id: Date.now(), type: 'lens', x: this.width/2, y: this.height/2, f, h: 120, rot: 0 }); },
+    addMirror() { this.objects.push({ id: Date.now(), type: 'mirror', x: this.width/2, y: this.height/2, h: 100, rot: 0 }); },
+    addBlock() { this.objects.push({ id: Date.now(), type: 'block', x: this.width/2, y: this.height/2, h: 100, rot: 0 }); },
+    deleteSelected() { this.objects = this.objects.filter(o => o !== this.selectedObj); this.selectObject(null); },
+
+    traceRay(ray) {
+        let closestDist = Infinity;
+        let closestObj = null;
+        let hitPoint = null;
+        const curr = ray.path[ray.path.length-1];
+
+        this.objects.forEach(obj => {
+            const halfH = obj.h / 2;
+            const cosR = Math.cos(obj.rot); const sinR = Math.sin(obj.rot);
+            const x1 = obj.x - sinR*(-halfH); const y1 = obj.y + cosR*(-halfH);
+            const x2 = obj.x - sinR*(halfH);  const y2 = obj.y + cosR*(halfH);
+            const den = (x1 - x2) * (curr.y - (curr.y + Math.sin(ray.angle))) - (y1 - y2) * (curr.x - (curr.x + Math.cos(ray.angle)));
+            if(Math.abs(den) < 0.001) return;
+            const u = -((x1 - x2) * (y1 - curr.y) - (y1 - y2) * (x1 - curr.x)) / den;
+            const t = ((x1 - curr.x) * (curr.y - (curr.y + Math.sin(ray.angle))) - (y1 - curr.y) * (curr.x - (curr.x + Math.cos(ray.angle)))) / den;
+
+            if (t >= 0 && t <= 1 && u > 0.1) {
+                if(u < closestDist) {
+                    closestDist = u; closestObj = obj;
+                    hitPoint = {x: curr.x + u*Math.cos(ray.angle), y: curr.y + u*Math.sin(ray.angle)};
+                }
+            }
+        });
+
+        if(closestObj) {
+            ray.path.push(hitPoint);
+            if(closestObj.type === 'block') ray.active = false;
+            else if(closestObj.type === 'mirror') ray.angle = 2 * closestObj.rot - ray.angle + Math.PI;
+            else if(closestObj.type === 'lens') {
+                const dx = hitPoint.x - closestObj.x; const dy = hitPoint.y - closestObj.y;
+                const deflection = (dx * Math.sin(-closestObj.rot) + dy * Math.cos(-closestObj.rot)) / closestObj.f;
+                ray.angle -= deflection;
+            }
+        } else {
+            ray.path.push({x: curr.x + Math.cos(ray.angle)*2000, y: curr.y + Math.sin(ray.angle)*2000});
+            ray.active = false;
+        }
+    },
+
+    draw() {
+        this.ctx.clearRect(0, 0, this.width, this.height);
+        
+        // Eksen
+        this.ctx.strokeStyle = "#e2e8f0"; this.ctx.setLineDash([5,5]);
+        this.ctx.beginPath(); this.ctx.moveTo(0, this.height/2); this.ctx.lineTo(this.width, this.height/2); this.ctx.stroke();
+        this.ctx.setLineDash([]);
+
+        // Işınlar
+        const rays = [];
+        for(let i=0; i<this.source.rayCount; i++) {
+            let ry = this.source.y + (this.source.type === 'parallel' ? (i - (this.source.rayCount-1)/2) * (this.source.spread/this.source.rayCount) : 0);
+            let ra = this.source.type === 'point' ? (i - (this.source.rayCount-1)/2) * (this.source.spread*Math.PI/180/this.source.rayCount) : 0;
+            rays.push({ angle: ra, path: [{x: this.source.x, y: ry}], active: true });
+        }
+
+        this.ctx.strokeStyle = "rgba(249, 115, 22, 0.6)"; this.ctx.lineWidth = 2;
+        rays.forEach(r => {
+            for(let b=0; b<5 && r.active; b++) this.traceRay(r);
+            this.ctx.beginPath(); this.ctx.moveTo(r.path[0].x, r.path[0].y);
+            r.path.forEach(p => this.ctx.lineTo(p.x, p.y)); this.ctx.stroke();
+        });
+
+        // Objeler
+        this.objects.forEach(o => {
+            this.ctx.save(); this.ctx.translate(o.x, o.y); this.ctx.rotate(o.rot);
+            this.ctx.lineWidth = 3; this.ctx.strokeStyle = o.type === 'lens' ? (o.f > 0 ? "#3b82f6" : "#ef4444") : "#64748b";
+            this.ctx.beginPath(); this.ctx.moveTo(0, -o.h/2); this.ctx.lineTo(0, o.h/2); this.ctx.stroke();
+            if(o.type === 'lens' && this.showFocals) {
+                this.ctx.fillStyle = this.ctx.strokeStyle;
+                [o.f, -o.f].forEach(f => { this.ctx.beginPath(); this.ctx.arc(f, 0, 4, 0, 7); this.ctx.fill(); });
+            }
+            this.ctx.restore();
+        });
+
+        // Kaynak
+        this.ctx.fillStyle = "#f97316"; this.ctx.beginPath();
+        this.ctx.arc(this.source.x, this.source.y, 10, 0, 7); this.ctx.fill();
+    },
+
+    selectObject(obj) {
+        this.selectedObj = obj;
+        const panel = document.getElementById('propPanel');
+        if(obj) {
+            panel.style.display = 'block';
+            document.getElementById('slH').value = obj.h;
+            document.getElementById('slRot').value = obj.rot * 180 / Math.PI;
+            document.getElementById('propFocalGroup').style.display = obj.type === 'lens' ? 'flex' : 'none';
+        } else panel.style.display = 'none';
+    },
+
+    setupEvents() {
+        this.canvas.onmousedown = (e) => {
+            const m = { x: e.offsetX, y: e.offsetY };
+            if (Math.hypot(m.x - this.source.x, m.y - this.source.y) < 20) { this.dragging = this.source; return; }
+            let found = this.objects.find(o => Math.hypot(m.x - o.x, m.y - o.y) < 40);
+            this.selectObject(found); this.dragging = found;
+        };
+        window.onmousemove = (e) => { if(this.dragging) { 
+            const rect = this.canvas.getBoundingClientRect();
+            this.dragging.x = e.clientX - rect.left; this.dragging.y = e.clientY - rect.top; 
+        }};
+        window.onmouseup = () => this.dragging = null;
+    },
+
+    loop() { this.draw(); requestAnimationFrame(() => this.loop()); }
+};
+app.init();
+</script>
+</body>
+</html>
