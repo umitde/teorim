@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Periyodik Tablo (Full 118) | Teorim</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --bg-app: #f8fafc;
+            --bg-panel: #ffffff;
+            --col-accent: #f97316;
+            --radius: 12px;
+            --cell-size: 48px; /* Okunabilirlik için ideal boyut */
+        }
+
+        body { 
+            margin: 0; background: var(--bg-app); 
+            font-family: 'Inter', sans-serif; 
+            height: 100vh; display: flex; overflow: hidden; 
+        }
+
+        /* SOL PANEL */
+        aside { 
+            width: 320px; flex-shrink: 0; background: var(--bg-panel); 
+            border-right: 1px solid #e2e8f0; padding: 24px; 
+            display: flex; flex-direction: column; gap: 20px; 
+            z-index: 30; box-shadow: 4px 0 20px rgba(0,0,0,0.02);
+            overflow-y: auto;
+        }
+
+        /* ANA ALAN */
+        main { 
+            flex: 1; 
+            padding: 20px; 
+            overflow: auto; 
+            background: #f1f5f9; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+        }
+
+        /* ORTAK KAPSAYICI (Hizalama İçin) */
+        .content-wrapper {
+            width: 100%;
+            max-width: 1100px; /* Tablo ve kartları hizalayan sınır */
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            transform-origin: top center;
+        }
+
+        /* TABLO KAPSAYICISI */
+        .table-box {
+            background: white;
+            padding: 20px;
+            border-radius: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+            display: flex;
+            justify-content: center;
+            overflow-x: auto;
+        }
+
+        .table-grid {
+            display: grid;
+            grid-template-columns: repeat(18, var(--cell-size));
+            grid-template-rows: repeat(10, var(--cell-size)); /* 7 Periyot + Boşluk + 2 L/A */
+            gap: 4px;
+        }
+
+        .element {
+            width: var(--cell-size); height: var(--cell-size);
+            border-radius: 6px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.15s ease-out;
+            border: 1px solid rgba(0,0,0,0.05); position: relative;
+            background: white; user-select: none;
+        }
+        .element:hover { transform: scale(1.4); z-index: 50; box-shadow: 0 10px 25px rgba(0,0,0,0.2); border-color: var(--col-accent); }
+        .element.dimmed { opacity: 0.1; filter: grayscale(100%); pointer-events: none; }
+        .element.active { border: 2px solid var(--col-accent); z-index: 40; transform: scale(1.1); }
+        
+        .element .symbol { font-weight: 800; font-size: 0.9rem; color: #1e293b; }
+        .element .number { font-size: 0.5rem; position: absolute; top: 2px; left: 3px; font-weight: 700; opacity: 0.6; }
+
+        /* GRUP RENKLERİ */
+        .cat-alkali { background: #fee2e2; color: #991b1b; }
+        .cat-alkaline { background: #ffedd5; color: #9a3412; }
+        .cat-transition { background: #f1f5f9; color: #475569; }
+        .cat-post { background: #e0f2fe; color: #075985; }
+        .cat-metalloid { background: #ecfeff; color: #155e75; }
+        .cat-nonmetal { background: #dcfce7; color: #166534; }
+        .cat-halogen { background: #fff1f2; color: #9f1239; }
+        .cat-noble { background: #f3e8ff; color: #6b21a8; }
+        .cat-lanthanide { background: #fafaf9; color: #57534e; border-bottom: 2px solid #a8a29e; }
+        .cat-actinide { background: #fafaf9; color: #57534e; border-bottom: 2px solid #ef4444; }
+
+        /* FİLTRE BUTONLARI */
+        .filter-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+        .filter-btn {
+            padding: 8px 4px; font-size: 9px; font-weight: 700;
+            border-radius: 8px; border: 1px solid #e2e8f0; cursor: pointer;
+            transition: 0.2s; text-transform: uppercase; text-align: center;
+            background: white; color: #64748b;
+        }
+        .filter-btn:hover { border-color: var(--col-accent); color: var(--col-accent); }
+        .filter-btn.active { background: var(--col-accent); color: white; border-color: var(--col-accent); }
+
+        .info-card {
+            background: white; border: 1px solid #e2e8f0;
+            padding: 20px; border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+
+        #mobile-warning {
+            display: none; position: fixed; inset: 0; background: #0f172a; 
+            color: white; z-index: 100; flex-direction: column; align-items: center; justify-content: center;
+        }
+        @media (max-width: 1024px) { #mobile-warning { display: flex; } }
+    </style>
+</head>
+<body>
+
+    <div id="mobile-warning">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-orange-500 animate-bounce mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+        </svg>
+        <p class="font-bold">Lütfen ekranı genişletin veya cihazı yan çevirin.</p>
+    </div>
+
+<aside>
+    <div class="flex items-center gap-3 mb-2">
+        <a href="../../dersler/kimya.html" class="p-2 hover:bg-orange-100 rounded-full text-orange-600 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+        </a>
+        <h1 class="font-black text-xl text-slate-800">Elementler</h1>
+    </div>
+
+    <div>
+        <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Grup Filtrele</h3>
+        <div class="filter-grid">
+            <button class="filter-btn active" onclick="filterElements('all', this)">Tümü</button>
+            <button class="filter-btn" onclick="filterElements('alkali', this)">Alkali</button>
+            <button class="filter-btn" onclick="filterElements('alkaline', this)">Toprak A.</button>
+            <button class="filter-btn" onclick="filterElements('transition', this)">Geçiş</button>
+            <button class="filter-btn" onclick="filterElements('metalloid', this)">Yarı M.</button>
+            <button class="filter-btn" onclick="filterElements('nonmetal', this)">Ametal</button>
+            <button class="filter-btn" onclick="filterElements('halogen', this)">Halojen</button>
+            <button class="filter-btn" onclick="filterElements('noble', this)">Soygaz</button>
+            <button class="filter-btn" onclick="filterElements('lanthanide', this)">Lantanit</button>
+        </div>
+    </div>
+
+    <div id="details" class="info-card">
+        <div class="flex justify-between items-start mb-2">
+            <span id="detNum" class="text-xs font-bold text-slate-400">#1</span>
+            <span id="detCat" class="text-[9px] uppercase font-black px-2 py-0.5 rounded-full bg-slate-100">AMETAL</span>
+        </div>
+        <h2 id="detSym" class="text-5xl font-black text-slate-800 mb-0 tracking-tighter">H</h2>
+        <h3 id="detName" class="font-bold text-lg text-slate-600 mb-4 italic">Hidrojen</h3>
+        
+        <div class="space-y-3 text-xs">
+            <div class="bg-blue-50 p-3 rounded-xl border border-blue-100">
+                <span class="block text-[9px] font-bold text-blue-400 uppercase mb-1">Elektron Dizilimi</span>
+                <span id="detConfig" class="font-mono font-bold text-blue-700 text-sm">1s¹</span>
+            </div>
+
+            <div class="flex gap-2">
+                <div class="flex-1 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                    <span class="block text-[9px] font-bold text-slate-400 uppercase">Atom Kütlesi</span>
+                    <b id="detMass" class="text-slate-700">1.008</b>
+                </div>
+                <div class="flex-1 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                    <span class="block text-[9px] font-bold text-slate-400 uppercase">Elektronegatiflik</span>
+                    <b id="detElectro" class="text-orange-600">2.20</b>
+                </div>
+            </div>
+            
+            <p id="detDesc" class="text-slate-500 leading-relaxed pt-2">Evrenin en bol bulunan elementidir.</p>
+        </div>
+    </div>
+</aside>
+
+<main>
+    <div class="content-wrapper" id="scaler">
+        <div class="table-box">
+            <div class="table-grid" id="table"></div>
+        </div>
+
+        <div class="grid grid-cols-4 gap-4 w-full">
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 border-t-4 border-t-red-200">
+                <h4 class="text-[10px] font-black text-slate-800 uppercase mb-1">Alkali & Toprak</h4>
+                <p class="text-[10px] text-slate-500 leading-tight">s-bloğu elementleri. Aktif metallerdir, suyla tepkime verirler.</p>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 border-t-4 border-t-slate-300">
+                <h4 class="text-[10px] font-black text-slate-800 uppercase mb-1">Geçiş Metalleri</h4>
+                <p class="text-[10px] text-slate-500 leading-tight">d-bloğu. Sert, yüksek erime noktalı, iletken metallerdir.</p>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 border-t-4 border-t-emerald-300">
+                <h4 class="text-[10px] font-black text-slate-800 uppercase mb-1">Ametaller & Halojen</h4>
+                <p class="text-[10px] text-slate-500 leading-tight">p-bloğu. Yaşamın temelini oluşturan, elektron alan elementler.</p>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 border-t-4 border-t-stone-400">
+                <h4 class="text-[10px] font-black text-slate-800 uppercase mb-1">Lantanit & Aktinit</h4>
+                <p class="text-[10px] text-slate-500 leading-tight">f-bloğu. İç geçiş metalleri. Çoğu radyoaktiftir.</p>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+    // 118 ELEMENTİN TAMAMI (Sıkıştırılmış Format)
+    // n:No, s:Sembol, nam:İsim, cat:Kategori, m:Kütle, en:Elektronegatiflik
+    const rawData = [
+        "1|H|Hidrojen|nonmetal|1.008|2.20", "2|He|Helyum|noble|4.002|-",
+        "3|Li|Lityum|alkali|6.941|0.98", "4|Be|Berilyum|alkaline|9.012|1.57", "5|B|Bor|metalloid|10.81|2.04", "6|C|Karbon|nonmetal|12.01|2.55", "7|N|Azot|nonmetal|14.00|3.04", "8|O|Oksijen|nonmetal|15.99|3.44", "9|F|Flor|halogen|18.99|3.98", "10|Ne|Neon|noble|20.17|-",
+        "11|Na|Sodyum|alkali|22.99|0.93", "12|Mg|Magnezyum|alkaline|24.30|1.31", "13|Al|Alüminyum|post|26.98|1.61", "14|Si|Silisyum|metalloid|28.08|1.90", "15|P|Fosfor|nonmetal|30.97|2.19", "16|S|Kükürt|nonmetal|32.06|2.58", "17|Cl|Klor|halogen|35.45|3.16", "18|Ar|Argon|noble|39.94|-",
+        "19|K|Potasyum|alkali|39.09|0.82", "20|Ca|Kalsiyum|alkaline|40.07|1.00", "21|Sc|Skandiyum|transition|44.95|1.36", "22|Ti|Titanyum|transition|47.86|1.54", "23|V|Vanadyum|transition|50.94|1.63", "24|Cr|Krom|transition|51.99|1.66", "25|Mn|Mangan|transition|54.93|1.55", "26|Fe|Demir|transition|55.84|1.83", "27|Co|Kobalt|transition|58.93|1.88", "28|Ni|Nikel|transition|58.69|1.91", "29|Cu|Bakır|transition|63.54|1.90", "30|Zn|Çinko|transition|65.38|1.65", "31|Ga|Galyum|post|69.72|1.81", "32|Ge|Germanyum|metalloid|72.63|2.01", "33|As|Arsenik|metalloid|74.92|2.18", "34|Se|Selenyum|nonmetal|78.97|2.55", "35|Br|Brom|halogen|79.90|2.96", "36|Kr|Kripton|noble|83.79|3.00",
+        "37|Rb|Rubidyum|alkali|85.46|0.82", "38|Sr|Stronsiyum|alkaline|87.62|0.95", "39|Y|İtriyum|transition|88.90|1.22", "40|Zr|Zirkonyum|transition|91.22|1.33", "41|Nb|Niyobyum|transition|92.90|1.60", "42|Mo|Molibden|transition|95.95|2.16", "43|Tc|Teknetyum|transition|98|1.90", "44|Ru|Rutenyum|transition|101.0|2.20", "45|Rh|Rodyum|transition|102.9|2.28", "46|Pd|Paladyum|transition|106.4|2.20", "47|Ag|Gümüş|transition|107.8|1.93", "48|Cd|Kadmiyum|transition|112.4|1.69", "49|In|İndiyum|post|114.8|1.78", "50|Sn|Kalay|post|118.7|1.96", "51|Sb|Antimon|metalloid|121.7|2.05", "52|Te|Tellür|metalloid|127.6|2.10", "53|I|İyot|halogen|126.9|2.66", "54|Xe|Ksenon|noble|131.2|2.60",
+        "55|Cs|Sezyum|alkali|132.9|0.79", "56|Ba|Baryum|alkaline|137.3|0.89", 
+        // Lantanitler (57-71)
+        "57|La|Lantan|lanthanide|138.9|1.10", "58|Ce|Seryum|lanthanide|140.1|1.12", "59|Pr|Praseodim|lanthanide|140.9|1.13", "60|Nd|Neodim|lanthanide|144.2|1.14", "61|Pm|Prometyum|lanthanide|145|-", "62|Sm|Samaryum|lanthanide|150.3|1.17", "63|Eu|Evropiyum|lanthanide|151.9|1.20", "64|Gd|Gadolinyum|lanthanide|157.2|1.20", "65|Tb|Terbiyum|lanthanide|158.9|1.20", "66|Dy|Disprosyum|lanthanide|162.5|1.22", "67|Ho|Holmiyum|lanthanide|164.9|1.23", "68|Er|Erbiyum|lanthanide|167.2|1.24", "69|Tm|Tulyum|lanthanide|168.9|1.25", "70|Yb|İterbiyum|lanthanide|173.0|1.10", "71|Lu|Lutesyum|lanthanide|174.9|1.27",
+        "72|Hf|Hafniyum|transition|178.4|1.30", "73|Ta|Tantal|transition|180.9|1.50", "74|W|Volfram|transition|183.8|2.36", "75|Re|Renyum|transition|186.2|1.90", "76|Os|Osmiyum|transition|190.2|2.20", "77|Ir|İridyum|transition|192.2|2.20", "78|Pt|Platin|transition|195.0|2.28", "79|Au|Altın|transition|196.9|2.54", "80|Hg|Cıva|transition|200.5|2.00", "81|Tl|Talyum|post|204.3|1.62", "82|Pb|Kurşun|post|207.2|2.33", "83|Bi|Bizmut|post|208.9|2.02", "84|Po|Polonyum|metalloid|209|2.00", "85|At|Astatin|halogen|210|2.20", "86|Rn|Radon|noble|222|-",
+        "87|Fr|Fransiyum|alkali|223|0.70", "88|Ra|Radyum|alkaline|226|0.90",
+        // Aktinitler (89-103)
+        "89|Ac|Aktinyum|actinide|227|1.10", "90|Th|Toryum|actinide|232.0|1.30", "91|Pa|Protaktinyum|actinide|231.0|1.50", "92|U|Uranyum|actinide|238.0|1.38", "93|Np|Neptünyum|actinide|237|1.36", "94|Pu|Plütonyum|actinide|244|1.28", "95|Am|Amerikyum|actinide|243|1.13", "96|Cm|Küriyum|actinide|247|1.28", "97|Bk|Berkelyum|actinide|247|1.30", "98|Cf|Kaliforniyum|actinide|251|1.30", "99|Es|Aynştaynyum|actinide|252|1.30", "100|Fm|Fermiyum|actinide|257|1.30", "101|Md|Mendelevyum|actinide|258|1.30", "102|No|Nobelyum|actinide|259|1.30", "103|Lr|Lavrensiyum|actinide|262|1.30",
+        "104|Rf|Rutherfordiyum|transition|267|-", "105|Db|Dubniyum|transition|268|-", "106|Sg|Seaborgiyum|transition|269|-", "107|Bh|Bohriyum|transition|270|-", "108|Hs|Hassiyum|transition|277|-", "109|Mt|Meitneriyum|transition|278|-", "110|Ds|Darmstadtiyum|transition|281|-", "111|Rg|Röntgenyum|transition|280|-", "112|Cn|Kopernikyum|transition|285|-", "113|Nh|Nihonyum|post|284|-", "114|Fl|Fleroviyum|post|289|-", "115|Mc|Moskoviyum|post|288|-", "116|Lv|Livermoryum|post|293|-", "117|Ts|Tennesin|halogen|294|-", "118|Og|Oganesson|noble|294|-"
+    ];
+
+    const elements = rawData.map(str => {
+        const [n, s, name, c, m, en] = str.split('|');
+        return { n: parseInt(n), s, name, c, m, en };
+    });
+
+    const table = document.getElementById('table');
+    const catMap = { 
+        alkali:'Alkali Metal', alkaline:'Toprak Alkali', transition:'Geçiş Metali', 
+        post:'Zayıf Metal', metalloid:'Yarı Metal', nonmetal:'Ametal', 
+        halogen:'Halojen', noble:'Soygaz', lanthanide:'Lantanit', actinide:'Aktinit' 
+    };
+
+    function init() {
+        // Tabloyu Oluştur
+        elements.forEach(el => {
+            const pos = getPosition(el.n);
+            const div = document.createElement('div');
+            div.className = `element cat-${el.c} ${el.c}`;
+            div.style.gridColumn = pos.col;
+            div.style.gridRow = pos.row;
+            div.innerHTML = `<span class="number">${el.n}</span><span class="symbol">${el.s}</span>`;
+            div.onclick = () => showDetails(el, div);
+            table.appendChild(div);
+        });
+
+        // Lantanit/Aktinit Yer Tutucular
+        createGhost(3, 6, "57-71");
+        createGhost(3, 7, "89-103");
+
+        // İlk elementi seç
+        showDetails(elements[0], document.querySelector('.element'));
+        autoScale();
+    }
+
+    // Atom Numarasına Göre Tablo Konumu (Mantıksal)
+    function getPosition(n) {
+        if(n===1) return {col:1, row:1};
+        if(n===2) return {col:18, row:1}; // He
+        if(n>=3 && n<=18) { // P2-P3
+            const row = Math.ceil((n-2)/8) + 1;
+            let col = (n-2)%8;
+            if(col===0) col=8;
+            if(col>2) col += 10;
+            return {col, row};
+        }
+        if(n>=19 && n<=56) { // P4-P5 + ilk 2 P6
+            const row = Math.ceil((n-18)/18) + 3;
+            let col = (n-18)%18;
+            if(col===0) col=18;
+            return {col, row};
+        }
+        if(n>=57 && n<=71) return {col: (n-57)+4, row: 9}; // Lantanitler
+        if(n>=72 && n<=88) return {col: (n-72)+4, row: 6}; // Hf-Ra
+        if(n>=89 && n<=103) return {col: (n-89)+4, row: 10}; // Aktinitler
+        if(n>=104 && n<=118) return {col: (n-104)+4, row: 7}; // Rf-Og
+        return {col:1, row:1};
+    }
+
+    function createGhost(c, r, txt) {
+        const d = document.createElement('div');
+        d.className = 'element';
+        d.style.gridColumn = c; d.style.gridRow = r;
+        d.style.opacity = '0.3'; d.style.pointerEvents = 'none'; d.style.border = 'none';
+        d.innerHTML = `<span class="symbol" style="font-size:10px">${txt}</span>`;
+        table.appendChild(d);
+    }
+
+    // Elektron Dizilimi Hesaplayıcı (Aufbau Prensibi)
+    function getElectronConfig(n) {
+        // Orbital sırası: 1s, 2s, 2p, 3s, 3p, 4s, 3d, 4p, 5s, 4d, 5p, 6s, 4f, 5d, 6p, 7s, 5f, 6d, 7p
+        const orbitals = [
+            {n:1,l:'s',cap:2}, {n:2,l:'s',cap:2}, {n:2,l:'p',cap:6}, {n:3,l:'s',cap:2}, {n:3,l:'p',cap:6},
+            {n:4,l:'s',cap:2}, {n:3,l:'d',cap:10}, {n:4,l:'p',cap:6}, {n:5,l:'s',cap:2}, {n:4,l:'d',cap:10},
+            {n:5,l:'p',cap:6}, {n:6,l:'s',cap:2}, {n:4,l:'f',cap:14}, {n:5,l:'d',cap:10}, {n:6,l:'p',cap:6},
+            {n:7,l:'s',cap:2}, {n:5,l:'f',cap:14}, {n:6,l:'d',cap:10}, {n:7,l:'p',cap:6}
+        ];
+        
+        let rem = n;
+        let result = [];
+        
+        for(let orb of orbitals) {
+            if(rem <= 0) break;
+            let fill = Math.min(rem, orb.cap);
+            result.push(`${orb.n}${orb.l}<sup>${fill}</sup>`);
+            rem -= fill;
+        }
+
+        // İstisnalar (Cr, Cu vb.) simüle edilmedi, standart kural uygulandı.
+        // Çok uzunsa kısalt
+        if(result.length > 5) {
+            return `[..] ${result.slice(-4).join(' ')}`;
+        }
+        return result.join(' ');
+    }
+
+    function showDetails(el, div) {
+        // Aktif sınıfı
+        if(div) {
+            document.querySelectorAll('.element').forEach(e => e.classList.remove('active'));
+            div.classList.add('active');
+        }
+
+        document.getElementById('detNum').innerText = `#${el.n}`;
+        document.getElementById('detSym').innerText = el.s;
+        document.getElementById('detName').innerText = el.name;
+        document.getElementById('detMass').innerText = el.m;
+        document.getElementById('detElectro').innerText = el.en;
+        document.getElementById('detConfig').innerHTML = getElectronConfig(el.n);
+        
+        const catText = catMap[el.c] || el.c;
+        const badge = document.getElementById('detCat');
+        badge.innerText = catText.toUpperCase();
+        badge.className = `text-[9px] uppercase font-black px-2 py-0.5 rounded-full cat-${el.c}`;
+        
+        document.getElementById('detDesc').innerText = `${el.name}, atom numarası ${el.n} olan ${catText} grubunda yer alan bir elementtir.`;
+    }
+
+    function filterElements(cat, btn) {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        document.querySelectorAll('.element').forEach(div => {
+            if(div.classList.contains('cat-lanthanide') && cat === 'lanthanide') {
+                div.classList.remove('dimmed'); return;
+            }
+            if(cat === 'all') {
+                div.classList.remove('dimmed');
+            } else if (div.classList.contains(`cat-${cat}`)) {
+                div.classList.remove('dimmed');
+            } else {
+                div.classList.add('dimmed');
+            }
+        });
+    }
+
+    // Responsive Ölçeklendirme
+    function autoScale() {
+        const wrapper = document.getElementById('scaler');
+        const main = document.querySelector('main');
+        // 1100px genişliğe göre oranla
+        const scale = Math.min(1, (main.clientWidth - 40) / 1100);
+        wrapper.style.transform = `scale(${scale})`;
+    }
+    window.onresize = autoScale;
+
+    init();
+</script>
+</body>
+</html>
