@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elektrik Devresi | Teorim</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --bg-app: #f8fafc;
+            --bg-panel: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --col-accent: #f97316;
+            --border: #e2e8f0;
+            --radius: 16px;
+        }
+
+        body { 
+            margin: 0; padding: 0; background: var(--bg-app); 
+            color: var(--text-main); font-family: 'Inter', sans-serif; 
+            height: 100vh; display: flex; overflow: hidden; 
+        }
+
+        aside { 
+            width: 320px; flex-shrink: 0; background: var(--bg-panel); 
+            border-right: 1px solid var(--border); padding: 24px; 
+            display: flex; flex-direction: column; gap: 20px; 
+            z-index: 20; box-shadow: 4px 0 20px rgba(0,0,0,0.03);
+            overflow-y: auto;
+        }
+
+        .section-title {
+            font-size: 0.7rem; font-weight: 800; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 1px;
+            margin-bottom: 8px; border-bottom: 1px solid var(--border); padding-bottom: 4px;
+        }
+
+        .tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .tool-btn {
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+            background: #ffffff; border: 1px solid var(--border); padding: 12px;
+            border-radius: var(--radius); cursor: pointer; transition: all 0.2s;
+            font-weight: 700; font-size: 0.75rem;
+        }
+        .tool-btn:hover { border-color: var(--col-accent); color: var(--col-accent); transform: translateY(-2px); }
+
+        .properties-panel {
+            background: #fff7ed; padding: 18px; border-radius: var(--radius); 
+            border: 1px solid #ffedd5; display: none;
+        }
+
+        .prop-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-size: 0.8rem; font-weight: 700; }
+        input[type="range"] { flex: 1; margin-left: 12px; accent-color: var(--col-accent); cursor: pointer; }
+
+        main { flex: 1; position: relative; background: #f8fafc; }
+        canvas { display: block; width: 100%; height: 100%; }
+
+        .tip-box {
+            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: var(--text-main); color: white; padding: 8px 20px; border-radius: 30px;
+            font-size: 0.8rem; pointer-events: none; opacity: 0.9;
+        }
+
+        #mobile-warning {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #1e293b; color: white; z-index: 9999;
+            flex-direction: column; align-items: center; justify-content: center;
+            text-align: center; padding: 20px;
+        }
+        @media (max-width: 768px) and (orientation: portrait) { #mobile-warning { display: flex; } }
+    </style>
+</head>
+<body>
+
+    <div id="mobile-warning">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-orange-500 animate-bounce mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+        </svg>
+        <h2 class="text-xl font-bold mb-2">En İyi Deneyim İçin</h2>
+        <p class="text-slate-400">Cihazınızı yan çevirin.</p>
+    </div>
+
+<aside>
+    <div class="flex items-center gap-3 mb-4">
+        <a href="../../dersler/fizik.html" class="p-2 hover:bg-orange-100 rounded-full text-orange-600 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+        </a>
+        <h1 class="font-bold text-xl text-slate-800">Elektrik Devresi</h1>
+    </div>
+    
+    <div class="section-title">Devre Elemanları</div>
+    <div class="tools-grid">
+        <button class="tool-btn" onclick="app.addComponent('battery')"><span>🔋</span>Üreteç (Pil)</button>
+        <button class="tool-btn" onclick="app.addComponent('resistor')"><span>📟</span>Direnç</button>
+        <button class="tool-btn" onclick="app.addComponent('lamp')"><span>💡</span>Lamba</button>
+        <button class="tool-btn" onclick="app.addComponent('switch')"><span>🔌</span>Anahtar</button>
+    </div>
+
+    <div class="properties-panel" id="propPanel">
+        <div class="section-title" style="border:none; color:var(--col-accent)">Eleman Ayarları</div>
+        <div id="valRow" class="prop-row">
+            <span id="valLabel">Değer:</span>
+            <input type="range" id="slVal" min="1" max="100" value="10">
+        </div>
+        <p class="text-[10px] text-orange-600 font-bold mb-2"><span id="displayVal">10</span> <span id="unitLabel">Ω</span></p>
+        <button class="w-full py-2 bg-rose-100 text-rose-600 font-bold rounded-lg text-[10px] hover:bg-rose-600 hover:text-white transition" onclick="app.deleteSelected()">ELEMANI SİL</button>
+    </div>
+
+    <div class="mt-auto p-4 bg-slate-800 rounded-2xl text-white text-[11px] space-y-2">
+        <p class="text-orange-400 font-bold uppercase tracking-widest text-center mb-2">Canlı Veri</p>
+        <div class="flex justify-between"><span>Eşdeğer Direnç:</span><span id="totalR" class="font-mono text-orange-400">0 Ω</span></div>
+        <div class="flex justify-between"><span>Ana Kol Akımı:</span><span id="totalI" class="font-mono text-orange-400">0 A</span></div>
+    </div>
+
+    <button class="w-full py-3 border border-slate-200 rounded-xl font-bold text-slate-400 text-xs hover:bg-slate-50 transition" onclick="app.resetScene()">DEVREYİ SIFIRLA</button>
+</aside>
+
+<main id="container">
+    <div class="tip-box font-bold">Elemanları birbirine yaklaştırarak otomatik bağla!</div>
+    <canvas id="simCanvas"></canvas>
+</main>
+
+<script>
+const app = {
+    canvas: document.getElementById('simCanvas'),
+    ctx: null,
+    components: [],
+    selected: null,
+    dragging: null,
+    electronOffset: 0,
+
+    init() {
+        this.ctx = this.canvas.getContext('2d');
+        this.resize();
+        window.addEventListener('resize', () => this.resize());
+        this.setupEvents();
+        this.setupUI();
+        this.resetScene();
+        this.loop();
+    },
+
+    resize() {
+        const el = document.getElementById('container');
+        this.canvas.width = el.clientWidth;
+        this.canvas.height = el.clientHeight;
+    },
+
+    setupUI() {
+        document.getElementById('slVal').oninput = (e) => {
+            if(this.selected) {
+                this.selected.value = parseFloat(e.target.value);
+                this.updateLabels();
+            }
+        };
+    },
+
+    updateLabels() {
+        if(!this.selected) return;
+        document.getElementById('displayVal').innerText = this.selected.value;
+        document.getElementById('valLabel').innerText = this.selected.type === 'battery' ? 'Gerilim:' : 'Direnç:';
+        document.getElementById('unitLabel').innerText = this.selected.type === 'battery' ? 'V' : 'Ω';
+    },
+
+    resetScene() {
+        this.components = [
+            { id: 1, type: 'battery', x: 200, y: 400, value: 20, connectedTo: null },
+            { id: 2, type: 'lamp', x: 400, y: 400, value: 10, connectedTo: null }
+        ];
+        this.select(null);
+    },
+
+    addComponent(type) {
+        const comp = {
+            id: Date.now(),
+            type,
+            x: this.canvas.width / 2,
+            y: this.canvas.height / 2,
+            value: type === 'battery' ? 12 : 10,
+            isOpen: false // Sadece switch için
+        };
+        this.components.push(comp);
+        this.select(comp);
+    },
+
+    deleteSelected() {
+        this.components = this.components.filter(c => c !== this.selected);
+        this.select(null);
+    },
+
+    select(comp) {
+        this.selected = comp;
+        const panel = document.getElementById('propPanel');
+        if(comp && comp.type !== 'switch') {
+            panel.style.display = 'block';
+            document.getElementById('slVal').value = comp.value;
+            this.updateLabels();
+        } else {
+            panel.style.display = 'none';
+        }
+    },
+
+    setupEvents() {
+        this.canvas.onmousedown = (e) => {
+            const m = { x: e.offsetX, y: e.offsetY };
+            let found = this.components.find(c => Math.hypot(m.x - c.x, m.y - c.y) < 30);
+            if(found && found.type === 'switch' && !this.isMoving) found.isOpen = !found.isOpen;
+            this.select(found);
+            this.dragging = found;
+            this.isMoving = false;
+        };
+        window.onmousemove = (e) => {
+            if(this.dragging) {
+                const rect = this.canvas.getBoundingClientRect();
+                this.dragging.x = e.clientX - rect.left;
+                this.dragging.y = e.clientY - rect.top;
+                this.isMoving = true;
+            }
+        };
+        window.onmouseup = () => this.dragging = null;
+    },
+
+    drawComponent(c) {
+        const ctx = this.ctx;
+        ctx.save();
+        ctx.translate(c.x, c.y);
+        
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = this.selected === c ? '#f97316' : '#1e293b';
+
+        if(c.type === 'battery') {
+            // Pil Çizimi
+            ctx.beginPath(); ctx.moveTo(-10, -20); ctx.lineTo(-10, 20); ctx.stroke();
+            ctx.beginPath(); ctx.lineWidth = 6; ctx.moveTo(10, -10); ctx.lineTo(10, 10); ctx.stroke();
+            ctx.fillStyle = '#1e293b'; ctx.font = 'bold 10px Inter'; ctx.fillText(c.value+'V', -15, -25);
+        } else if(c.type === 'resistor') {
+            // Direnç Çizimi (Zikzak)
+            ctx.beginPath();
+            ctx.moveTo(-20, 0); ctx.lineTo(-15, -10); ctx.lineTo(-5, 10); ctx.lineTo(5, -10); ctx.lineTo(15, 10); ctx.lineTo(20, 0);
+            ctx.stroke();
+        } else if(c.type === 'lamp') {
+            // Lamba Çizimi
+            const current = this.calculateCurrent();
+            ctx.beginPath(); ctx.arc(0, 0, 20, 0, 7); ctx.stroke();
+            if(current > 0) {
+                ctx.shadowBlur = current * 10; ctx.shadowColor = "#facc15";
+                ctx.fillStyle = `rgba(250, 204, 21, ${Math.min(current, 1)})`; ctx.fill();
+            }
+            ctx.beginPath(); ctx.moveTo(-12, -12); ctx.lineTo(12, 12); ctx.moveTo(12, -12); ctx.lineTo(-12, 12); ctx.stroke();
+            ctx.shadowBlur = 0;
+        } else if(c.type === 'switch') {
+            ctx.beginPath(); ctx.arc(-20, 0, 4, 0, 7); ctx.arc(20, 0, 4, 0, 7); ctx.fill();
+            ctx.beginPath(); ctx.moveTo(-20, 0);
+            if(c.isOpen) ctx.lineTo(10, -20); else ctx.lineTo(20, 0);
+            ctx.stroke();
+        }
+        ctx.restore();
+    },
+
+    calculateCurrent() {
+        let V = 0; let R = 0; let closed = true;
+        this.components.forEach(c => {
+            if(c.type === 'battery') V += c.value;
+            if(c.type === 'resistor' || c.type === 'lamp') R += c.value;
+            if(c.type === 'switch' && c.isOpen) closed = false;
+        });
+        if(!closed || R === 0) return 0;
+        const I = V / R;
+        document.getElementById('totalR').innerText = R.toFixed(1) + ' Ω';
+        document.getElementById('totalI').innerText = I.toFixed(2) + ' A';
+        return I;
+    },
+
+    loop() {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        const I = this.calculateCurrent();
+        
+        // Kabloları Çiz (Basit Seri Bağlantı Sırası)
+        if(this.components.length > 1) {
+            this.ctx.beginPath();
+            this.ctx.strokeStyle = '#94a3b8';
+            this.ctx.lineWidth = 4;
+            this.ctx.setLineDash([]);
+            this.ctx.moveTo(this.components[0].x, this.components[0].y);
+            for(let i=1; i<this.components.length; i++) {
+                this.ctx.lineTo(this.components[i].x, this.components[i].y);
+            }
+            this.ctx.lineTo(this.components[0].x, this.components[0].y);
+            this.ctx.stroke();
+
+            // Akım Görselleştirme (Elektronlar)
+            if(I > 0) {
+                this.electronOffset += I * 2;
+                this.ctx.fillStyle = '#f97316';
+                for(let i=0; i<this.components.length; i++) {
+                    const start = this.components[i];
+                    const end = this.components[(i+1)%this.components.length];
+                    const dist = Math.hypot(end.x - start.x, end.y - start.y);
+                    const steps = Math.floor(dist / 30);
+                    for(let j=0; j<steps; j++) {
+                        const t = ((j * 30 + this.electronOffset) % dist) / dist;
+                        const ex = start.x + (end.x - start.x) * t;
+                        const ey = start.y + (end.y - start.y) * t;
+                        this.ctx.beginPath(); this.ctx.arc(ex, ey, 3, 0, 7); this.ctx.fill();
+                    }
+                }
+            }
+        }
+
+        this.components.forEach(c => this.drawComponent(c));
+        requestAnimationFrame(() => this.loop());
+    }
+};
+
+app.init();
+</script>
+</body>
+</html>
