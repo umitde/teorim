@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kimya Simülasyonları | Teorim</title>
+    <link rel="icon" type="image/png" href="../logo.png">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* --- CSS ANİMASYONLARI (Kimya Laboratuvarı) --- */
+
+        /* 1. ATOM (Dönen Elektronlar) */
+        @keyframes spinOrbit {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .atom-core {
+            width: 16px; height: 16px; background: #9333EA; /* Purple-600 */
+            border-radius: 50%; position: absolute; top: 50%; left: 50%;
+            margin: -8px 0 0 -8px; z-index: 10;
+        }
+        .electron-ring {
+            position: absolute; top: 50%; left: 50%;
+            border: 1px solid #D8B4FE; /* Purple-300 */
+            border-radius: 50%;
+        }
+        .electron {
+            width: 8px; height: 8px; background: #A855F7; border-radius: 50%;
+            position: absolute; top: -4px; left: 50%; margin-left: -4px;
+        }
+
+        /* 2. BALONCUKLAR (Reaksiyon) */
+        @keyframes bubbleRise {
+            0% { transform: translateY(0) scale(0.5); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateY(-40px) scale(1.2); opacity: 0; }
+        }
+        .beaker {
+            width: 40px; height: 50px; border: 2px solid #CBD5E1;
+            border-top: none; background: rgba(147, 51, 234, 0.1);
+            position: relative; margin-top: 20px;
+        }
+        .bubble {
+            width: 6px; height: 6px; background: #9333EA;
+            border-radius: 50%; position: absolute; bottom: 5px;
+            animation: bubbleRise 2s infinite ease-in;
+        }
+
+        /* 3. MOLEKÜL (Titreşim/Dönme) */
+        @keyframes bondShake {
+            0% { transform: rotate(-10deg); }
+            50% { transform: rotate(10deg); }
+            100% { transform: rotate(-10deg); }
+        }
+        .molecule-group {
+            animation: bondShake 3s infinite ease-in-out;
+            transform-origin: center;
+        }
+
+        /* 4. DAMLAMA (Titrasyon) */
+        @keyframes dropFall {
+            0% { top: 0; opacity: 1; transform: scale(1); }
+            80% { top: 30px; opacity: 1; transform: scale(0.8); }
+            100% { top: 35px; opacity: 0; transform: scale(2); } /* Suya çarpma */
+        }
+        .burette {
+            width: 6px; height: 40px; background: #CBD5E1;
+            position: absolute; top: 10px; left: 50%; margin-left: -3px;
+        }
+        .drop {
+            width: 6px; height: 8px; background: #9333EA;
+            border-radius: 0 50% 50% 50%;
+            transform: rotate(45deg);
+            position: absolute; top: 40px; left: 50%; margin-left: -4px;
+            animation: dropFall 2s infinite ease-in;
+        }
+        .flask-pool {
+            width: 40px; height: 10px; background: #D8B4FE;
+            border-radius: 50%; position: absolute; bottom: 30px; left: 50%; margin-left: -20px;
+            opacity: 0.5;
+        }
+
+        /* 5. GAZ TANECİKLERİ (Hareket) */
+        @keyframes particleMoveX { 0% { left: 0; } 100% { left: 100%; } }
+        @keyframes particleMoveY { 0% { top: 0; } 100% { top: 100%; } }
+        .particle-box {
+            width: 80px; height: 60px; border: 2px solid #CBD5E1;
+            position: relative; overflow: hidden; background: #F8FAFC;
+        }
+        .particle {
+            width: 6px; height: 6px; background: #9333EA; border-radius: 50%;
+            position: absolute;
+        }
+
+        /* 6. ENERJİ/ISI (Dalgalanma) */
+        @keyframes heatWave {
+            0% { height: 10px; }
+            50% { height: 25px; }
+            100% { height: 10px; }
+        }
+        .heat-bar {
+            width: 4px; background: #DC2626; /* Red for heat */
+            border-radius: 2px;
+            margin: 0 2px;
+            animation: heatWave 0.8s infinite ease-in-out;
+        }
+
+    </style>
+</head>  
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <header class="bg-white/90 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+            <a href="../kutuphane.html" class="flex items-center gap-2 text-slate-500 hover:text-purple-600 transition-colors py-2 pr-4 rounded-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                <span class="font-medium text-sm hidden sm:block">Kütüphane</span>
+            </a>
+
+            <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-purple-600"></span>
+                <h1 class="font-bold text-lg text-slate-800">Kimya</h1>
+            </div>
+
+            <a href="../index.html" class="flex items-center justify-end">
+                <img src="../logo.png" alt="Teorim" class="h-8 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity">
+            </a> 
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-6 py-12 w-full flex-grow">
+        
+        <div class="mb-10">
+            <h2 class="text-3xl font-bold text-slate-900">Simülasyonlar</h2>
+            <p class="text-slate-500 mt-2">Maddenin yapısını ve değişimini inceleyin.</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+            <a href="../simulasyonlar/kimya/atom.html" class="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-purple-200 transition-all duration-300 overflow-hidden">
+                <div class="h-40 bg-slate-50 relative overflow-hidden border-b border-slate-100 flex items-center justify-center">
+                    <div class="atom-core shadow-lg shadow-purple-500/50"></div>
+                    <div class="electron-ring w-24 h-24" style="animation: spinOrbit 4s linear infinite">
+                        <div class="electron"></div>
+                    </div>
+                    <div class="electron-ring w-16 h-16" style="animation: spinOrbit 2s linear infinite reverse">
+                        <div class="electron"></div>
+                    </div>
+                </div>
+                <div class="p-5">
+                    <h3 class="font-bold text-slate-800 group-hover:text-purple-600 transition-colors">Atom Modelleri</h3>
+                    <p class="text-xs text-slate-500 mt-2 leading-relaxed">Proton, nötron ve elektronlar. Bohr atom modelini oluşturun ve kararlılığı test edin.</p>
+                </div>
+            </a>
+
+            <a href="../simulasyonlar/kimya/periyodik-tablo.html" class="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-purple-200 transition-all duration-300 overflow-hidden">
+                <div class="h-40 bg-slate-50 relative overflow-hidden border-b border-slate-100 flex items-center justify-center">
+                    <div class="grid grid-cols-4 gap-1 opacity-70 group-hover:opacity-100 transition-opacity">
+                        <div class="w-6 h-6 bg-purple-200 rounded-sm"></div> <div class="w-6 h-6 bg-slate-200 rounded-sm"></div> <div class="w-6 h-6 bg-slate-200 rounded-sm"></div> <div class="w-6 h-6 bg-purple-100 rounded-sm"></div>
+                        <div class="w-6 h-6 bg-purple-300 rounded-sm"></div> <div class="w-6 h-6 bg-purple-300 rounded-sm"></div> <div class="w-6 h-6 bg-purple-300 rounded-sm"></div> <div class="w-6 h-6 bg-purple-200 rounded-sm"></div>
+                        <div class="w-6 h-6 bg-purple-400 rounded-sm"></div> <div class="w-6 h-6 bg-purple-400 rounded-sm"></div> <div class="w-6 h-6 bg-purple-400 rounded-sm"></div> <div class="w-6 h-6 bg-purple-300 rounded-sm"></div>
+                    </div>
+                </div>
+                <div class="p-5">
+                    <h3 class="font-bold text-slate-800 group-hover:text-purple-600 transition-colors">Periyodik Tablo</h3>
+                    <p class="text-xs text-slate-500 mt-2 leading-relaxed">Elementlerin özellikleri, gruplar ve periyotlar. Elektron dizilimi ve elektronegatiflik trendleri.</p>
+                </div>
+            </a>
+
+            <a href="../simulasyonlar/kimya/baglar.html" class="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-purple-200 transition-all duration-300 overflow-hidden">
+                <div class="h-40 bg-slate-50 relative overflow-hidden border-b border-slate-100 flex items-center justify-center">
+                    <div class="molecule-group relative w-20 h-10">
+                        <div class="absolute left-0 top-0 w-8 h-8 bg-purple-600 rounded-full shadow-md"></div>
+                        <div class="absolute right-0 bottom-0 w-6 h-6 bg-slate-400 rounded-full shadow-md"></div>
+                        <div class="absolute left-4 top-4 w-10 h-1 bg-slate-300 -z-10 transform rotate(15deg)"></div>
+                    </div>
+                </div>
+                <div class="p-5">
+                    <h3 class="font-bold text-slate-800 group-hover:text-purple-600 transition-colors">Kimyasal Bağlar</h3>
+                    <p class="text-xs text-slate-500 mt-2 leading-relaxed">İyonik, kovalent ve metalik bağlar. Atomların nasıl birleşerek molekül oluşturduğunu görün.</p>
+                </div>
+            </a>
+
+            <a href="../simulasyonlar/kimya/asit-baz.html" class="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-purple-200 transition-all duration-300 overflow-hidden">
+                <div class="h-40 bg-slate-50 relative overflow-hidden border-b border-slate-100 flex items-center justify-center">
+                    <div class="relative w-full h-full">
+                        <div class="burette"></div>
+                        <div class="drop"></div>
+                        <div class="flask-pool"></div>
+                    </div>
+                </div>
+                <div class="p-5">
+                    <h3 class="font-bold text-slate-800 group-hover:text-purple-600 transition-colors">Asitler ve Bazlar</h3>
+                    <p class="text-xs text-slate-500 mt-2 leading-relaxed">pH ölçeği ve titrasyon deneyi. Çözeltilerin asidik veya bazik özelliklerini test edin.</p>
+                </div>
+            </a>
+
+            <a href="../simulasyonlar/kimya/gazlar.html" class="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-purple-200 transition-all duration-300 overflow-hidden">
+                <div class="h-40 bg-slate-50 relative overflow-hidden border-b border-slate-100 flex items-center justify-center">
+                    <div class="particle-box">
+                        <div class="particle" style="top: 20%; animation: particleMoveX 2s linear infinite alternate"></div>
+                        <div class="particle" style="left: 40%; animation: particleMoveY 1.5s linear infinite alternate"></div>
+                        <div class="particle" style="top: 60%; animation: particleMoveX 2.5s linear infinite alternate-reverse"></div>
+                        <div class="particle" style="left: 80%; animation: particleMoveY 2s linear infinite alternate-reverse"></div>
+                    </div>
+                </div>
+                <div class="p-5">
+                    <h3 class="font-bold text-slate-800 group-hover:text-purple-600 transition-colors">Gaz Yasaları</h3>
+                    <p class="text-xs text-slate-500 mt-2 leading-relaxed">İdeal gaz denklemi. Basınç, hacim ve sıcaklık arasındaki ilişkiyi piston simülasyonuyla keşfedin.</p>
+                </div>
+            </a>
+
+            <a href="../simulasyonlar/kimya/tepkime.html" class="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-purple-200 transition-all duration-300 overflow-hidden">
+                <div class="h-40 bg-slate-50 relative overflow-hidden border-b border-slate-100 flex items-center justify-center">
+                    <div class="beaker flex justify-center">
+                         <div class="bubble" style="left: 10px; animation-delay: 0s"></div>
+                         <div class="bubble" style="left: 20px; animation-delay: 0.5s"></div>
+                         <div class="bubble" style="left: 25px; animation-delay: 1.2s"></div>
+                    </div>
+                    <div class="absolute bottom-6 flex justify-center">
+                        <div class="heat-bar" style="animation-delay: 0s"></div>
+                        <div class="heat-bar" style="animation-delay: 0.2s"></div>
+                        <div class="heat-bar" style="animation-delay: 0.4s"></div>
+                    </div>
+                </div>
+                <div class="p-5">
+                    <h3 class="font-bold text-slate-800 group-hover:text-purple-600 transition-colors">Tepkime Hızı</h3>
+                    <p class="text-xs text-slate-500 mt-2 leading-relaxed">Çarpışma teorisi ve aktivasyon enerjisi. Sıcaklık ve derişimin reaksiyon hızına etkisini görün.</p>
+                </div>
+            </a>
+
+        </div>
+    </main>
+
+    <footer class="bg-white border-t border-slate-100 py-8 text-center text-slate-400 text-sm">
+        &copy; 2026 Teorim Kimya
+    </footer>
+
+</body>
+</html>
