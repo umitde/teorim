@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sarkaç Pro | Teorim</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; overflow: hidden; margin: 0; }
+        canvas { background: radial-gradient(circle, #ffffff 0%, #f1f5f9 100%); }
+        .control-panel { backdrop-blur: md; background: rgba(255, 255, 255, 0.8); }
+
+        /* --- MOBİL UYARI KATMANI (İkonlu) --- */
+        #mobile-warning {
+            display: none; 
+            position: fixed; 
+            top: 0; left: 0; 
+            width: 100%; height: 100%;
+            background: #1e293b; 
+            color: white; 
+            z-index: 9999;
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center;
+            text-align: center; 
+            padding: 20px;
+        }
+
+        /* Dikey mobilde göster */
+        @media (max-width: 768px) and (orientation: portrait) {
+            #mobile-warning { display: flex; }
+        }
+    </style>
+</head>
+<body class="bg-slate-100 flex h-screen">
+
+    <div id="mobile-warning">
+        <div class="mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-orange-500 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            </svg>
+        </div>
+        <h2 class="text-xl font-bold mb-2">En İyi Deneyim İçin</h2>
+        <p class="text-slate-400">Lütfen cihazınızı yan çevirin veya bir tablet/bilgisayar kullanın.</p>
+    </div>
+
+    <div class="control-panel w-80 h-full border-r border-slate-200 p-6 flex flex-col gap-6 shadow-xl z-10">
+        <div class="flex items-center gap-3 mb-4">
+            <a href="../../dersler/fizik.html" class="p-2 hover:bg-orange-100 rounded-full text-orange-600 transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+            </a>
+            <h1 class="font-bold text-xl text-slate-800">Basit Sarkaç</h1>
+        </div>
+
+        <div class="space-y-4">
+            <div>
+                <label class="text-sm font-semibold text-slate-600 flex justify-between">
+                    İp Uzunluğu (L) <span id="lVal">250 cm</span>
+                </label>
+                <input type="range" id="length" min="100" max="450" value="250" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-orange-500">
+            </div>
+
+            <div>
+                <label class="text-sm font-semibold text-slate-600 flex justify-between">
+                    Kütle (m) <span id="mVal">2.0 kg</span>
+                </label>
+                <input type="range" id="mass" min="0.5" max="5.0" step="0.1" value="2.0" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-orange-500">
+            </div>
+
+            <div>
+                <label class="text-sm font-semibold text-slate-600 flex justify-between">
+                    Yerçekimi (g) <span id="gVal">9.8 m/s²</span>
+                </label>
+                <input type="range" id="gravity" min="1.6" max="20" step="0.1" value="9.8" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-orange-500">
+            </div>
+        </div>
+
+        <button id="resetBtn" class="w-full bg-slate-900 hover:bg-black text-white font-bold py-3 rounded-xl shadow-lg transition-all active:scale-95">
+            SİSTEMİ SIFIRLA
+        </button>
+
+        <div class="mt-auto p-4 bg-slate-800 rounded-2xl text-white text-xs space-y-3 shadow-2xl">
+            <div class="flex justify-between items-center">
+                <p class="text-slate-400">Periyot (T):</p>
+                <span id="periodRes" class="text-orange-400 font-mono text-base">0.00 s</span>
+            </div>
+            <div class="flex justify-between items-center">
+                <p class="text-slate-400">Anlık Açı:</p>
+                <span id="angleRes" class="text-white font-mono text-base">0°</span>
+            </div>
+            
+            <div class="h-12 w-full bg-slate-700 rounded-lg relative overflow-hidden flex items-end p-1">
+                 <div id="kineticBar" class="w-1/2 bg-blue-500 transition-all duration-75" style="height: 0%"></div>
+                 <div id="potentialBar" class="w-1/2 bg-emerald-500 transition-all duration-75" style="height: 0%"></div>
+            </div>
+
+            <div class="flex justify-between text-[10px] font-bold uppercase tracking-tighter">
+                <div class="flex items-center gap-1">
+                    <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <span class="text-blue-400">Kinetik</span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <div class="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                    <span class="text-emerald-400">Potansiyel</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <canvas id="simCanvas" class="flex-1"></canvas>
+
+<script>
+    const canvas = document.getElementById('simCanvas');
+    const ctx = canvas.getContext('2d');
+    const lInput = document.getElementById('length');
+    const mInput = document.getElementById('mass');
+    const gInput = document.getElementById('gravity');
+    const resetBtn = document.getElementById('resetBtn');
+
+    let angle = Math.PI / 3; 
+    let angleV = 0; 
+    let angleA = 0;
+    let pathHistory = [];
+    let origin = { x: 0, y: 80 };
+
+    function resize() {
+        canvas.width = window.innerWidth - 320;
+        canvas.height = window.innerHeight;
+        origin.x = canvas.width / 2;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    function calculatePeriod() {
+        const L = parseFloat(lInput.value) / 100;
+        const g = parseFloat(gInput.value);
+        const period = 2 * Math.PI * Math.sqrt(L / g);
+        document.getElementById('periodRes').innerText = period.toFixed(2) + " s";
+    }
+
+    function update() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        const L = parseFloat(lInput.value);
+        const g = parseFloat(gInput.value);
+        const m = parseFloat(mInput.value);
+        const dt = 0.05; 
+
+        angleA = (-1 * g / (L / 10)) * Math.sin(angle);
+        angleV += angleA * dt;
+        angleV *= 0.999; 
+        angle += angleV * dt;
+
+        let x = L * Math.sin(angle) + origin.x;
+        let y = L * Math.cos(angle) + origin.y;
+
+        pathHistory.push({x: x, y: y});
+        if(pathHistory.length > 20) pathHistory.shift();
+        ctx.beginPath();
+        pathHistory.forEach((p, i) => {
+            ctx.globalAlpha = i / 20;
+            ctx.lineTo(p.x, p.y);
+        });
+        ctx.strokeStyle = "#fb923c";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+
+        document.getElementById('angleRes').innerText = Math.abs((angle * 180 / Math.PI).toFixed(0)) + "°";
+
+        let h = L - (L * Math.cos(angle));
+        let pe = h; 
+        let ke = 0.5 * (angleV * angleV * L * 50); 
+        const total = pe + ke + 0.1;
+        document.getElementById('potentialBar').style.height = (pe/total*100) + "%";
+        document.getElementById('kineticBar').style.height = (ke/total*100) + "%";
+
+        ctx.fillStyle = "#1e293b";
+        ctx.fillRect(origin.x - 40, origin.y - 10, 80, 10);
+        ctx.beginPath();
+        ctx.moveTo(origin.x, origin.y);
+        ctx.lineTo(x, y);
+        ctx.strokeStyle = "#64748b";
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        const grad = ctx.createRadialGradient(x - 5, y - 5, 2, x, y, 15 + m);
+        grad.addColorStop(0, "#fb923c");
+        grad.addColorStop(1, "#ea580c");
+        ctx.beginPath();
+        ctx.arc(x, y, 15 + (m * 2), 0, Math.PI * 2);
+        ctx.fillStyle = grad;
+        ctx.fill();
+        ctx.strokeStyle = "white";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        requestAnimationFrame(update);
+    }
+
+    resetBtn.addEventListener('click', () => {
+        angle = Math.PI / 3;
+        angleV = 0;
+        angleA = 0;
+        pathHistory = [];
+    });
+
+    function updateUI() {
+        document.getElementById('lVal').innerText = lInput.value + " cm";
+        document.getElementById('mVal').innerText = mInput.value + " kg";
+        document.getElementById('gVal').innerText = gInput.value + " m/s²";
+        calculatePeriod();
+    }
+
+    lInput.oninput = updateUI;
+    mInput.oninput = updateUI;
+    gInput.oninput = updateUI;
+
+    updateUI();
+    update();
+</script>
+</body>
+</html>
