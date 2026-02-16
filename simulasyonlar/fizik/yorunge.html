@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yörünge Mekaniği | Teorim</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --bg-app: #f8fafc;
+            --bg-panel: #ffffff;
+            --text-main: #1e293b;
+            --col-accent: #f97316;
+            --border: #e2e8f0;
+            --radius: 16px;
+        }
+
+        body { 
+            margin: 0; padding: 0; background: var(--bg-app); 
+            color: var(--text-main); font-family: 'Inter', sans-serif; 
+            height: 100vh; display: flex; overflow: hidden; 
+        }
+
+        aside { 
+            width: 320px; flex-shrink: 0; background: var(--bg-panel); 
+            border-right: 1px solid var(--border); padding: 24px; 
+            display: flex; flex-direction: column; gap: 20px; 
+            z-index: 20; box-shadow: 4px 0 20px rgba(0,0,0,0.03);
+            overflow-y: auto;
+        }
+
+        .section-title {
+            font-size: 0.7rem; font-weight: 800; color: #64748b;
+            text-transform: uppercase; letter-spacing: 1px;
+            margin-bottom: 8px; border-bottom: 1px solid var(--border); padding-bottom: 4px;
+        }
+
+        .control-group { background: #f8fafc; padding: 16px; border-radius: var(--radius); border: 1px solid var(--border); }
+        .prop-row { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; font-size: 0.8rem; font-weight: 700; }
+        input[type="range"] { width: 100%; accent-color: var(--col-accent); cursor: pointer; }
+
+        main { flex: 1; position: relative; background: #020617; overflow: hidden; }
+        canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
+
+        .data-card {
+            position: absolute; top: 20px; right: 20px;
+            background: rgba(255, 255, 255, 0.9); padding: 15px;
+            border-radius: var(--radius); border: 1px solid var(--border);
+            min-width: 220px; backdrop-filter: blur(10px); color: var(--text-main);
+        }
+    </style>
+</head>
+<body>
+
+<aside>
+    <div class="flex items-center gap-3 mb-4">
+        <a href="../../dersler/fizik.html" class="p-2 hover:bg-orange-100 rounded-full text-orange-600 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+        </a>
+        <h1 class="font-bold text-xl">Kütle Çekim</h1>
+    </div>
+
+    <div class="section-title">Merkezi Gök Cismi</div>
+    <div class="control-group">
+        <div class="prop-row">
+            <div class="flex justify-between"><span>Güneş Kütlesi (M):</span><span id="valMass" class="text-orange-600">100</span></div>
+            <input type="range" id="slMass" min="10" max="500" value="100">
+        </div>
+    </div>
+
+    <div class="section-title">Fiziksel Sabitler</div>
+    <div class="control-group">
+        <div class="prop-row">
+            <div class="flex justify-between"><span>Çekim Katsayısı (G):</span><span id="valG" class="text-orange-600">1.0</span></div>
+            <input type="range" id="slG" min="0.1" max="5.0" step="0.1" value="1.0">
+        </div>
+        <div class="flex items-center gap-2 mt-2">
+            <input type="checkbox" id="chkPath" checked>
+            <label class="text-xs font-bold text-slate-600">Yörünge İzini Göster</label>
+        </div>
+    </div>
+
+    <div class="mt-auto space-y-3">
+        <div class="p-3 bg-orange-50 text-orange-700 rounded-xl text-[10px] font-bold border border-orange-100">
+            KÜTLE ÇEKİM YASASI: <br> Nesneler birbirini kütleleriyle doğru, uzaklığın karesiyle ters orantılı çeker.
+        </div>
+        <button class="w-full py-3 border border-slate-200 rounded-xl font-bold text-slate-400 text-xs hover:bg-slate-50 transition" onclick="sim.reset()">SİSTEMİ SIFIRLA</button>
+    </div>
+</aside>
+
+<main id="container">
+    <div class="data-card">
+        <div class="text-[10px] font-extrabold text-slate-400 uppercase mb-2">Vektörel Analiz</div>
+        <div class="flex justify-between text-xs mb-1"><span>Aktif Nesne:</span><span id="planetCount" class="text-orange-600 font-bold">0</span></div>
+        <div class="text-[9px] text-slate-500 mt-2">
+            $F = G \frac{M \cdot m}{r^2}$ formülü anlık hesaplanmaktadır.
+        </div>
+    </div>
+    <canvas id="simCanvas"></canvas>
+</main>
+
+<script>
+const sim = {
+    canvas: document.getElementById('simCanvas'),
+    ctx: null,
+    sun: { x: 0, y: 0, mass: 100 },
+    planets: [],
+    G: 1.0,
+    isDrawing: false,
+    mStart: null,
+    mEnd: null,
+
+    init() {
+        this.ctx = this.canvas.getContext('2d');
+        this.resize();
+        window.addEventListener('resize', () => this.resize());
+        this.setupEvents();
+        this.setupUI();
+        this.loop();
+    },
+
+    resize() {
+        const el = document.getElementById('container');
+        this.canvas.width = el.clientWidth;
+        this.canvas.height = el.clientHeight;
+        this.sun.x = this.canvas.width / 2;
+        this.sun.y = this.canvas.height / 2;
+    },
+
+    setupUI() {
+        document.getElementById('slMass').oninput = (e) => {
+            this.sun.mass = parseFloat(e.target.value);
+            document.getElementById('valMass').innerText = this.sun.mass;
+        };
+        document.getElementById('slG').oninput = (e) => {
+            this.G = parseFloat(e.target.value);
+            document.getElementById('valG').innerText = this.G.toFixed(1);
+        };
+    },
+
+    setupEvents() {
+        this.canvas.onmousedown = (e) => {
+            this.isDrawing = true;
+            this.mStart = { x: e.offsetX, y: e.offsetY };
+            this.mEnd = { x: e.offsetX, y: e.offsetY };
+        };
+        window.onmousemove = (e) => {
+            if(this.isDrawing) {
+                const rect = this.canvas.getBoundingClientRect();
+                this.mEnd = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+            }
+        };
+        window.onmouseup = () => {
+            if(this.isDrawing) {
+                // Hız vektörü fırlatma yönünün tersine (yay mantığı)
+                const vx = (this.mStart.x - this.mEnd.x) * 0.06;
+                const vy = (this.mStart.y - this.mEnd.y) * 0.06;
+                this.planets.push({
+                    x: this.mStart.x, y: this.mStart.y,
+                    vx, vy, path: [],
+                    color: `hsl(${Math.random() * 360}, 80%, 60%)`
+                });
+            }
+            this.isDrawing = false;
+        };
+    },
+
+    reset() { this.planets = []; },
+
+    update() {
+        this.planets.forEach(p => {
+            const dx = this.sun.x - p.x;
+            const dy = this.sun.y - p.y;
+            const distSq = dx*dx + dy*dy;
+            const dist = Math.sqrt(distSq);
+
+            // Bilimsel Kütle Çekim Formülü: a = (G * M) / r^2
+            const force = (this.G * this.sun.mass) / Math.max(distSq, 500); // Yakınsama hatasını engelle
+            p.vx += (dx / dist) * force;
+            p.vy += (dy / dist) * force;
+            p.x += p.vx;
+            p.y += p.vy;
+
+            p.path.push({x: p.x, y: p.y});
+            if(p.path.length > 150) p.path.shift();
+        });
+    },
+
+    draw() {
+        const ctx = this.ctx;
+        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        // Yıldız Çizimi (Güneş)
+        const sR = 10 + (this.sun.mass / 25);
+        ctx.shadowBlur = 30; ctx.shadowColor = "#fb923c";
+        ctx.fillStyle = "#fb923c";
+        ctx.beginPath(); ctx.arc(this.sun.x, this.sun.y, sR, 0, 7); ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // Gezegenler ve Yörüngeler
+        const showPath = document.getElementById('chkPath').checked;
+        this.planets.forEach(p => {
+            if(showPath && p.path.length > 1) {
+                ctx.beginPath(); ctx.strokeStyle = p.color; ctx.globalAlpha = 0.4;
+                ctx.moveTo(p.path[0].x, p.path[0].y);
+                p.path.forEach(pt => ctx.lineTo(pt.x, pt.y));
+                ctx.stroke(); ctx.globalAlpha = 1;
+            }
+            ctx.fillStyle = p.color;
+            ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, 7); ctx.fill();
+            
+            // Çekim Vektörü (Görselleştirme)
+            ctx.strokeStyle = "rgba(255,255,255,0.2)";
+            ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(this.sun.x, this.sun.y); ctx.stroke();
+        });
+
+        // Fırlatma Çizgisi
+        if(this.isDrawing) {
+            ctx.strokeStyle = "white"; ctx.setLineDash([5, 5]);
+            ctx.beginPath(); ctx.moveTo(this.mStart.x, this.mStart.y); ctx.lineTo(this.mEnd.x, this.mEnd.y); ctx.stroke();
+            ctx.setLineDash([]);
+        }
+        document.getElementById('planetCount').innerText = this.planets.length;
+    },
+
+    loop() { this.update(); this.draw(); requestAnimationFrame(() => this.loop()); }
+};
+sim.init();
+</script>
+</body>
+</html>
