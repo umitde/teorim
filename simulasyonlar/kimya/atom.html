@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atom Modelleri | Teorim</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --bg-app: #f8fafc;
+            --bg-panel: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --col-accent: #f97316;
+            --border: #e2e8f0;
+            --radius: 16px;
+        }
+
+        body { 
+            margin: 0; padding: 0; background: var(--bg-app); 
+            color: var(--text-main); font-family: 'Inter', sans-serif; 
+            height: 100vh; display: flex; overflow: hidden; 
+        }
+
+        aside { 
+            width: 320px; flex-shrink: 0; background: var(--bg-panel); 
+            border-right: 1px solid var(--border); padding: 24px; 
+            display: flex; flex-direction: column; gap: 20px; 
+            z-index: 20; box-shadow: 4px 0 20px rgba(0,0,0,0.03);
+            overflow-y: auto;
+        }
+
+        .section-title {
+            font-size: 0.7rem; font-weight: 800; color: #64748b;
+            text-transform: uppercase; letter-spacing: 1px;
+            margin-bottom: 8px; border-bottom: 1px solid var(--border); padding-bottom: 4px;
+        }
+
+        .model-btn {
+            display: flex; align-items: center; gap: 12px;
+            background: #ffffff; border: 1px solid var(--border); padding: 14px;
+            border-radius: var(--radius); cursor: pointer; transition: all 0.2s;
+            font-weight: 700; font-size: 0.8rem; text-align: left;
+        }
+        .model-btn:hover { border-color: var(--col-accent); color: var(--col-accent); transform: translateX(5px); }
+        .model-btn.active { background: #fff7ed; border-color: var(--col-accent); color: var(--col-accent); }
+
+        main { flex: 1; position: relative; background: #ffffff; overflow: hidden; }
+        canvas { display: block; width: 100%; height: 100%; }
+
+        /* MOBİL UYARI */
+        #mobile-warning {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #1e293b; color: white; z-index: 9999;
+            flex-direction: column; align-items: center; justify-content: center;
+            text-align: center; padding: 20px;
+        }
+        @media (max-width: 768px) and (orientation: portrait) { #mobile-warning { display: flex; } }
+
+        .info-card {
+            position: absolute; bottom: 24px; left: 24px; right: 24px;
+            background: rgba(255, 255, 255, 0.9); padding: 20px;
+            border-radius: var(--radius); border: 1px solid var(--border);
+            backdrop-filter: blur(10px); box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="mobile-warning">
+        <div class="mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-orange-500 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            </svg>
+        </div>
+        <h2 class="text-xl font-bold mb-2">En İyi Deneyim İçin</h2>
+        <p class="text-slate-400">Lütfen cihazınızı yan çevirin veya bilgisayar kullanın.</p>
+    </div>
+
+<aside>
+    <div class="flex items-center gap-3 mb-4">
+        <a href="../../dersler/kimya.html" class="p-2 hover:bg-orange-100 rounded-full text-orange-600 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+        </a>
+        <h1 class="font-bold text-xl text-slate-800">Atom Modelleri</h1>
+    </div>
+
+    <div class="section-title">Model Seçimi</div>
+    <div class="space-y-2">
+        <button class="model-btn active" id="btn-dalton" onclick="sim.changeModel('dalton')"><span>⚫</span> Dalton (1803)</button>
+        <button class="model-btn" id="btn-thomson" onclick="sim.changeModel('thomson')"><span>🍪</span> Thomson (1897)</button>
+        <button class="model-btn" id="btn-rutherford" onclick="sim.changeModel('rutherford')"><span>☢️</span> Rutherford (1911)</button>
+        <button class="model-btn" id="btn-bohr" onclick="sim.changeModel('bohr')"><span>💫</span> Bohr (1913)</button>
+        <button class="model-btn" id="btn-modern" onclick="sim.changeModel('modern')"><span>☁️</span> Modern (Günümüz)</button>
+    </div>
+
+    <div class="mt-auto space-y-4">
+        <div class="p-4 bg-orange-50 rounded-2xl border border-orange-100">
+            <p class="text-[10px] text-orange-700 font-bold uppercase mb-2 text-center tracking-widest">Atom Yapısı</p>
+            <div class="flex justify-between text-xs font-bold text-slate-600 px-1">
+                <span>Proton: <span id="pNum">1</span></span>
+                <span>Elektron: <span id="eNum">1</span></span>
+            </div>
+            <input type="range" id="atomSize" min="1" max="6" value="1" class="w-full mt-3 accent-orange-500">
+        </div>
+        <button class="w-full py-3 border border-slate-200 rounded-xl font-bold text-slate-400 text-xs hover:bg-slate-50 transition" onclick="sim.reset()">SİSTEMİ SIFIRLA</button>
+    </div>
+</aside>
+
+<main id="container">
+    <div class="info-card">
+        <h2 id="infoTitle" class="font-bold text-lg text-orange-600 mb-1 tracking-tight">Dalton Atom Modeli</h2>
+        <p id="infoText" class="text-sm text-slate-600 leading-relaxed italic">Atom içi dolu, parçalanamayan sert bir küredir. Maddeyi oluşturan en küçük yapı taşıdır.</p>
+    </div>
+    <canvas id="simCanvas"></canvas>
+</main>
+
+<script>
+const sim = {
+    canvas: document.getElementById('simCanvas'),
+    ctx: null,
+    currentModel: 'dalton',
+    atomCount: 1,
+    time: 0,
+    
+    data: {
+        dalton: { title: "Dalton Atom Modeli (Bilardo Topu)", text: "Atomlar içi dolu kürelerdir. Bir elementin tüm atomları özdeştir, farklı elementlerin atomları farklıdır." },
+        thomson: { title: "Thomson Atom Modeli (Üzümlü Kek)", text: "Elektronların keşfiyle ortaya çıkmıştır. Pozitif yüklü 'hamur' içinde negatif yüklü 'üzümler' (elektronlar) bulunur." },
+        rutherford: { title: "Rutherford Atom Modeli (Çekirdekli Model)", text: "Güneş sistemine benzer. Pozitif yük merkezdeki küçük çekirdekte toplanmış, elektronlar çevredeki boşlukta dağılmıştır." },
+        bohr: { title: "Bohr Atom Modeli (Yörüngeli Model)", text: "Elektronlar çekirdek çevresinde rastgele değil, belirli enerji seviyelerindeki dairesel yörüngelerde dönerler." },
+        modern: { title: "Modern Atom Teorisi (Bulut Modeli)", text: "Elektronlar dalga özelliği gösterir. Tam yerleri bilinemez, sadece bulunma olasılığının olduğu orbitaller (bulutlar) vardır." }
+    },
+
+    init() {
+        this.ctx = this.canvas.getContext('2d');
+        this.resize();
+        window.addEventListener('resize', () => this.resize());
+        this.setupUI();
+        this.loop();
+    },
+
+    resize() {
+        const el = document.getElementById('container');
+        this.canvas.width = el.clientWidth;
+        this.canvas.height = el.clientHeight;
+    },
+
+    setupUI() {
+        document.getElementById('atomSize').oninput = (e) => {
+            this.atomCount = parseInt(e.target.value);
+            document.getElementById('pNum').innerText = this.atomCount;
+            document.getElementById('eNum').innerText = this.atomCount;
+        };
+    },
+
+    changeModel(m) {
+        this.currentModel = m;
+        document.querySelectorAll('.model-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById('btn-' + m).classList.add('active');
+        document.getElementById('infoTitle').innerText = this.data[m].title;
+        document.getElementById('infoText').innerText = this.data[m].text;
+    },
+
+    reset() { this.atomCount = 1; this.changeModel('dalton'); document.getElementById('atomSize').value = 1; },
+
+    draw() {
+        const ctx = this.ctx;
+        const cx = this.canvas.width / 2;
+        const cy = this.canvas.height / 2;
+        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        // --- ARKA PLAN IZGARASI KALDIRILDI ---
+
+        if (this.currentModel === 'dalton') {
+            const grad = ctx.createRadialGradient(cx-20, cy-20, 10, cx, cy, 80);
+            grad.addColorStop(0, "#94a3b8"); grad.addColorStop(1, "#1e293b");
+            ctx.fillStyle = grad;
+            ctx.beginPath(); ctx.arc(cx, cy, 80, 0, 7); ctx.fill();
+        } 
+        
+        else if (this.currentModel === 'thomson') {
+            ctx.fillStyle = "#fff7ed"; // Kek
+            ctx.beginPath(); ctx.arc(cx, cy, 110, 0, 7); ctx.fill();
+            ctx.strokeStyle = "#f97316"; ctx.lineWidth = 4; ctx.stroke();
+            
+            for(let i=0; i<this.atomCount * 2; i++) {
+                const angle = i * (Math.PI * 2) / (this.atomCount * 2) + (this.time * 0.01);
+                const r = 40 + (i%2)*30;
+                const ex = cx + Math.cos(angle) * r;
+                const ey = cy + Math.sin(angle) * r;
+                ctx.fillStyle = "#3b82f6";
+                ctx.beginPath(); ctx.arc(ex, ey, 12, 0, 7); ctx.fill();
+                ctx.fillStyle = "white"; ctx.font = "bold 14px Arial"; ctx.fillText("-", ex-4, ey+5);
+            }
+        }
+
+        else if (this.currentModel === 'rutherford') {
+            // Çekirdek
+            ctx.fillStyle = "#ef4444"; ctx.shadowBlur = 15; ctx.shadowColor = "#ef4444";
+            ctx.beginPath(); ctx.arc(cx, cy, 12, 0, 7); ctx.fill(); ctx.shadowBlur = 0;
+            
+            // Elektronlar (Kaotik Yörüngeler)
+            for(let i=0; i<this.atomCount; i++) {
+                ctx.save(); ctx.translate(cx, cy); ctx.rotate(i * Math.PI / 3);
+                ctx.strokeStyle = "#cbd5e1"; ctx.setLineDash([5, 5]);
+                ctx.beginPath(); ctx.ellipse(0, 0, 140, 50, 0, 0, 7); ctx.stroke();
+                
+                const ex = Math.cos(this.time * 0.05 + i) * 140;
+                const ey = Math.sin(this.time * 0.05 + i) * 50;
+                ctx.fillStyle = "#3b82f6"; ctx.setLineDash([]);
+                ctx.beginPath(); ctx.arc(ex, ey, 7, 0, 7); ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        else if (this.currentModel === 'bohr') {
+            // Çekirdek
+            ctx.fillStyle = "#ef4444";
+            ctx.beginPath(); ctx.arc(cx, cy, 15, 0, 7); ctx.fill();
+            
+            const layers = [70, 110, 150];
+            layers.forEach((r, idx) => {
+                ctx.strokeStyle = "#e2e8f0"; ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.arc(cx, cy, r, 0, 7); ctx.stroke();
+                
+                const eNum = idx === 0 ? Math.min(this.atomCount, 2) : (idx === 1 ? Math.max(0, Math.min(this.atomCount-2, 8)) : 0);
+                for(let j=0; j<eNum; j++) {
+                    const angle = (this.time * 0.03) + (j * Math.PI * 2 / eNum);
+                    const ex = cx + Math.cos(angle) * r;
+                    const ey = cy + Math.sin(angle) * r;
+                    ctx.fillStyle = "#3b82f6"; ctx.beginPath(); ctx.arc(ex, ey, 8, 0, 7); ctx.fill();
+                }
+            });
+        }
+
+        else if (this.currentModel === 'modern') {
+            ctx.fillStyle = "#ef4444";
+            ctx.beginPath(); ctx.arc(cx, cy, 8, 0, 7); ctx.fill();
+            
+            for(let i=0; i<300; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const dist = Math.abs(this.gaussianRandom(0, 80));
+                const ex = cx + Math.cos(angle) * dist;
+                const ey = cy + Math.sin(angle) * dist;
+                ctx.fillStyle = `rgba(59, 130, 246, ${0.1 + Math.random()*0.2})`;
+                ctx.beginPath(); ctx.arc(ex, ey, 2, 0, 7); ctx.fill();
+            }
+        }
+        this.time += 1;
+    },
+
+    gaussianRandom(mean, stdev) {
+        const u = 1 - Math.random(); const v = Math.random();
+        const z = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+        return z * stdev + mean;
+    },
+
+    loop() { this.draw(); requestAnimationFrame(() => this.loop()); }
+};
+
+sim.init();
+</script>
+</body>
+</html>
