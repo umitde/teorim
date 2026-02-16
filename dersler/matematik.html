@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matematik Simülasyonları | Teorim</title>
+    <link rel="icon" type="image/png" href="../logo.png">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* --- CSS ANİMASYONLARI (Matematik İçin Özel) --- */
+
+        /* 1. Fonksiyon (Sinüs Dalgası) */
+        @keyframes drawSine {
+            0% { stroke-dashoffset: 100; }
+            50% { stroke-dashoffset: 0; }
+            100% { stroke-dashoffset: -100; }
+        }
+        .anim-sine-path {
+            stroke-dasharray: 100;
+            animation: drawSine 4s linear infinite;
+        }
+
+        /* 2. Geometri (Dönen Üçgen/Açı) */
+        @keyframes morphShape {
+            0% { transform: scale(1) rotate(0deg); border-bottom-color: #3B82F6; }
+            50% { transform: scale(1.2) rotate(180deg); border-bottom-color: #60A5FA; }
+            100% { transform: scale(1) rotate(360deg); border-bottom-color: #3B82F6; }
+        }
+        .anim-triangle {
+            width: 0; height: 0;
+            border-left: 25px solid transparent;
+            border-right: 25px solid transparent;
+            border-bottom: 40px solid #3B82F6; /* Blue-500 */
+            animation: morphShape 4s infinite ease-in-out;
+        }
+
+        /* 3. Olasılık (Yükselen Grafikler) */
+        @keyframes growBar {
+            0%, 100% { height: 20%; }
+            50% { height: 80%; }
+        }
+        .anim-bar {
+            width: 12px;
+            background: #3B82F6;
+            border-radius: 2px 2px 0 0;
+            animation: growBar 2s infinite ease-in-out;
+            margin: 0 4px;
+        }
+
+        /* 4. Birim Çember (Dönen Nokta) */
+        @keyframes circleRotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .anim-unit-point {
+            position: absolute; top: 0; left: 50%;
+            width: 8px; height: 8px;
+            background: #2563EB; /* Blue-600 */
+            border-radius: 50%;
+            margin-left: -4px; margin-top: -4px;
+        }
+        .anim-unit-line {
+            width: 100%; height: 100%;
+            animation: circleRotate 5s linear infinite;
+        }
+
+        /* 5. 3D Küp (Perspektif Dönüş) */
+        @keyframes spinCube {
+            0% { transform: rotateX(0deg) rotateY(0deg); }
+            100% { transform: rotateX(360deg) rotateY(360deg); }
+        }
+        .cube-scene { perspective: 400px; width: 40px; height: 40px; }
+        .cube {
+            width: 100%; height: 100%; position: relative;
+            transform-style: preserve-3d;
+            animation: spinCube 6s infinite linear;
+        }
+        .cube-face {
+            position: absolute; width: 40px; height: 40px;
+            border: 2px solid #3B82F6; background: rgba(59, 130, 246, 0.1);
+        }
+        .cube-face-front  { transform: rotateY(  0deg) translateZ(20px); }
+        .cube-face-back   { transform: rotateY(180deg) translateZ(20px); }
+        .cube-face-right  { transform: rotateY( 90deg) translateZ(20px); }
+        .cube-face-left   { transform: rotateY(-90deg) translateZ(20px); }
+        .cube-face-top    { transform: rotateX( 90deg) translateZ(20px); }
+        .cube-face-bottom { transform: rotateX(-90deg) translateZ(20px); }
+
+        /* 6. Türev (Teğet Çizgisi) */
+        @keyframes moveTangent {
+            0% { transform: translateX(-30px) translateY(20px) rotate(-20deg); }
+            50% { transform: translateX(0px) translateY(0px) rotate(0deg); }
+            100% { transform: translateX(30px) translateY(20px) rotate(20deg); }
+        }
+        .anim-tangent {
+            width: 60px; height: 2px; background: #EF4444; /* Red for contrast */
+            position: absolute;
+            top: 50%; left: 50%;
+            margin-left: -30px;
+            animation: moveTangent 3s infinite ease-in-out;
+        }
+    </style>
+</head>  
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <header class="bg-white/90 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+            <a href="../kutuphane.html" class="flex items-center gap-2 text-slate-500 hover:text-blue-600 transition-colors py-2 pr-4 rounded-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                <span class="font-medium text-sm hidden sm:block">Kütüphane</span>
+            </a>
+
+            <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+                <h1 class="font-bold text-lg text-slate-800">Matematik</h1>
+            </div>
+
+            <a href="../index.html" class="flex items-center justify-end">
+                <img src="../logo.png" alt="Teorim" class="h-8 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity">
+            </a> 
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-6 py-12 w-full flex-grow">
+        
+        <div class="mb-10">
+            <h2 class="text-3xl font-bold text-slate-900">Simülasyonlar</h2>
+            <p class="text-slate-500 mt-2">Formülleri görselleştirin ve keşfedin.</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+            <a href="../simulasyonlar/matematik/fonksiyonlar.html" class="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-blue-200 transition-all duration-300 overflow-hidden">
+                <div class="h-40 bg-slate-50 relative overflow-hidden border-b border-slate-100 flex items-center justify-center">
+                    <div class="absolute w-full h-[1px] bg-slate-200"></div> <div class="absolute h-full w-[1px] bg-slate-200"></div> <svg width="100" height="60" viewBox="0 0 100 60" class="overflow-visible">
+                        <path d="M0,30 Q25,0 50,30 T100,30" fill="none" stroke="#3B82F6" stroke-width="3" class="anim-sine-path" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div class="p-5">
+                    <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">Fonksiyon Grafikleri</h3>
+                    <p class="text-xs text-slate-500 mt-2 leading-relaxed">Parabol, doğrusal ve trigonometrik fonksiyonlar. Parametreleri değiştirerek değişimi görün.</p>
+                </div>
+            </a>
+
+            <a href="../simulasyonlar/matematik/birim-cember.html" class="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-blue-200 transition-all duration-300 overflow-hidden">
+                <div class="h-40 bg-slate-50 relative overflow-hidden border-b border-slate-100 flex items-center justify-center">
+                    <div class="w-24 h-24 rounded-full border border-slate-300 relative">
+                         <div class="absolute top-1/2 left-0 w-full h-[1px] bg-slate-200"></div>
+                         <div class="absolute left-1/2 top-0 h-full w-[1px] bg-slate-200"></div>
+                         <div class="anim-unit-line absolute top-0 left-0">
+                             <div class="anim-unit-point"></div>
+                             <div class="absolute top-1/2 left-1/2 w-1/2 h-[1px] bg-blue-300 origin-left"></div>
+                         </div>
+                    </div>
+                </div>
+                <div class="p-5">
+                    <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">Birim Çember</h3>
+                    <p class="text-xs text-slate-500 mt-2 leading-relaxed">Sinüs ve kosinüsün geometrik anlamı. Açı değiştikçe değerlerin nasıl oluştuğunu izleyin.</p>
+                </div>
+            </a>
+
+            <a href="../simulasyonlar/matematik/olasilik.html" class="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-blue-200 transition-all duration-300 overflow-hidden">
+                <div class="h-40 bg-slate-50 relative overflow-hidden border-b border-slate-100 flex items-end justify-center pb-8">
+                    <div class="anim-bar" style="height: 30%; animation-delay: 0s"></div>
+                    <div class="anim-bar" style="height: 60%; animation-delay: 0.2s"></div>
+                    <div class="anim-bar" style="height: 45%; animation-delay: 0.4s"></div>
+                    <div class="anim-bar" style="height: 80%; animation-delay: 0.6s"></div>
+                    <div class="anim-bar" style="height: 20%; animation-delay: 0.8s"></div>
+                </div>
+                <div class="p-5">
+                    <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">Olasılık ve İstatistik</h3>
+                    <p class="text-xs text-slate-500 mt-2 leading-relaxed">Zar atma deneyleri ve normal dağılım. Veri sayısı arttıkça grafiğin nasıl şekillendiğini görün.</p>
+                </div>
+            </a>
+
+            <a href="../simulasyonlar/matematik/geometri.html" class="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-blue-200 transition-all duration-300 overflow-hidden">
+                <div class="h-40 bg-slate-50 relative overflow-hidden border-b border-slate-100 flex items-center justify-center">
+                    <div class="anim-triangle"></div>
+                </div>
+                <div class="p-5">
+                    <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">Üçgenler ve Açılar</h3>
+                    <p class="text-xs text-slate-500 mt-2 leading-relaxed">İç açılar toplamı, Pisagor teoremi ve benzerlik kurallarını interaktif olarak test edin.</p>
+                </div>
+            </a>
+
+            <a href="../simulasyonlar/matematik/3d-cisimler.html" class="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-blue-200 transition-all duration-300 overflow-hidden">
+                <div class="h-40 bg-slate-50 relative overflow-hidden border-b border-slate-100 flex items-center justify-center">
+                    <div class="cube-scene">
+                        <div class="cube">
+                            <div class="cube-face cube-face-front"></div>
+                            <div class="cube-face cube-face-back"></div>
+                            <div class="cube-face cube-face-right"></div>
+                            <div class="cube-face cube-face-left"></div>
+                            <div class="cube-face cube-face-top"></div>
+                            <div class="cube-face cube-face-bottom"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-5">
+                    <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">3D Cisimler</h3>
+                    <p class="text-xs text-slate-500 mt-2 leading-relaxed">Prizmalar, küreler ve silindirler. Hacim ve yüzey alanı hesaplamalarını görselleştirin.</p>
+                </div>
+            </a>
+
+            <a href="../simulasyonlar/matematik/turev.html" class="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-blue-200 transition-all duration-300 overflow-hidden">
+                <div class="h-40 bg-slate-50 relative overflow-hidden border-b border-slate-100 flex items-center justify-center">
+                    <svg width="120" height="80" viewBox="0 0 120 80" class="absolute">
+                        <path d="M10,70 Q60,-20 110,70" fill="none" stroke="#CBD5E1" stroke-width="2"/>
+                    </svg>
+                    <div class="anim-tangent"></div>
+                    <div class="absolute w-2 h-2 bg-blue-600 rounded-full top-1/2 left-1/2 -mt-3 -ml-1"></div>
+                </div>
+                <div class="p-5">
+                    <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">Türev ve Eğim</h3>
+                    <p class="text-xs text-slate-500 mt-2 leading-relaxed">Bir eğrinin anlık değişim hızı. Teğetin eğimi ile türev arasındaki ilişkiyi kavrayın.</p>
+                </div>
+            </a>
+
+        </div>
+    </main>
+
+    <footer class="bg-white border-t border-slate-100 py-8 text-center text-slate-400 text-sm">
+        &copy; 2026 Teorim Matematik
+    </footer>
+
+</body>
+</html>
