@@ -6,21 +6,44 @@
     <title>Eğik Atış Simülasyonu | Teorim</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; overflow: hidden; }
+        body { font-family: 'Inter', sans-serif; overflow: hidden; margin: 0; }
         canvas { background: #f8fafc; cursor: crosshair; }
         .control-panel { backdrop-blur: md; background: rgba(255, 255, 255, 0.8); }
+
+        /* --- MOBİL UYARI KATMANI STİLİ --- */
+        #mobile-warning {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: #1e293b; /* Slate-800 */
+            color: white;
+            z-index: 9999;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+
+        /* Sadece dikey mobil ekranlarda (768px altı) göster */
+        @media (max-width: 768px) and (orientation: portrait) {
+            #mobile-warning {
+                display: flex;
+            }
+        }
     </style>
 </head>
 <body class="bg-slate-100 flex h-screen">
 
     <div id="mobile-warning">
-    <div class="mb-6">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-orange-500 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-        </svg>
-    </div>
-    <h2 class="text-xl font-bold mb-2">En İyi Deneyim İçin</h2>
-    <p class="text-slate-400">Lütfen cihazınızı yan çevirin veya bir tablet/bilgisayar kullanın.</p>
+        <div class="mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-orange-500 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            </svg>
+        </div>
+        <h2 class="text-xl font-bold mb-2">En İyi Deneyim İçin</h2>
+        <p class="text-slate-400">Lütfen cihazınızı yan çevirin veya bir tablet/bilgisayar kullanın.</p>
     </div>
 
     <div class="control-panel w-80 h-full border-r border-slate-200 p-6 flex flex-col gap-6 shadow-xl z-10">
@@ -93,7 +116,6 @@
     window.addEventListener('resize', resize);
     resize();
 
-    // UI Değerlerini güncelleme fonksiyonu
     function updateUI() {
         document.getElementById('vVal').innerText = vInput.value + " m/s";
         document.getElementById('aVal').innerText = aInput.value + "°";
@@ -119,7 +141,6 @@
             y: canvas.height - GROUND_Y
         });
         
-        // Teorik Sonuçlar
         const range = (v0 * v0 * Math.sin(2 * angleRad)) / g;
         const maxHeight = (v0 * v0 * Math.pow(Math.sin(angleRad), 2)) / (2 * g);
         const flightTime = (2 * v0 * Math.sin(angleRad)) / g;
@@ -132,7 +153,6 @@
     function update() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        // Kamera Takibi
         let furthestX = canvas.width / cameraScale;
         projectiles.forEach(p => {
             if (!p.landed && p.x > furthestX - 100) furthestX = p.x + 100;
@@ -146,7 +166,6 @@
         ctx.scale(cameraScale, cameraScale);
         ctx.translate(0, -(canvas.height - GROUND_Y));
 
-        // --- OPTİMİZE EDİLMİŞ CETVEL ---
         const worldEnd = 10000; 
         ctx.beginPath();
         ctx.moveTo(START_X, canvas.height - GROUND_Y);
@@ -155,7 +174,6 @@
         ctx.lineWidth = 2 / cameraScale;
         ctx.stroke();
 
-        // Sadece ekranda görünen metrajları çiz
         let startMeter = Math.floor(Math.max(0, (-START_X) / M_TO_PX));
         let endMeter = startMeter + Math.ceil((canvas.width / cameraScale) / M_TO_PX) + 100;
 
@@ -177,26 +195,20 @@
             }
         }
 
-        // --- HAREKET ---
-        const dt = 0.02; // Zaman adımı
+        const dt = 0.02;
 
         projectiles.forEach((p) => {
             if (!p.landed) {
                 p.t += dt;
-                // Formül
                 p.x = START_X + (p.v0 * Math.cos(p.angleRad) * p.t) * M_TO_PX;
                 let height = (p.v0 * Math.sin(p.angleRad) * p.t) - (0.5 * p.g * p.t * p.t);
                 p.y = (canvas.height - GROUND_Y) - (height * M_TO_PX);
-
                 p.path.push({x: p.x, y: p.y});
-
                 if (p.y >= canvas.height - GROUND_Y) {
                     p.y = canvas.height - GROUND_Y;
                     p.landed = true;
                 }
             }
-
-            // Yörünge
             ctx.beginPath();
             ctx.setLineDash([5/cameraScale, 5/cameraScale]);
             p.path.forEach((pos, i) => {
@@ -207,8 +219,6 @@
             ctx.lineWidth = 2 / cameraScale;
             ctx.stroke();
             ctx.setLineDash([]);
-
-            // Top
             ctx.beginPath();
             ctx.arc(p.x, p.y, p.radius / cameraScale, 0, Math.PI * 2);
             ctx.fillStyle = p.color;
@@ -219,33 +229,6 @@
         requestAnimationFrame(update);
     }
 
-    /* Mobil Uyarı Katmanı Stili */
-#mobile-warning {
-    display: none;
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: #1e293b; /* Slate-800 */
-    color: white;
-    z-index: 9999;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 20px;
-}
-
-/* Sadece dikey mobil ekranlarda göster */
-@media (max-width: 768px) and (orientation: portrait) {
-    #mobile-warning {
-        display: flex;
-    }
-    body {
-        overflow: hidden;
-    }
-    }
-
-    // Event Listeners (Döngünün dışında)
     document.getElementById('fireBtn').onclick = fire;
     document.getElementById('clearBtn').onclick = () => { 
         projectiles = []; 
