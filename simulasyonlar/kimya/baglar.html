@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kimyasal Bağlar | Teorim</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-app: #f8fafc;
+            --bg-panel: #ffffff;
+            --col-accent: #f97316;
+            --text-main: #1e293b;
+            --border: #e2e8f0;
+            --radius: 16px;
+        }
+
+        body { 
+            margin: 0; background: var(--bg-app); 
+            font-family: 'Inter', sans-serif; 
+            height: 100vh; display: flex; overflow: hidden; color: var(--text-main);
+        }
+
+        /* SOL PANEL */
+        aside { 
+            width: 340px; flex-shrink: 0; background: var(--bg-panel); 
+            border-right: 1px solid var(--border); padding: 24px; 
+            display: flex; flex-direction: column; gap: 20px; 
+            z-index: 30; box-shadow: 4px 0 20px rgba(0,0,0,0.02);
+            overflow-y: auto;
+        }
+
+        .section-title {
+            font-size: 0.7rem; font-weight: 800; color: #64748b;
+            text-transform: uppercase; letter-spacing: 1px;
+            margin-bottom: 8px; border-bottom: 1px solid var(--border); padding-bottom: 4px;
+        }
+
+        /* KART TASARIMI */
+        .molecule-card {
+            background: #ffffff; border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 16px;
+            cursor: pointer; transition: all 0.2s ease;
+            display: flex; align-items: center; gap: 14px;
+        }
+        .molecule-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-color: var(--col-accent); }
+        .molecule-card.active { background: #fff7ed; border-color: var(--col-accent); }
+        .molecule-card.active .mol-icon { background: var(--col-accent); color: white; }
+
+        .mol-icon {
+            width: 40px; height: 40px; background: #f1f5f9; 
+            border-radius: 10px; display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 0.9rem; color: #64748b; transition: 0.2s;
+        }
+
+        /* ETİKETLER */
+        .badge {
+            font-size: 9px; font-weight: 800; text-transform: uppercase;
+            padding: 3px 8px; border-radius: 6px; margin-top: 4px; display: inline-block;
+        }
+        .badge-ionic { background: #fee2e2; color: #991b1b; }
+        .badge-covalent { background: #dbeafe; color: #1e40af; }
+
+        /* ANALİZ KARTI (ALT) */
+        .stats-card {
+            margin-top: auto;
+            background: #1e293b; color: white;
+            padding: 20px; border-radius: var(--radius);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        /* ANA ALAN */
+        main { flex: 1; position: relative; background: #f8fafc; overflow: hidden; }
+        canvas { display: block; width: 100%; height: 100%; }
+        
+        /* AKSİYON BUTONU */
+        #actionBtn {
+            position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
+            padding: 14px 40px; background: var(--col-accent); color: white;
+            font-weight: 700; font-size: 0.9rem; border-radius: 50px; 
+            box-shadow: 0 10px 25px rgba(249, 115, 22, 0.4);
+            transition: all 0.2s; cursor: pointer; letter-spacing: 0.5px; border: none;
+        }
+        #actionBtn:hover { transform: translateX(-50%) scale(1.05); box-shadow: 0 15px 30px rgba(249, 115, 22, 0.5); }
+        #actionBtn:disabled { background: #cbd5e1; cursor: not-allowed; box-shadow: none; transform: translateX(-50%); }
+
+        /* MOBİL UYARI */
+        #mobile-warning {
+            display: none; position: fixed; inset: 0; background: #0f172a; 
+            color: white; z-index: 100; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center; padding: 20px;
+        }
+        @media (max-width: 768px) and (orientation: portrait) { #mobile-warning { display: flex; } }
+    </style>
+</head>
+<body>
+
+    <div id="mobile-warning">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-orange-500 animate-bounce mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+        </svg>
+        <h2 class="text-xl font-bold mb-2">Ekranı Yan Çevirin</h2>
+        <p class="text-slate-400 text-sm">Laboratuvar simülasyonu için geniş ekran gereklidir.</p>
+    </div>
+
+<aside>
+    <div class="flex items-center gap-3 mb-2">
+        <a href="../../dersler/kimya.html" class="p-2 hover:bg-orange-100 rounded-full text-orange-600 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" /></svg>
+        </a>
+        <h1 class="font-bold text-xl text-slate-800">Kimyasal Bağlar</h1>
+    </div>
+
+    <div class="section-title">Molekül Seçimi</div>
+    
+    <div class="space-y-3">
+        <div class="molecule-card active" onclick="app.loadMolecule('nacl', this)">
+            <div class="mol-icon">NaCl</div>
+            <div>
+                <div class="text-sm font-bold text-slate-800">Sodyum Klorür</div>
+                <span class="badge badge-ionic">İyonik Bağ</span>
+            </div>
+        </div>
+        <div class="molecule-card" onclick="app.loadMolecule('mgo', this)">
+            <div class="mol-icon">MgO</div>
+            <div>
+                <div class="text-sm font-bold text-slate-800">Magnezyum Oksit</div>
+                <span class="badge badge-ionic">İyonik Bağ</span>
+            </div>
+        </div>
+        <div class="molecule-card" onclick="app.loadMolecule('h2', this)">
+            <div class="mol-icon">H₂</div>
+            <div>
+                <div class="text-sm font-bold text-slate-800">Hidrojen Gazı</div>
+                <span class="badge badge-covalent">Kovalent (Apolar)</span>
+            </div>
+        </div>
+        <div class="molecule-card" onclick="app.loadMolecule('hcl', this)">
+            <div class="mol-icon">HCl</div>
+            <div>
+                <div class="text-sm font-bold text-slate-800">Hidrojen Klorür</div>
+                <span class="badge badge-covalent">Kovalent (Polar)</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="stats-card">
+        <div class="flex justify-between items-end mb-3">
+            <span class="text-orange-400 font-bold text-xs tracking-widest" id="statType">İYONİK BAĞ</span>
+            <span class="text-[10px] text-slate-400 uppercase font-bold">Bağ Enerjisi</span>
+        </div>
+        <div class="text-4xl font-black mb-2 tracking-tight" id="statFormula">Na ― Cl</div>
+        <div class="h-1.5 w-full bg-slate-700 rounded-full overflow-hidden mb-4">
+            <div id="energyBar" class="h-full bg-gradient-to-r from-orange-500 to-red-500 w-[0%] transition-all duration-1000 ease-out"></div>
+        </div>
+        <p class="text-[11px] text-slate-300 leading-relaxed font-medium opacity-80" id="statDesc">
+            Sodyum atomu 1 elektronunu Klor atomuna verir. Oluşan (+) ve (-) yükler birbirini çeker.
+        </p>
+    </div>
+</aside>
+
+<main>
+    <canvas id="simCanvas"></canvas>
+    <button id="actionBtn" onclick="app.startBonding()">BAĞI OLUŞTUR</button>
+</main>
+
+<script>
+    const app = {
+        canvas: document.getElementById('simCanvas'),
+        ctx: null,
+        width: 0, height: 0,
+        atoms: [],
+        bondingState: 'idle', // idle, moving, transferring, bonded
+        currentData: null,
+        animFrame: null,
+
+        molecules: {
+            nacl: { 
+                type: 'ionic', 
+                atoms: [
+                    { sym: 'Na', color: '#94a3b8', r: 35, e: [2,8,1], xOffset: -160 }, 
+                    { sym: 'Cl', color: '#10b981', r: 40, e: [2,8,7], xOffset: 160 }
+                ],
+                desc: "Metal (Na) elektron verir, Ametal (Cl) alır. Elektrostatik çekim oluşur.",
+                energy: 80, formula: "Na⁺ Cl⁻", title: "İYONİK BAĞ"
+            },
+            mgo: { 
+                type: 'ionic', 
+                atoms: [
+                    { sym: 'Mg', color: '#cbd5e1', r: 38, e: [2,8,2], xOffset: -160 },
+                    { sym: 'O',  color: '#f43f5e', r: 32, e: [2,6], xOffset: 160 }
+                ],
+                desc: "Mg iki elektronunu Oksijene verir. Çok güçlü bir iyonik bağ oluşur.",
+                energy: 95, formula: "Mg²⁺ O²⁻", title: "İYONİK BAĞ"
+            },
+            h2: { 
+                type: 'covalent', 
+                atoms: [
+                    { sym: 'H', color: '#64748b', r: 24, e: [1], xOffset: -100 },
+                    { sym: 'H', color: '#64748b', r: 24, e: [1], xOffset: 100 }
+                ],
+                desc: "İki Hidrojen atomu elektronlarını ortaklaşa kullanarak Dublet kuralına uyarlar.",
+                energy: 60, formula: "H ― H", title: "KOVALENT BAĞ"
+            },
+            hcl: { 
+                type: 'covalent', 
+                atoms: [
+                    { sym: 'H',  color: '#64748b', r: 24, e: [1], xOffset: -130 },
+                    { sym: 'Cl', color: '#10b981', r: 40, e: [2,8,7], xOffset: 130 }
+                ],
+                desc: "Elektronlar ortaklaşa kullanılır ancak Klor tarafında daha çok vakit geçirir (Polar).",
+                energy: 70, formula: "H ― Cl", title: "POLAR KOVALENT"
+            }
+        },
+
+        init() {
+            this.ctx = this.canvas.getContext('2d');
+            this.resize();
+            window.addEventListener('resize', () => this.resize());
+            this.loadMolecule('nacl', document.querySelector('.molecule-card'));
+            this.loop();
+        },
+
+        resize() {
+            this.width = this.canvas.width = this.canvas.parentElement.clientWidth;
+            this.height = this.canvas.height = this.canvas.parentElement.clientHeight;
+        },
+
+        loadMolecule(key, el) {
+            if(el) {
+                document.querySelectorAll('.molecule-card').forEach(c => c.classList.remove('active'));
+                el.classList.add('active');
+            }
+            
+            this.currentData = JSON.parse(JSON.stringify(this.molecules[key]));
+            this.bondingState = 'idle';
+            
+            const btn = document.getElementById('actionBtn');
+            btn.innerText = "BAĞI OLUŞTUR";
+            btn.disabled = false;
+            btn.style.background = "#f97316";
+
+            document.getElementById('statType').innerText = this.currentData.title;
+            document.getElementById('statFormula').innerText = key.toUpperCase();
+            document.getElementById('statDesc').innerText = this.currentData.desc;
+            document.getElementById('energyBar').style.width = "0%";
+
+            const cx = this.width / 2;
+            const cy = this.height / 2;
+            
+            this.atoms = this.currentData.atoms.map(a => ({
+                ...a,
+                x: cx + a.xOffset, y: cy,
+                targetX: cx + (a.xOffset * 0.45),
+                electrons: this.generateElectrons(a.e),
+                angle: 0
+            }));
+        },
+
+        generateElectrons(config) {
+            let els = [];
+            config.forEach((count, shellIndex) => {
+                const radius = 45 + (shellIndex * 28);
+                for(let i=0; i<count; i++) {
+                    els.push({
+                        shell: shellIndex,
+                        angle: (Math.PI * 2 / count) * i,
+                        radius: radius,
+                        speed: 0.015 - (shellIndex * 0.003),
+                        isShared: false,
+                        isTransferred: false
+                    });
+                }
+            });
+            return els;
+        },
+
+        startBonding() {
+            if(this.bondingState !== 'idle') return;
+            this.bondingState = 'moving';
+            const btn = document.getElementById('actionBtn');
+            btn.disabled = true;
+            btn.innerText = "BAĞLANIYOR...";
+        },
+
+        update() {
+            const cx = this.width / 2;
+            
+            if(this.bondingState === 'moving') {
+                let moved = false;
+                this.atoms.forEach(a => {
+                    const dx = a.targetX - a.x;
+                    if(Math.abs(dx) > 1) {
+                        a.x += dx * 0.06;
+                        moved = true;
+                    }
+                });
+                if(!moved) this.bondingState = 'transferring';
+            }
+
+            if(this.bondingState === 'transferring') {
+                if(this.currentData.type === 'ionic') {
+                    const giver = this.atoms[0];
+                    const receiver = this.atoms[1];
+                    const lastShell = giver.e.length - 1;
+                    const valenceElectrons = giver.electrons.filter(e => e.shell === lastShell && !e.isTransferred);
+
+                    if(valenceElectrons.length > 0) {
+                        valenceElectrons.forEach(e => {
+                            const targetShellRadius = 45 + (receiver.e.length * 28);
+                            e.isTransferred = true;
+                            e.targetPos = { x: receiver.x, y: receiver.y, r: targetShellRadius };
+                        });
+                    }
+                    this.bondingState = 'bonded';
+                } else {
+                    this.bondingState = 'bonded';
+                }
+                
+                document.getElementById('statFormula').innerText = this.currentData.formula;
+                document.getElementById('energyBar').style.width = this.currentData.energy + "%";
+                const btn = document.getElementById('actionBtn');
+                btn.innerText = "BAĞLANDI";
+                btn.style.background = "#10b981";
+            }
+        },
+
+        draw() {
+            const ctx = this.ctx;
+            ctx.clearRect(0, 0, this.width, this.height);
+
+            // Grid Arka Plan (Hafif)
+            ctx.strokeStyle = "#f1f5f9"; ctx.lineWidth = 1;
+            for(let i=0; i<this.width; i+=40) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,this.height); ctx.stroke(); }
+            for(let i=0; i<this.height; i+=40) { ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(this.width,i); ctx.stroke(); }
+
+            if(this.bondingState === 'bonded') {
+                ctx.beginPath();
+                ctx.moveTo(this.atoms[0].x, this.atoms[0].y);
+                ctx.lineTo(this.atoms[1].x, this.atoms[1].y);
+                
+                if(this.currentData.type === 'covalent') {
+                    ctx.lineWidth = 50;
+                    ctx.strokeStyle = "rgba(59, 130, 246, 0.05)";
+                    ctx.lineCap = "round";
+                    ctx.stroke();
+                } else {
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([6, 6]);
+                    ctx.strokeStyle = "rgba(249, 115, 22, 0.4)";
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+            }
+
+            this.atoms.forEach((atom, atomIdx) => {
+                atom.e.forEach((_, i) => {
+                    ctx.beginPath();
+                    ctx.arc(atom.x, atom.y, 45 + (i * 28), 0, Math.PI * 2);
+                    ctx.strokeStyle = "#e2e8f0"; ctx.lineWidth = 1.5; ctx.stroke();
+                });
+
+                atom.electrons.forEach(e => {
+                    let ex, ey;
+
+                    if(e.isTransferred && this.bondingState === 'bonded') {
+                        const target = this.atoms[1];
+                        e.angle += 0.02;
+                        ex = target.x + Math.cos(e.angle) * e.targetPos.r;
+                        ey = target.y + Math.sin(e.angle) * e.targetPos.r;
+                        ctx.fillStyle = "#ef4444";
+                    } 
+                    else if(this.currentData.type === 'covalent' && this.bondingState === 'bonded' && e.shell === atom.e.length-1) {
+                        const midX = (this.atoms[0].x + this.atoms[1].x) / 2;
+                        const midY = (this.atoms[0].y + this.atoms[1].y) / 2;
+                        e.angle += 0.03;
+                        ex = midX + Math.cos(e.angle) * 45 * (atomIdx === 0 ? 1 : -1); 
+                        ey = midY + Math.sin(e.angle) * 70;
+                        ctx.fillStyle = "#3b82f6";
+                    }
+                    else {
+                        e.angle += e.speed;
+                        ex = atom.x + Math.cos(e.angle) * e.radius;
+                        ey = atom.y + Math.sin(e.angle) * e.radius;
+                        ctx.fillStyle = "#94a3b8";
+                    }
+
+                    ctx.beginPath(); ctx.arc(ex, ey, 5, 0, Math.PI*2); ctx.fill();
+                });
+
+                ctx.beginPath(); ctx.arc(atom.x, atom.y, atom.r, 0, Math.PI*2);
+                ctx.fillStyle = atom.color; ctx.fill();
+                
+                ctx.fillStyle = "white"; ctx.font = "bold 16px Inter, sans-serif"; 
+                ctx.textAlign = "center"; ctx.textBaseline = "middle";
+                ctx.fillText(atom.sym, atom.x, atom.y);
+
+                if(this.currentData.type === 'ionic' && this.bondingState === 'bonded') {
+                    const sign = atomIdx === 0 ? "+" : "-";
+                    const chargeColor = atomIdx === 0 ? "#ef4444" : "#3b82f6";
+                    
+                    ctx.beginPath(); ctx.arc(atom.x + 35, atom.y - 35, 14, 0, Math.PI*2);
+                    ctx.fillStyle = chargeColor; ctx.fill();
+                    ctx.fillStyle = "white"; ctx.font = "bold 16px Arial";
+                    ctx.fillText(sign, atom.x + 35, atom.y - 35);
+                }
+            });
+        },
+
+        loop() {
+            this.update();
+            this.draw();
+            requestAnimationFrame(() => this.loop());
+        }
+    };
+
+    app.init();
+</script>
+</body>
+</html>
