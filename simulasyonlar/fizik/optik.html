@@ -22,6 +22,28 @@
             height: 100vh; display: flex; overflow: hidden; 
         }
 
+        /* MOBİL UYARI EKRANI (CSS) */
+        #mobile-warning { 
+            display: none; 
+            position: fixed; inset: 0; 
+            background: #0f172a; color: white; 
+            z-index: 9999; 
+            flex-direction: column; align-items: center; justify-content: center; 
+            text-align: center; padding: 20px; 
+        }
+
+        /* Hem telefonda hem de dikey tutuşta göster */
+        @media (max-width: 768px) or (orientation: portrait) { 
+            #mobile-warning { display: flex; } 
+        }
+
+        /* Zıplama Animasyonu */
+        @keyframes phoneBounce {
+            0%, 100% { transform: translateY(0) rotate(-5deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+        .phone-icon { animation: phoneBounce 1.5s infinite ease-in-out; }
+
         /* SOL PANEL */
         aside { 
             width: 320px; flex-shrink: 0; background: var(--bg-panel); 
@@ -81,6 +103,16 @@
     </style>
 </head>
 <body>
+
+<div id="mobile-warning">
+    <div class="phone-icon mb-6">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+        </svg>
+    </div>
+    <h2 class="text-2xl font-bold mb-2">Ekranı Yan Çevirin</h2>
+    <p class="text-slate-400 text-sm max-w-xs">Optik laboratuvarı hassas çizimler gerektirdiği için geniş ekran modunda çalışır.</p>
+</div>
 
 <aside>
     <div class="flex items-center gap-3 mb-4">
