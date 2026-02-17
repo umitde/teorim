@@ -21,6 +21,27 @@
             height: 100vh; display: flex; overflow: hidden; 
         }
 
+        /* --- MOBİL UYARI CSS --- */
+        #mobile-warning { 
+            display: none; 
+            position: fixed; inset: 0; 
+            background: #0f172a; color: white; 
+            z-index: 9999; 
+            flex-direction: column; align-items: center; justify-content: center; 
+            text-align: center; padding: 20px; 
+        }
+
+        @media (max-width: 768px) or (orientation: portrait) { 
+            #mobile-warning { display: flex; } 
+        }
+
+        @keyframes phoneBounce {
+            0%, 100% { transform: translateY(0) rotate(-5deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+        .phone-icon { animation: phoneBounce 1.5s infinite ease-in-out; }
+        /* ------------------------ */
+
         aside { 
             width: 320px; flex-shrink: 0; background: var(--bg-panel); 
             border-right: 1px solid var(--border); padding: 24px; 
@@ -52,6 +73,15 @@
 </head>
 <body>
 
+<div id="mobile-warning">
+    <div class="phone-icon mb-6">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+        </svg>
+    </div>
+    <h2 class="text-2xl font-bold mb-2">Yatay Konuma Geçin</h2>
+    <p class="text-slate-400 text-sm max-w-xs">Yörünge simülasyonunu tam ekran deneyimlemek için cihazı yan çevirin.</p>
+</div>
 <aside>
     <div class="flex items-center gap-3 mb-4">
         <a href="../../dersler/fizik.html" class="p-2 hover:bg-orange-100 rounded-full text-orange-600 transition">
@@ -89,11 +119,28 @@
 </aside>
 
 <main id="container">
-    <div class="data-card">
-        <div class="text-[10px] font-extrabold text-slate-400 uppercase mb-2">Vektörel Analiz</div>
-        <div class="flex justify-between text-xs mb-1"><span>Aktif Nesne:</span><span id="planetCount" class="text-orange-600 font-bold">0</span></div>
-        <div class="text-[9px] text-slate-500 mt-2">
-            $F = G \frac{M \cdot m}{r^2}$ formülü anlık hesaplanmaktadır.
+<div class="data-card">
+    <div class="text-[10px] font-extrabold text-slate-400 uppercase mb-2">Vektörel Analiz</div>
+    
+    <div class="flex items-center justify-between">
+        
+        <div class="flex items-center gap-1 text-[12px] text-slate-600 font-serif">
+            <span class="italic font-bold text-orange-600">F</span> = 
+            <span class="italic">G</span>
+            <div class="flex flex-col items-center leading-none mx-1 text-[10px]">
+                 <span class="border-b border-slate-400 px-1 pb-[1px]">M · m</span>
+                 <span>r²</span>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-1 bg-slate-50 px-2 py-1 rounded border border-slate-100">
+            <span class="text-[9px] text-slate-400 font-bold">N:</span>
+            <span id="planetCount" class="text-orange-600 font-bold text-xs">0</span>
+        </div>
+
+    </div>
+</div>
+</div>
         </div>
     </div>
     <canvas id="simCanvas"></canvas>
