@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>İdeal Gaz Yasaları | Teorim</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-app: #f8fafc;
+            --bg-panel: #ffffff;
+            --col-accent: #f97316;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --radius: 16px;
+        }
+
+        body { 
+            margin: 0; background: var(--bg-app); 
+            font-family: 'Inter', sans-serif; 
+            height: 100vh; display: flex; overflow: hidden; color: var(--text-main);
+        }
+
+        /* --- MOBİL UYARI --- */
+        #mobile-warning { 
+            display: none; position: fixed; inset: 0; 
+            background: #0f172a; color: white; z-index: 9999; 
+            flex-direction: column; align-items: center; justify-content: center; 
+            text-align: center; padding: 20px; 
+        }
+        @media (max-width: 768px) or (orientation: portrait) { #mobile-warning { display: flex; } }
+        @keyframes phoneBounce {
+            0%, 100% { transform: translateY(0) rotate(-5deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+        .phone-icon { animation: phoneBounce 1.5s infinite ease-in-out; }
+
+        /* SOL PANEL */
+        aside { 
+            width: 340px; flex-shrink: 0; background: var(--bg-panel); 
+            border-right: 1px solid var(--border); padding: 24px; 
+            display: flex; flex-direction: column; gap: 20px; 
+            z-index: 30; box-shadow: 4px 0 20px rgba(0,0,0,0.02);
+            overflow-y: auto;
+        }
+
+        .section-title {
+            font-size: 0.7rem; font-weight: 800; color: #64748b;
+            text-transform: uppercase; letter-spacing: 1px;
+            margin-bottom: 8px; border-bottom: 1px solid var(--border); padding-bottom: 4px;
+        }
+
+        .control-group { background: #f8fafc; padding: 16px; border-radius: var(--radius); border: 1px solid var(--border); }
+        .prop-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: 15px; font-size: 0.8rem; font-weight: 700; }
+        .label-val { display: flex; justify-content: space-between; align-items: center; }
+        input[type="range"] { width: 100%; accent-color: var(--col-accent); cursor: pointer; height: 4px; border-radius: 2px; }
+
+        /* ANA ALAN */
+        main { flex: 1; position: relative; background: #f8fafc; overflow: hidden; }
+        canvas { display: block; width: 100%; height: 100%; }
+
+        /* VERİ KARTI */
+        .data-card {
+            position: absolute; top: 20px; right: 20px;
+            background: rgba(255, 255, 255, 0.95); padding: 20px;
+            border-radius: var(--radius); border: 1px solid var(--border);
+            min-width: 240px; backdrop-filter: blur(12px);
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="mobile-warning">
+        <div class="phone-icon mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            </svg>
+        </div>
+        <h2 class="text-2xl font-bold mb-2">Yatay Moda Geçin</h2>
+        <p class="text-slate-400 text-sm max-w-xs">Simülasyon verilerini ve grafiği doğru görüntülemek için ekranı çevirin.</p>
+    </div>
+
+<aside>
+    <div class="flex items-center gap-3 mb-2">
+        <a href="../../dersler/kimya.html" class="p-2 hover:bg-orange-100 rounded-full text-orange-600 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" /></svg>
+        </a>
+        <h1 class="font-bold text-xl text-slate-800">Gaz Yasaları</h1>
+    </div>
+
+    <div class="section-title">Deney Kontrolleri</div>
+    <div class="control-group">
+        <div class="prop-row">
+            <div class="label-val">
+                <span class="text-slate-500">Hacim (V)</span>
+                <span id="valVol" class="text-orange-600 font-bold">5.0 L</span>
+            </div>
+            <input type="range" id="slVol" min="2" max="10" step="0.1" value="5">
+        </div>
+
+        <div class="prop-row">
+            <div class="label-val">
+                <span class="text-slate-500">Sıcaklık (T)</span>
+                <span id="valTemp" class="text-orange-600 font-bold">300 K</span>
+            </div>
+            <input type="range" id="slTemp" min="50" max="600" step="10" value="300">
+        </div>
+
+        <div class="prop-row">
+            <div class="label-val">
+                <span class="text-slate-500">Madde (n)</span>
+                <span id="valMol" class="text-orange-600 font-bold">1.0 mol</span>
+            </div>
+            <input type="range" id="slMol" min="0.2" max="3.0" step="0.1" value="1.0">
+        </div>
+    </div>
+
+    <div class="section-title">Hesaplama Modeli</div>
+    <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+        <div class="flex items-center justify-center gap-2 text-sm text-slate-600 font-serif">
+            <span class="font-bold text-orange-600 italic">P</span> = 
+            <div class="flex flex-col items-center leading-none text-xs">
+                 <span class="border-b border-slate-400 px-2 pb-[1px]">n · R · T</span>
+                 <span>V</span>
+            </div>
+        </div>
+        <p class="text-[10px] text-slate-400 text-center mt-2 leading-tight">
+            İdeal gaz varsayımı altında, tanecikler arası etkileşim ihmal edilmiştir.
+        </p>
+    </div>
+
+    <button class="w-full py-3 mt-auto bg-slate-800 text-white rounded-xl font-bold text-xs hover:bg-slate-700 transition" onclick="app.reset()">SİSTEMİ SIFIRLA</button>
+</aside>
+
+<main>
+    <div class="data-card">
+        <div class="text-[10px] font-extrabold text-slate-400 uppercase mb-4 tracking-widest border-b border-slate-100 pb-2">Anlık Veriler</div>
+        
+        <div class="mb-4">
+            <div class="flex justify-between items-end mb-1">
+                <span class="text-xs font-bold text-slate-600">Basınç (P)</span>
+                <span class="text-2xl font-black text-slate-800" id="valPress">1.00 <span class="text-xs font-normal text-slate-400">atm</span></span>
+            </div>
+            <div class="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                <div id="barPress" class="h-full bg-orange-500 w-[20%] transition-all duration-300"></div>
+            </div>
+        </div>
+
+        <div class="flex justify-between items-center mb-2 text-xs">
+            <span class="text-slate-500 font-medium">Ort. Kinetik Enerji:</span>
+            <span id="valEnergy" class="font-mono font-bold text-orange-600">3.74 kJ</span>
+        </div>
+
+        <div class="flex justify-between items-center text-xs">
+            <span class="text-slate-500 font-medium">Çarpışma (s⁻¹):</span>
+            <span id="valCollision" class="font-mono font-bold text-blue-600">0</span>
+        </div>
+    </div>
+
+    <canvas id="simCanvas"></canvas>
+</main>
+
+<script>
+    const app = {
+        canvas: document.getElementById('simCanvas'),
+        ctx: null,
+        width: 0, height: 0,
+        particles: [],
+        collisions: 0,
+        lastTime: 0,
+        
+        // Durum Değişkenleri
+        V: 5.0, T: 300, n: 1.0, P: 0,
+        R: 0.0821, // L⋅atm⋅K⁻¹⋅mol⁻¹
+
+        // Görsel Ayarlar
+        scale: { containerW: 280, baseYOffset: 100, pxPerL: 45 },
+        
+        init() {
+            this.ctx = this.canvas.getContext('2d');
+            this.resize();
+            window.addEventListener('resize', () => this.resize());
+            this.setupUI();
+            this.updateParticles();
+            this.loop(0);
+
+            // Çarpışma sayacını her saniye sıfırla/güncelle
+            setInterval(() => {
+                document.getElementById('valCollision').innerText = this.collisions;
+                this.collisions = 0;
+            }, 1000);
+        },
+
+        resize() {
+            this.width = this.canvas.width = this.canvas.parentElement.clientWidth;
+            this.height = this.canvas.height = this.canvas.parentElement.clientHeight;
+        },
+
+        setupUI() {
+            const update = () => {
+                this.V = parseFloat(document.getElementById('slVol').value);
+                this.T = parseFloat(document.getElementById('slTemp').value);
+                this.n = parseFloat(document.getElementById('slMol').value);
+                
+                document.getElementById('valVol').innerText = this.V.toFixed(1) + " L";
+                document.getElementById('valTemp').innerText = this.T + " K";
+                document.getElementById('valMol').innerText = this.n.toFixed(1) + " mol";
+                
+                this.updatePhysics();
+            };
+
+            ['slVol', 'slTemp', 'slMol'].forEach(id => {
+                document.getElementById(id).oninput = update;
+            });
+            update(); // İlk hesaplama
+        },
+
+        updatePhysics() {
+            // P = nRT / V
+            this.P = (this.n * this.R * this.T) / this.V;
+            
+            // UI Güncelle
+            document.getElementById('valPress').innerHTML = this.P.toFixed(2) + ' <span class="text-xs font-normal text-slate-400">atm</span>';
+            
+            // Kinetik Enerji (Ek = 3/2 RT) - Basitleştirilmiş gösterim
+            const Ek = (1.5 * 8.314 * this.T) / 1000; // kJ/mol
+            document.getElementById('valEnergy').innerText = Ek.toFixed(2) + " kJ/mol";
+
+            // Bar Animasyonu
+            const bar = document.getElementById('barPress');
+            const percent = Math.min(100, (this.P / 15) * 100);
+            bar.style.width = percent + "%";
+            bar.className = `h-full transition-all duration-300 ${this.P > 12 ? 'bg-red-500' : 'bg-orange-500'}`;
+
+            // Parçacık Sayısı ve Hızı
+            this.updateParticles();
+        },
+
+        updateParticles() {
+            // Hedef parçacık sayısı
+            const targetCount = Math.floor(this.n * 40);
+            
+            // Hız faktörü (Sıcaklığın karekökü ile orantılı)
+            const speedFactor = Math.sqrt(this.T) * 0.15;
+
+            // Parçacık ekle/çıkar
+            if (this.particles.length < targetCount) {
+                for(let i = this.particles.length; i < targetCount; i++) {
+                    this.particles.push({
+                        x: this.width/2, 
+                        y: this.height - this.scale.baseYOffset - 50,
+                        vx: (Math.random()-0.5), vy: (Math.random()-0.5),
+                        r: 3 + Math.random()*2,
+                        color: this.getColor(this.T)
+                    });
+                }
+            } else if (this.particles.length > targetCount) {
+                this.particles.splice(targetCount);
+            }
+
+            // Hızları ve renkleri güncelle
+            this.particles.forEach(p => {
+                // Mevcut yönü koru, büyüklüğü güncelle
+                const mag = Math.sqrt(p.vx*p.vx + p.vy*p.vy) || 1;
+                p.vx = (p.vx / mag) * speedFactor * (0.8 + Math.random()*0.4); // Biraz rastgelelik
+                p.vy = (p.vy / mag) * speedFactor * (0.8 + Math.random()*0.4);
+                p.color = this.getColor(this.T);
+            });
+        },
+
+        getColor(temp) {
+            // Sıcaklığa göre renk interpolasyonu
+            if(temp < 200) return "#3b82f6"; // Soğuk Mavi
+            if(temp < 400) return "#64748b"; // Nötr Gri
+            if(temp < 550) return "#f97316"; // Sıcak Turuncu
+            return "#ef4444"; // Çok Sıcak Kırmızı
+        },
+
+        reset() {
+            document.getElementById('slVol').value = 5;
+            document.getElementById('slTemp').value = 300;
+            document.getElementById('slMol').value = 1.0;
+            this.setupUI();
+        },
+
+        draw() {
+            const ctx = this.ctx;
+            ctx.clearRect(0, 0, this.width, this.height);
+            
+            const cx = this.width / 2;
+            const baseY = this.height - this.scale.baseYOffset;
+            const containerH = this.V * this.scale.pxPerL;
+            const topY = baseY - containerH;
+            const w = this.scale.containerW;
+
+            // 1. Isı Kaynağı (Efekt)
+            if(this.T > 350) {
+                const intensity = (this.T - 300) / 300;
+                const grad = ctx.createRadialGradient(cx, baseY+10, 10, cx, baseY+10, 80);
+                grad.addColorStop(0, `rgba(249, 115, 22, ${intensity})`);
+                grad.addColorStop(1, "rgba(249, 115, 22, 0)");
+                ctx.fillStyle = grad;
+                ctx.beginPath(); ctx.arc(cx, baseY+10, 80, 0, Math.PI*2); ctx.fill();
+            } else if (this.T < 250) {
+                const intensity = (300 - this.T) / 250;
+                const grad = ctx.createRadialGradient(cx, baseY+10, 10, cx, baseY+10, 80);
+                grad.addColorStop(0, `rgba(59, 130, 246, ${intensity})`);
+                grad.addColorStop(1, "rgba(59, 130, 246, 0)");
+                ctx.fillStyle = grad;
+                ctx.beginPath(); ctx.arc(cx, baseY+10, 80, 0, Math.PI*2); ctx.fill();
+            }
+
+            // 2. Silindir (Kap)
+            ctx.beginPath();
+            // Sol Duvar
+            ctx.moveTo(cx - w/2, topY - 40); 
+            ctx.lineTo(cx - w/2, baseY);
+            // Taban (Kavisli)
+            ctx.quadraticCurveTo(cx, baseY + 20, cx + w/2, baseY);
+            // Sağ Duvar
+            ctx.lineTo(cx + w/2, topY - 40);
+            
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = "#cbd5e1";
+            ctx.stroke();
+
+            // Cam Yansıması Efekti
+            ctx.fillStyle = "rgba(255, 255, 255, 0.1)";
+            ctx.fill();
+
+            // 3. Piston
+            ctx.fillStyle = "#e2e8f0";
+            ctx.strokeStyle = "#94a3b8";
+            ctx.lineWidth = 2;
+            
+            // Piston Kafası
+            ctx.beginPath();
+            ctx.rect(cx - w/2 + 2, topY, w - 4, 15);
+            ctx.fill(); ctx.stroke();
+            
+            // Piston Sapı
+            ctx.beginPath();
+            ctx.moveTo(cx, topY); ctx.lineTo(cx, topY - 80);
+            ctx.stroke();
+            // Piston Tutacağı
+            ctx.fillStyle = "#64748b";
+            ctx.beginPath();
+            ctx.roundRect(cx - 25, topY - 85, 50, 10, 5);
+            ctx.fill();
+
+            // 4. Parçacıklar
+            this.particles.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+
+                // Sınır Kontrolleri
+                const r = p.r;
+                const left = cx - w/2 + r + 2;
+                const right = cx + w/2 - r - 2;
+                const bottom = baseY - r; // Kavis ihmal ediliyor basitlik için
+                const top = topY + 15 + r;
+
+                let collided = false;
+
+                if(p.x < left) { p.x = left; p.vx *= -1; collided = true; }
+                else if(p.x > right) { p.x = right; p.vx *= -1; collided = true; }
+                
+                if(p.y > bottom) { p.y = bottom; p.vy *= -1; collided = true; }
+                else if(p.y < top) { 
+                    p.y = top; p.vy *= -1; collided = true; 
+                    // Piston yukarı itilme efekti eklenebilir
+                }
+
+                if(collided) this.collisions++;
+
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, r, 0, Math.PI*2);
+                ctx.fillStyle = p.color;
+                ctx.fill();
+            });
+        },
+
+        loop(now) {
+            this.draw();
+            requestAnimationFrame((t) => this.loop(t));
+        }
+    };
+
+    app.init();
+</script>
+</body>
+</html>
