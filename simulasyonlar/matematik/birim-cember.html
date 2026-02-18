@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Birim Çember & Trigonometri | Teorim</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-app: #f8fafc;
+            --bg-panel: #ffffff;
+            --col-sin: #f97316; /* Turuncu */
+            --col-cos: #3b82f6; /* Mavi */
+            --col-tan: #10b981; /* Yeşil */
+            --col-cot: #a855f7; /* Mor */
+            --text-main: #334155;
+            --text-muted: #94a3b8;
+            --border: #e2e8f0;
+            --radius: 20px;
+        }
+
+        body { 
+            margin: 0; background: var(--bg-app); 
+            font-family: 'Inter', sans-serif; 
+            height: 100vh; display: flex; overflow: hidden; color: var(--text-main);
+        }
+
+        /* UYARI EKRANI */
+        #mobile-warning { 
+            display: none; position: fixed; inset: 0; 
+            background: #0f172a; color: white; z-index: 9999; 
+            flex-direction: column; align-items: center; justify-content: center; 
+            text-align: center; padding: 20px; 
+        }
+        @media (max-width: 768px) or (orientation: portrait) { #mobile-warning { display: flex; } }
+        .phone-icon { animation: phoneBounce 1.5s infinite ease-in-out; }
+        @keyframes phoneBounce {
+            0%, 100% { transform: translateY(0) rotate(-5deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+
+        /* SOL PANEL */
+        aside { 
+            width: 360px; flex-shrink: 0; background: var(--bg-panel); 
+            border-right: 1px solid var(--border); padding: 24px; 
+            display: flex; flex-direction: column; gap: 24px; 
+            z-index: 30; box-shadow: 10px 0 30px rgba(0,0,0,0.02);
+            overflow-y: auto;
+        }
+
+        .section-header {
+            font-size: 0.7rem; font-weight: 800; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 1.5px;
+            margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 6px;
+        }
+
+        /* SLIDER KARTI */
+        .control-card { 
+            background: #f8fafc; padding: 20px; border-radius: var(--radius); 
+            border: 1px solid var(--border); transition: all 0.2s;
+        }
+        .control-card:hover { border-color: #cbd5e1; }
+        
+        input[type="range"] { 
+            width: 100%; accent-color: var(--col-sin); cursor: pointer; height: 4px; border-radius: 2px;
+            background: #e2e8f0; margin-top: 10px;
+        }
+
+        /* FONKSİYON BUTONLARI */
+        .func-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .func-btn {
+            padding: 10px 12px; border: 1px solid var(--border); border-radius: 12px;
+            font-size: 0.75rem; font-weight: 700; color: var(--text-muted);
+            cursor: pointer; text-align: left; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex; align-items: center; gap: 8px; background: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+        .func-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        
+        .dot { width: 8px; height: 8px; border-radius: 50%; }
+
+        /* Aktif Durumlar */
+        .func-btn.active.sin { border-color: var(--col-sin); background: #fff7ed; color: var(--col-sin); }
+        .func-btn.active.cos { border-color: var(--col-cos); background: #eff6ff; color: var(--col-cos); }
+        .func-btn.active.tan { border-color: var(--col-tan); background: #ecfdf5; color: var(--col-tan); }
+        .func-btn.active.cot { border-color: var(--col-cot); background: #faf5ff; color: var(--col-cot); }
+
+        /* ANA ALAN */
+        main { flex: 1; position: relative; background: #ffffff; overflow: hidden; cursor: crosshair; }
+        canvas { display: block; width: 100%; height: 100%; }
+
+        /* VERİ KARTI */
+        .data-card {
+            position: absolute; top: 24px; right: 24px;
+            background: rgba(255, 255, 255, 0.9); padding: 24px;
+            border-radius: var(--radius); border: 1px solid var(--border);
+            min-width: 240px; backdrop-filter: blur(20px);
+            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1);
+            z-index: 20;
+        }
+
+        .data-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 8px 0; border-bottom: 1px dashed var(--border);
+        }
+        .data-row:last-child { border-bottom: none; }
+        .val-text { font-family: 'Menlo', 'Monaco', monospace; font-size: 0.85rem; font-weight: 700; }
+
+        /* 3D KART */
+        .threed-card {
+            position: absolute; bottom: 24px; right: 24px;
+            width: 280px; height: 180px;
+            background: white; border: 1px solid var(--border);
+            border-radius: var(--radius); overflow: hidden;
+            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.15); z-index: 20;
+            display: flex; flex-direction: column;
+        }
+        #canvas3D { width: 100%; height: 100%; background: #f8fafc; cursor: grab; }
+        #canvas3D:active { cursor: grabbing; }
+    </style>
+</head>
+<body>
+
+    <div id="mobile-warning">
+        <div class="phone-icon mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            </svg>
+        </div>
+        <h2 class="text-2xl font-bold mb-2">Ekranı Çevirin</h2>
+        <p class="text-slate-400 text-sm max-w-xs">Matematik laboratuvarı yatay modda çalışır.</p>
+    </div>
+
+<aside>
+    <div class="flex items-center gap-3 mb-2">
+        <a href="../../dersler/matematik.html" class="p-2 hover:bg-orange-50 rounded-full text-orange-600 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+        </a>
+        <h1 class="font-bold text-xl text-slate-800">Trigonometri</h1>
+    </div>
+
+    <div class="section-header">Açı Kontrolü</div>
+    <div class="control-card">
+        <div class="flex justify-between items-end mb-2">
+            <div>
+                <span class="text-xs font-bold text-slate-400 uppercase">Derece</span>
+                <div class="text-3xl font-black text-slate-800" id="valDeg">45°</div>
+            </div>
+            <div class="text-right">
+                <span class="text-xs font-bold text-slate-400 uppercase">Radyan</span>
+                <div class="text-xl font-bold text-slate-600 font-mono" id="valRad">π/4</div>
+            </div>
+        </div>
+        <input type="range" id="slAngle" min="0" max="360" step="1" value="45">
+        <div class="flex justify-between text-[10px] text-slate-400 mt-2 font-bold">
+            <span>0°</span>
+            <span>90°</span>
+            <span>180°</span>
+            <span>270°</span>
+            <span>360°</span>
+        </div>
+    </div>
+
+    <div class="section-header">Fonksiyonlar</div>
+    <div class="func-grid">
+        <div class="func-btn sin active" onclick="app.toggle('showSin', this)">
+            <div class="dot bg-orange-500"></div> <span>Sinüs</span>
+        </div>
+        <div class="func-btn cos active" onclick="app.toggle('showCos', this)">
+            <div class="dot bg-blue-500"></div> <span>Kosinüs</span>
+        </div>
+        <div class="func-btn tan" onclick="app.toggle('showTan', this)">
+            <div class="dot bg-emerald-500"></div> <span>Tanjant</span>
+        </div>
+        <div class="func-btn cot" onclick="app.toggle('showCot', this)">
+            <div class="dot bg-purple-500"></div> <span>Kotanjant</span>
+        </div>
+    </div>
+
+    <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl mt-auto">
+        <div class="flex items-center gap-2 mb-1">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-orange-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+            <span class="text-xs font-bold text-slate-600 uppercase">Bölge Analizi</span>
+        </div>
+        <div class="text-xs text-slate-500 font-medium leading-relaxed" id="quadrantInfo">
+            I. Bölge: Tüm fonksiyonlar pozitiftir.
+        </div>
+    </div>
+</aside>
+
+<main>
+    <div class="data-card">
+        <div class="text-[10px] font-extrabold text-slate-400 uppercase mb-4 tracking-widest border-b border-slate-100 pb-2">Hassas Değerler</div>
+        
+        <div class="data-row">
+            <span class="text-xs font-bold text-slate-500">sin(θ)</span>
+            <div class="flex flex-col items-end">
+                <span class="val-text text-orange-500" id="exactSin">√2/2</span>
+                <span class="text-[9px] text-slate-400" id="decSin">0.707</span>
+            </div>
+        </div>
+        <div class="data-row">
+            <span class="text-xs font-bold text-slate-500">cos(θ)</span>
+            <div class="flex flex-col items-end">
+                <span class="val-text text-blue-500" id="exactCos">√2/2</span>
+                <span class="text-[9px] text-slate-400" id="decCos">0.707</span>
+            </div>
+        </div>
+        <div class="data-row">
+            <span class="text-xs font-bold text-slate-500">tan(θ)</span>
+            <div class="flex flex-col items-end">
+                <span class="val-text text-emerald-500" id="exactTan">1</span>
+                <span class="text-[9px] text-slate-400" id="decTan">1.000</span>
+            </div>
+        </div>
+    </div>
+
+    <canvas id="simCanvas"></canvas>
+
+    <div class="threed-card">
+        <div class="text-[9px] font-bold text-slate-400 uppercase bg-slate-50 px-3 py-2 border-b border-slate-100 flex justify-between items-center">
+            <span>SİNÜS DALGASI (3D)</span>
+            <div class="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></div>
+        </div>
+        <canvas id="canvas3D"></canvas>
+    </div>
+</main>
+
+<script>
+    const app = {
+        canvas: document.getElementById('simCanvas'),
+        ctx: null,
+        canvas3D: document.getElementById('canvas3D'),
+        ctx3D: null,
+        width: 0, height: 0,
+        
+        // Durum
+        angleDeg: 45,
+        radius: 220,
+        dragging: false,
+        
+        // 3D Durum
+        rotX: 0.5, rotY: 0.6,
+        wavePoints: [],
+
+        // Görünürlük
+        showSin: true, showCos: true, showTan: false, showCot: false,
+
+        specialAngles: {
+            0:   { rad: "0", sin: "0", cos: "1", tan: "0" },
+            30:  { rad: "π/6", sin: "1/2", cos: "√3/2", tan: "√3/3" },
+            45:  { rad: "π/4", sin: "√2/2", cos: "√2/2", tan: "1" },
+            60:  { rad: "π/3", sin: "√3/2", cos: "1/2", tan: "√3" },
+            90:  { rad: "π/2", sin: "1", cos: "0", tan: "∞" },
+            120: { rad: "2π/3", sin: "√3/2", cos: "-1/2", tan: "-√3" },
+            135: { rad: "3π/4", sin: "√2/2", cos: "-√2/2", tan: "-1" },
+            150: { rad: "5π/6", sin: "1/2", cos: "-√3/2", tan: "-√3/3" },
+            180: { rad: "π", sin: "0", cos: "-1", tan: "0" },
+            270: { rad: "3π/2", sin: "-1", cos: "0", tan: "∞" },
+            360: { rad: "2π", sin: "0", cos: "1", tan: "0" }
+        },
+
+        init() {
+            this.ctx = this.canvas.getContext('2d');
+            this.ctx3D = this.canvas3D.getContext('2d');
+            this.resize();
+            window.addEventListener('resize', () => this.resize());
+            
+            document.getElementById('slAngle').oninput = (e) => {
+                this.angleDeg = parseInt(e.target.value);
+                this.updateUI();
+                this.draw();
+            };
+
+            const handleStart = (e) => {
+                const rect = this.canvas.getBoundingClientRect();
+                const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left - this.width/2;
+                const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top - this.height/2;
+                if(Math.abs(Math.sqrt(x*x + y*y) - this.radius) < 50) {
+                    this.dragging = true;
+                    this.updateFromMouse(x, y);
+                }
+            };
+            const handleMove = (e) => {
+                if(!this.dragging) return;
+                const rect = this.canvas.getBoundingClientRect();
+                const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left - this.width/2;
+                const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top - this.height/2;
+                this.updateFromMouse(x, y);
+            };
+            const handleEnd = () => this.dragging = false;
+
+            this.canvas.addEventListener('mousedown', handleStart);
+            window.addEventListener('mousemove', handleMove);
+            window.addEventListener('mouseup', handleEnd);
+            this.canvas.addEventListener('touchstart', handleStart);
+            window.addEventListener('touchmove', handleMove);
+            window.addEventListener('touchend', handleEnd);
+
+            // 3D Döndürme
+            let isRotating3D = false;
+            let lastMouseX = 0;
+            let lastMouseY = 0;
+            this.canvas3D.addEventListener('mousedown', (e) => {
+                isRotating3D = true; lastMouseX = e.clientX; lastMouseY = e.clientY;
+            });
+            window.addEventListener('mousemove', (e) => {
+                if(isRotating3D) {
+                    this.rotY += (e.clientX - lastMouseX) * 0.01;
+                    this.rotX += (e.clientY - lastMouseY) * 0.01;
+                    lastMouseX = e.clientX; lastMouseY = e.clientY;
+                }
+            });
+            window.addEventListener('mouseup', () => isRotating3D = false);
+
+            this.updateUI();
+            this.loop();
+        },
+
+        updateFromMouse(dx, dy) {
+            let theta = Math.atan2(-dy, dx);
+            if (theta < 0) theta += Math.PI * 2;
+            this.angleDeg = Math.round(theta * 180 / Math.PI);
+            if(this.angleDeg === 360) this.angleDeg = 0;
+            document.getElementById('slAngle').value = this.angleDeg;
+            this.updateUI();
+            this.draw();
+        },
+
+        toggle(prop, el) {
+            this[prop] = !this[prop];
+            el.classList.toggle('active');
+            this.draw();
+        },
+
+        resize() {
+            this.width = this.canvas.width = this.canvas.parentElement.clientWidth;
+            this.height = this.canvas.height = this.canvas.parentElement.clientHeight;
+            this.canvas3D.width = this.canvas3D.clientWidth;
+            this.canvas3D.height = this.canvas3D.clientHeight;
+            this.draw();
+        },
+
+        getFormattedValue(val, type) {
+            if(this.specialAngles[this.angleDeg]) {
+                if(type === 'rad') return this.specialAngles[this.angleDeg].rad;
+                if(type === 'sin') return this.specialAngles[this.angleDeg].sin;
+                if(type === 'cos') return this.specialAngles[this.angleDeg].cos;
+                if(type === 'tan') return this.specialAngles[this.angleDeg].tan;
+            }
+            if(type === 'rad') return (this.angleDeg * Math.PI / 180).toFixed(2);
+            if(type === 'sin') return val.toFixed(2);
+            if(type === 'cos') return val.toFixed(2);
+            if(type === 'tan') return Math.abs(val) > 10 ? (val>0?"+∞":"-∞") : val.toFixed(2);
+            return val;
+        },
+
+        updateUI() {
+            const rad = this.angleDeg * Math.PI / 180;
+            const sin = Math.sin(rad);
+            const cos = Math.cos(rad);
+            const tan = Math.tan(rad);
+
+            document.getElementById('valDeg').innerText = this.angleDeg + "°";
+            document.getElementById('valRad').innerText = this.getFormattedValue(null, 'rad');
+            document.getElementById('exactSin').innerText = this.getFormattedValue(sin, 'sin');
+            document.getElementById('decSin').innerText = sin.toFixed(4);
+            document.getElementById('exactCos').innerText = this.getFormattedValue(cos, 'cos');
+            document.getElementById('decCos').innerText = cos.toFixed(4);
+            document.getElementById('exactTan').innerText = this.getFormattedValue(tan, 'tan');
+            document.getElementById('decTan').innerText = Math.abs(tan) > 100 ? "∞" : tan.toFixed(4);
+
+            let qText = "";
+            if(this.angleDeg >= 0 && this.angleDeg < 90) qText = "I. Bölge: Sin(+) Cos(+) Tan(+)";
+            else if(this.angleDeg >= 90 && this.angleDeg < 180) qText = "II. Bölge: Sin(+) Cos(-) Tan(-)";
+            else if(this.angleDeg >= 180 && this.angleDeg < 270) qText = "III. Bölge: Sin(-) Cos(-) Tan(+)";
+            else qText = "IV. Bölge: Sin(-) Cos(+) Tan(-)";
+            document.getElementById('quadrantInfo').innerText = qText;
+        },
+
+        draw() {
+            const ctx = this.ctx;
+            const cx = this.width / 2;
+            const cy = this.height / 2;
+            const r = this.radius;
+            const rad = this.angleDeg * Math.PI / 180;
+
+            ctx.clearRect(0, 0, this.width, this.height);
+
+            // 1. Grid
+            ctx.strokeStyle = "#f1f5f9"; ctx.lineWidth = 1;
+            for(let i=0; i<this.width; i+=40) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,this.height); ctx.stroke(); }
+            for(let i=0; i<this.height; i+=40) { ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(this.width,i); ctx.stroke(); }
+
+            // 2. Eksenler
+            ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 1.5;
+            ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(this.width, cy); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, this.height); ctx.stroke();
+
+            // 3. AÇI DİLİMİ (BU KISIM DÜZELTİLDİ: Sadece taralı alan turuncu, tüm çember değil)
+            ctx.fillStyle = "rgba(249, 115, 22, 0.075)"; 
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.arc(cx, cy, r, 0, -rad, true); 
+            ctx.lineTo(cx, cy);
+            ctx.fill();
+
+            // 4. BİRİM ÇEMBER (DOLGU YOK, SADECE ÇİZGİ)
+            ctx.strokeStyle = "#94a3b8"; ctx.lineWidth = 1.5;
+            ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
+
+            // Koordinatlar
+            const px = cx + r * Math.cos(rad);
+            const py = cy - r * Math.sin(rad);
+
+            // 5. Yarıçap
+            ctx.strokeStyle = "#64748b"; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(px, py); ctx.stroke();
+
+            // 6. Açı Yayı
+            ctx.strokeStyle = "#64748b"; ctx.lineWidth = 1.5;
+            ctx.beginPath(); ctx.arc(cx, cy, 40, 0, -rad, true); ctx.stroke();
+
+            // --- FONKSİYON ÇİZİMLERİ ---
+            if(this.showCos) {
+                ctx.strokeStyle = "#3b82f6"; ctx.lineWidth = 3; ctx.lineCap = "round";
+                ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(px, cy); ctx.stroke();
+                ctx.setLineDash([3,3]); ctx.lineWidth = 1; ctx.strokeStyle = "#3b82f6";
+                ctx.beginPath(); ctx.moveTo(px, cy); ctx.lineTo(px, py); ctx.stroke(); ctx.setLineDash([]);
+            }
+            if(this.showSin) {
+                ctx.strokeStyle = "#f97316"; ctx.lineWidth = 3; ctx.lineCap = "round";
+                ctx.beginPath(); ctx.moveTo(px, cy); ctx.lineTo(px, py); ctx.stroke();
+                ctx.setLineDash([3,3]); ctx.lineWidth = 1; ctx.strokeStyle = "#f97316";
+                ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(cx, py); ctx.stroke(); ctx.setLineDash([]);
+            }
+            if(this.showTan) {
+                const tanVal = Math.tan(rad);
+                if(Math.abs(tanVal) < 10) {
+                    const tx = cx + r; const ty = cy - r * tanVal;
+                    ctx.strokeStyle = "#e2e8f0"; ctx.lineWidth = 1;
+                    ctx.beginPath(); ctx.moveTo(tx, 0); ctx.lineTo(tx, this.height); ctx.stroke();
+                    ctx.strokeStyle = "#10b981"; ctx.lineWidth = 3;
+                    ctx.beginPath(); ctx.moveTo(tx, cy); ctx.lineTo(tx, ty); ctx.stroke();
+                    ctx.setLineDash([2,3]); ctx.lineWidth = 1;
+                    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(tx, ty); ctx.stroke(); ctx.setLineDash([]);
+                }
+            }
+            if(this.showCot) {
+                const cotVal = 1 / Math.tan(rad);
+                if(Math.abs(cotVal) < 10) {
+                    const cy_top = cy - r; const cx_cot = cx + r * cotVal;
+                    ctx.strokeStyle = "#e2e8f0"; ctx.lineWidth = 1;
+                    ctx.beginPath(); ctx.moveTo(0, cy_top); ctx.lineTo(this.width, cy_top); ctx.stroke();
+                    ctx.strokeStyle = "#a855f7"; ctx.lineWidth = 3;
+                    ctx.beginPath(); ctx.moveTo(cx, cy_top); ctx.lineTo(cx_cot, cy_top); ctx.stroke();
+                    ctx.setLineDash([2,3]); ctx.lineWidth = 1;
+                    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx_cot, cy_top); ctx.stroke(); ctx.setLineDash([]);
+                }
+            }
+
+            // Nokta
+            ctx.fillStyle = "#fff"; ctx.strokeStyle = "#1e293b"; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.arc(px, py, 5, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+        },
+
+        // --- 3D RENDERER ---
+        draw3D() {
+            const ctx = this.ctx3D;
+            const w = this.canvas3D.width;
+            const h = this.canvas3D.height;
+            const cx = w * 0.5;
+            const cy = h * 0.5;
+
+            ctx.clearRect(0, 0, w, h);
+
+            // İzometrik Projeksiyon
+            const project = (x, y, z) => {
+                const u = x * 0.7 + z * 0.7;
+                const v = y - (x * 0.3 - z * 0.3); 
+                return { x: cx + u, y: cy + v };
+            };
+
+            const rad = this.angleDeg * Math.PI / 180;
+            const r = 30; 
+            const drumZ = -60;
+
+            // 1. Koordinat Grid
+            ctx.strokeStyle = "#e2e8f0"; ctx.lineWidth = 1;
+            const pStart = project(-100, 0, 0); const pEnd = project(100, 0, 0);
+            ctx.beginPath(); ctx.moveTo(pStart.x, pStart.y); ctx.lineTo(pEnd.x, pEnd.y); ctx.stroke();
+
+            // 2. Çember (Drum)
+            ctx.strokeStyle = "#94a3b8"; ctx.lineWidth = 1;
+            ctx.beginPath();
+            for(let a=0; a<=360; a+=10) {
+                const ra = a * Math.PI / 180;
+                const p = project(r * Math.cos(ra), -r * Math.sin(ra), drumZ);
+                if(a===0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y);
+            }
+            ctx.stroke();
+
+            // 3. Sinüs Dalgası
+            this.wavePoints.unshift(-r * Math.sin(rad));
+            if(this.wavePoints.length > 80) this.wavePoints.pop();
+
+            ctx.strokeStyle = "#f97316"; ctx.lineWidth = 2;
+            ctx.beginPath();
+            for(let i=0; i<this.wavePoints.length; i++) {
+                const xPos = drumZ + (i * 2); 
+                const p = project(r * Math.cos(rad - i*0.1), this.wavePoints[i], xPos); 
+                // Daha basit dalga görünümü için sadece Y'yi alıp X ekseninde yayalım
+                // Z ekseni zaman olsun
+                const pSimple = project(0, this.wavePoints[i], drumZ + i*2.5);
+                
+                // Spiral görünüm (Helix)
+                const pHelix = project(r * Math.cos(rad - i*0.1), -r * Math.sin(rad - i*0.1), drumZ + i*2.5);
+
+                if(i===0) ctx.moveTo(pHelix.x, pHelix.y);
+                else ctx.lineTo(pHelix.x, pHelix.y);
+            }
+            ctx.stroke();
+
+            // Aktif Nokta
+            const pCircle = project(r * Math.cos(rad), -r * Math.sin(rad), drumZ);
+            
+            // Bağlantı
+            const waveStart = project(r * Math.cos(rad), -r * Math.sin(rad), drumZ); // Dalganın başı
+            
+            ctx.fillStyle = "#1e293b"; 
+            ctx.beginPath(); ctx.arc(pCircle.x, pCircle.y, 3, 0, Math.PI*2); ctx.fill();
+            
+            // Merkez çizgisi
+            const pCenter = project(0, 0, drumZ);
+            ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(pCenter.x, pCenter.y); ctx.lineTo(pCircle.x, pCircle.y); ctx.stroke();
+        },
+
+        loop() {
+            this.draw3D();
+            requestAnimationFrame(() => this.loop());
+        }
+    };
+
+    app.init();
+</script>
+</body>
+</html>
