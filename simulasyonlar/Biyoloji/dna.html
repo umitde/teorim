@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DNA Replikasyon | Teorim</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-app: #f8fafc;
+            --bg-panel: #ffffff;
+            --col-primary: #f97316;
+            --col-sec: #3b82f6;
+            
+            /* Nükleotit Renkleri */
+            --col-A: #f97316; 
+            --col-T: #3b82f6; 
+            --col-G: #10b981; 
+            --col-C: #ec4899; 
+
+            --text-main: #334155;
+            --text-muted: #94a3b8;
+            --border: #e2e8f0;
+            --radius: 20px;
+        }
+
+        body { 
+            margin: 0; background: var(--bg-app); 
+            font-family: 'Inter', sans-serif; 
+            height: 100vh; display: flex; overflow: hidden; color: var(--text-main);
+        }
+
+        /* MOBİL UYARI (STANDART) */
+        #mobile-warning { 
+            display: none; position: fixed; inset: 0; 
+            background: #0f172a; color: white; z-index: 9999; 
+            flex-direction: column; align-items: center; justify-content: center; 
+            text-align: center; padding: 20px; 
+        }
+        @media (max-width: 768px) or (orientation: portrait) { #mobile-warning { display: flex; } }
+        .phone-icon { animation: phoneBounce 1.5s infinite ease-in-out; }
+        @keyframes phoneBounce {
+            0%, 100% { transform: translateY(0) rotate(-5deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+
+        /* SOL PANEL */
+        aside { 
+            width: 360px; flex-shrink: 0; background: var(--bg-panel); 
+            border-right: 1px solid var(--border); padding: 24px; 
+            display: flex; flex-direction: column; gap: 20px; 
+            z-index: 30; box-shadow: 10px 0 30px rgba(0,0,0,0.02);
+            overflow-y: auto;
+        }
+
+        .section-header {
+            font-size: 0.7rem; font-weight: 800; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 1.5px;
+            margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 6px;
+        }
+
+        /* BUTON GRİD */
+        .nuc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .nuc-btn {
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+            padding: 16px; border: 1px solid var(--border); background: #f8fafc;
+            border-radius: 16px; cursor: pointer; transition: all 0.2s;
+            font-weight: 700; color: var(--text-main);
+        }
+        .nuc-btn:hover { background: #fff; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .nuc-btn:active { transform: translateY(0); }
+        
+        .nuc-letter { font-size: 1.5rem; font-weight: 900; line-height: 1; }
+        .btn-A .nuc-letter { color: var(--col-A); }
+        .btn-T .nuc-letter { color: var(--col-T); }
+        .btn-G .nuc-letter { color: var(--col-G); }
+        .btn-C .nuc-letter { color: var(--col-C); }
+
+        /* İSTATİSTİK KARTI */
+        .stats-card {
+            background: #f8fafc; border: 1px solid var(--border); 
+            border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 8px;
+        }
+        .progress-bar-bg { height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
+        .progress-bar-fill { height: 100%; background: var(--col-primary); width: 0%; transition: width 0.3s; }
+
+        /* BUTONLAR */
+        .btn-reset {
+            width: 100%; padding: 14px; background: #f1f5f9; color: #64748b;
+            border: none; border-radius: 12px; font-weight: 700; cursor: pointer;
+            transition: all 0.2s; font-size: 0.85rem; margin-top: auto;
+        }
+        .btn-reset:hover { background: #e2e8f0; color: #0f172a; }
+
+        /* ANA ALAN */
+        main { 
+            flex: 1; display: flex; flex-direction: column; 
+            padding: 24px; gap: 24px; background: #f8fafc;
+            overflow: hidden; position: relative;
+        }
+
+        .canvas-container {
+            flex: 1; background: white; border-radius: var(--radius);
+            border: 1px solid var(--border); box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05);
+            position: relative; overflow: hidden; 
+            display: flex; flex-direction: column;
+        }
+
+        /* DNA ZİNCİR ALANI */
+        .strand-stage {
+            flex: 1; overflow-y: auto; scroll-behavior: smooth;
+            padding: 60px 0 100px 0;
+            display: flex; flex-direction: column; align-items: center; /* ORTALAMA */
+        }
+        
+        .strand-info {
+            position: absolute; top: 15px; width: 100%; 
+            display: flex; justify-content: center; gap: 180px;
+            font-size: 0.75rem; font-weight: 800; color: #94a3b8; pointer-events: none; z-index: 10;
+        }
+
+        .base-row {
+            display: flex; align-items: center; width: 320px; height: 50px;
+            margin-bottom: 2px;
+            animation: slideUp 0.3s ease-out;
+        }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .base-block {
+            width: 120px; height: 42px; display: flex; align-items: center; justify-content: center;
+            font-weight: 800; color: white; border-radius: 8px; font-size: 1.1rem;
+            position: relative; box-shadow: inset 0 -3px 0 rgba(0,0,0,0.1);
+        }
+        .empty-slot {
+            width: 120px; height: 42px; border: 2px dashed #cbd5e1; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            color: #cbd5e1; font-weight: 700; background: #f8fafc;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 50% { border-color: #94a3b8; } }
+
+        .bonds { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; opacity: 0.2; }
+        .matched .bonds { opacity: 1; }
+        .bond-line { width: 100%; height: 2px; background: #94a3b8; }
+
+        /* RENKLER */
+        .bg-A { background: var(--col-A); }
+        .bg-T { background: var(--col-T); }
+        .bg-G { background: var(--col-G); }
+        .bg-C { background: var(--col-C); }
+
+        /* 3D PENCERE (Sağ Üst - Kutusuz) */
+        .threed-overlay {
+            position: absolute; top: 0; right: 0;
+            width: 250px; height: 400px;
+            background: transparent;
+            pointer-events: none; z-index: 5;
+            display: flex; justify-content: center; align-items: flex-start; /* Üstten başla */
+            padding-top: 40px;
+        }
+        #canvas3D { width: 100%; height: 100%; }
+
+        /* Feedback Toast (Alt) */
+        #feedback {
+            position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
+            padding: 10px 24px; border-radius: 30px; color: white; font-weight: 600; font-size: 0.9rem;
+            opacity: 0; transition: all 0.3s; z-index: 50; pointer-events: none;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="mobile-warning">
+        <div class="phone-icon mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            </svg>
+        </div>
+        <h2 class="text-2xl font-bold mb-2">Yatay Moda Geçin</h2>
+        <p class="text-slate-400 text-sm max-w-xs">Bu laboratuvar geniş ekran gerektirir.</p>
+    </div>
+
+<aside>
+    <div class="flex items-center gap-3 mb-2">
+        <a href="../../dersler/biyoloji.html" class="p-2 hover:bg-orange-50 rounded-full text-orange-600 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+        </a>
+        <h1 class="font-bold text-xl text-slate-800">DNA</h1>
+    </div>
+
+    <div class="stats-card">
+        <div class="flex justify-between text-xs font-bold text-slate-500 uppercase">
+            <span>Tamamlanan</span>
+            <span id="progressTxt">0 / 10</span>
+        </div>
+        <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="progressBar"></div>
+        </div>
+    </div>
+
+    <div class="section-header">Nükleotit Ekle</div>
+    <div class="nuc-grid">
+        <div class="nuc-btn btn-A" onclick="app.addBase('A')">
+            <span class="nuc-letter">A</span>
+            <span class="text-xs font-bold text-slate-400">Adenin</span>
+        </div>
+        <div class="nuc-btn btn-T" onclick="app.addBase('T')">
+            <span class="nuc-letter">T</span>
+            <span class="text-xs font-bold text-slate-400">Timin</span>
+        </div>
+        <div class="nuc-btn btn-G" onclick="app.addBase('G')">
+            <span class="nuc-letter">G</span>
+            <span class="text-xs font-bold text-slate-400">Guanin</span>
+        </div>
+        <div class="nuc-btn btn-C" onclick="app.addBase('C')">
+            <span class="nuc-letter">C</span>
+            <span class="text-xs font-bold text-slate-400">Sitozin</span>
+        </div>
+    </div>
+
+    <div class="mt-4 p-3 bg-blue-50 border border-blue-100 rounded-xl">
+        <div class="flex gap-2 items-start">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-500 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+            <p class="text-xs text-blue-800 leading-relaxed font-medium">
+                <strong>Bilgi:</strong> DNA zinciri "Antiparalel" yapıdadır. Kalıp zincir 3' ucundan 5' ucuna giderken, yeni sentezlenen zincir 5' ucundan 3' ucuna doğru ilerler.
+            </p>
+        </div>
+    </div>
+
+    <button class="btn-reset" onclick="app.reset()">SİMÜLASYONU SIFIRLA</button>
+</aside>
+
+<main>
+    <div class="canvas-container">
+        <div class="strand-info">
+            <span>KALIP ZİNCİR (3')</span>
+            <span>YENİ ZİNCİR (5')</span>
+        </div>
+
+        <div class="strand-stage" id="strandStage">
+            </div>
+
+        <div class="threed-overlay">
+            <canvas id="canvas3D"></canvas>
+        </div>
+        
+        <div id="feedback"></div>
+    </div>
+</main>
+
+<script>
+    const app = {
+        targetLen: 10, // 10'a düşürüldü
+        sequence: [],
+        currentIndex: 0,
+        
+        stage: document.getElementById('strandStage'),
+        feedbackEl: document.getElementById('feedback'),
+        
+        // 3D
+        canvas3D: document.getElementById('canvas3D'),
+        ctx3D: null,
+        rot: 0,
+
+        colors: { 'A': '#f97316', 'T': '#3b82f6', 'G': '#10b981', 'C': '#ec4899' },
+
+        init() {
+            this.ctx3D = this.canvas3D.getContext('2d');
+            this.resize3D();
+            window.addEventListener('resize', () => this.resize3D());
+
+            this.start();
+            this.loop3D();
+        },
+
+        resize3D() {
+            this.canvas3D.width = this.canvas3D.parentElement.clientWidth;
+            this.canvas3D.height = this.canvas3D.parentElement.clientHeight;
+        },
+
+        start() {
+            this.sequence = [];
+            this.currentIndex = 0;
+            this.stage.innerHTML = '';
+            
+            const bases = ['A', 'T', 'G', 'C'];
+            for(let i=0; i<this.targetLen; i++) {
+                this.sequence.push(bases[Math.floor(Math.random() * 4)]);
+            }
+
+            this.renderRow();
+            this.updateStats();
+        },
+
+        renderRow() {
+            if(this.currentIndex >= this.targetLen) return;
+
+            const base = this.sequence[this.currentIndex];
+            const row = document.createElement('div');
+            row.className = 'base-row';
+            row.id = `row-${this.currentIndex}`;
+
+            // Bağ sayısı
+            const bCount = (base === 'A' || base === 'T') ? 2 : 3;
+            let bonds = '';
+            for(let i=0; i<bCount; i++) bonds += `<div class="bond-line"></div>`;
+
+            row.innerHTML = `
+                <div class="base-block bg-${base}">${base}</div>
+                <div class="bonds">${bonds}</div>
+                <div class="empty-slot" id="slot-${this.currentIndex}">?</div>
+            `;
+            
+            this.stage.appendChild(row);
+            
+            // Scroll to bottom
+            setTimeout(() => {
+                this.stage.scrollTop = this.stage.scrollHeight;
+            }, 50);
+        },
+
+        addBase(userBase) {
+            if(this.currentIndex >= this.targetLen) return;
+            
+            const target = this.sequence[this.currentIndex];
+            const pairs = {'A':'T', 'T':'A', 'G':'C', 'C':'G'};
+            
+            if(userBase === pairs[target]) {
+                // Doğru
+                const slot = document.getElementById(`slot-${this.currentIndex}`);
+                const row = document.getElementById(`row-${this.currentIndex}`);
+                
+                slot.className = `base-block bg-${userBase}`;
+                slot.innerText = userBase;
+                row.classList.add('matched');
+                
+                this.showToast(true);
+                this.currentIndex++;
+                this.updateStats();
+                
+                if(this.currentIndex < this.targetLen) {
+                    setTimeout(() => this.renderRow(), 250);
+                } else {
+                    this.showFinish();
+                }
+
+            } else {
+                // Yanlış
+                this.showToast(false);
+                const slot = document.getElementById(`slot-${this.currentIndex}`);
+                slot.style.borderColor = '#ef4444';
+                slot.style.color = '#ef4444';
+                setTimeout(() => {
+                    slot.style.borderColor = '#cbd5e1';
+                    slot.style.color = '#cbd5e1';
+                }, 400);
+            }
+        },
+
+        showToast(success) {
+            this.feedbackEl.innerText = success ? "Doğru Eşleşme" : "Hatalı Baz!";
+            this.feedbackEl.style.backgroundColor = success ? '#10b981' : '#ef4444';
+            this.feedbackEl.style.opacity = '1';
+            this.feedbackEl.style.bottom = '50px'; 
+            setTimeout(() => {
+                this.feedbackEl.style.opacity = '0';
+                this.feedbackEl.style.bottom = '40px';
+            }, 800);
+        },
+
+        updateStats() {
+            document.getElementById('progressTxt').innerText = `${this.currentIndex} / ${this.targetLen}`;
+            document.getElementById('progressBar').style.width = `${(this.currentIndex/this.targetLen)*100}%`;
+        },
+
+        showFinish() {
+            const div = document.createElement('div');
+            div.className = 'mt-6 p-4 bg-green-100 text-green-800 font-bold rounded-xl text-center w-64';
+            div.innerText = "DNA Zinciri Tamamlandı!";
+            this.stage.appendChild(div);
+            this.stage.scrollTop = this.stage.scrollHeight;
+        },
+
+        reset() {
+            this.start();
+        },
+
+        // --- 3D Loop ---
+        loop3D() {
+            const ctx = this.ctx3D;
+            const w = this.canvas3D.width;
+            const h = this.canvas3D.height;
+            const cx = w/2;
+
+            ctx.clearRect(0,0,w,h);
+            
+            this.rot += 0.015;
+            
+            // Limit 10 (Zaten hedef 10)
+            const count = 10;
+            const spacing = 16;
+            // Dikey ortalama
+            const startY = (h - (count*spacing)) / 2;
+
+            for(let i=0; i<count; i++) {
+                // Veri var mı?
+                let c1 = '#e2e8f0'; 
+                let c2 = '#e2e8f0';
+
+                if(i < this.sequence.length) {
+                    const b1 = this.sequence[i];
+                    // Eğer kullanıcı bu indeksi eşleştirdiyse rengi aç
+                    if(i < this.currentIndex) {
+                        const b2 = {'A':'T', 'T':'A', 'G':'C', 'C':'G'}[b1];
+                        c1 = this.colors[b1];
+                        c2 = this.colors[b2];
+                    } else {
+                        // Henüz eşleşmediyse sadece kalıp zinciri soluk göster
+                        c1 = this.colors[b1]; 
+                    }
+                }
+
+                const y = startY + i*spacing;
+                const angle = i*0.5 + this.rot;
+                
+                const r = 35;
+                const xOff = Math.sin(angle) * r;
+                const z = Math.cos(angle);
+                const scale = 1 + z*0.2;
+                const alpha = 0.5 + scale*0.5;
+
+                ctx.globalAlpha = alpha;
+                
+                // Bağ
+                ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 2 * scale;
+                ctx.beginPath(); ctx.moveTo(cx-xOff, y); ctx.lineTo(cx+xOff, y); ctx.stroke();
+
+                // Toplar
+                const drawBall = (x, c) => {
+                    ctx.fillStyle = c;
+                    ctx.beginPath(); ctx.arc(x, y, 5*scale, 0, Math.PI*2); ctx.fill();
+                };
+
+                if(z > 0) {
+                    drawBall(cx-xOff, c1);
+                    drawBall(cx+xOff, c2);
+                } else {
+                    drawBall(cx+xOff, c2);
+                    drawBall(cx-xOff, c1);
+                }
+                
+                ctx.globalAlpha = 1;
+            }
+
+            requestAnimationFrame(() => this.loop3D());
+        }
+    };
+
+    app.init();
+</script>
+</body>
+</html>
