@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fonksiyon Grafikleri | Teorim</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-app: #f8fafc;
+            --bg-panel: #ffffff;
+            --col-accent: #f97316;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --radius: 16px;
+        }
+
+        body { 
+            margin: 0; background: var(--bg-app); 
+            font-family: 'Inter', sans-serif; 
+            height: 100vh; display: flex; overflow: hidden; color: var(--text-main);
+        }
+
+        /* MOBİL UYARI */
+        #mobile-warning { 
+            display: none; position: fixed; inset: 0; 
+            background: #0f172a; color: white; z-index: 9999; 
+            flex-direction: column; align-items: center; justify-content: center; 
+            text-align: center; padding: 20px; 
+        }
+        @media (max-width: 768px) or (orientation: portrait) { #mobile-warning { display: flex; } }
+        @keyframes phoneBounce {
+            0%, 100% { transform: translateY(0) rotate(-5deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+        .phone-icon { animation: phoneBounce 1.5s infinite ease-in-out; }
+
+        /* SOL PANEL */
+        aside { 
+            width: 340px; flex-shrink: 0; background: var(--bg-panel); 
+            border-right: 1px solid var(--border); padding: 24px; 
+            display: flex; flex-direction: column; gap: 20px; 
+            z-index: 30; box-shadow: 4px 0 20px rgba(0,0,0,0.02);
+            overflow-y: auto;
+        }
+
+        .section-title {
+            font-size: 0.7rem; font-weight: 800; color: #64748b;
+            text-transform: uppercase; letter-spacing: 1px;
+            margin-bottom: 8px; border-bottom: 1px solid var(--border); padding-bottom: 4px;
+        }
+
+        /* FONKSİYON BUTONLARI */
+        .func-btn {
+            padding: 10px; border: 1px solid var(--border); border-radius: 10px;
+            font-size: 0.75rem; font-weight: 700; color: var(--text-muted);
+            transition: all 0.2s; cursor: pointer; text-align: center;
+        }
+        .func-btn:hover { border-color: var(--col-accent); color: var(--col-accent); }
+        .func-btn.active { background: var(--col-accent); color: white; border-color: var(--col-accent); }
+
+        .control-group { background: #f8fafc; padding: 16px; border-radius: var(--radius); border: 1px solid var(--border); }
+        .prop-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: 15px; font-size: 0.8rem; font-weight: 700; }
+        .label-val { display: flex; justify-content: space-between; align-items: center; }
+        input[type="range"] { width: 100%; accent-color: var(--col-accent); cursor: pointer; height: 4px; border-radius: 2px; }
+
+        /* DENKLEM KARTI */
+        .equation-box {
+            background: #fff7ed; border: 1px solid #ffedd5;
+            padding: 12px; border-radius: var(--radius);
+            text-align: center; 
+            font-family: 'Inter', sans-serif; font-weight: 700; font-size: 1.1rem;
+            color: #c2410c;
+        }
+
+        /* ANA ALAN */
+        main { flex: 1; position: relative; background: #ffffff; overflow: hidden; }
+        canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
+
+        /* VERİ KARTI */
+        .data-card {
+            position: absolute; top: 20px; right: 20px;
+            background: rgba(255, 255, 255, 0.95); padding: 20px;
+            border-radius: var(--radius); border: 1px solid var(--border);
+            min-width: 200px; backdrop-filter: blur(12px);
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.1);
+            z-index: 20;
+        }
+
+        /* 3D GÖRÜNÜM KARTI */
+        .threed-card {
+            position: absolute; bottom: 20px; right: 20px;
+            width: 180px; height: 180px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid var(--border); border-radius: var(--radius);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden; z-index: 20;
+            display: flex; flex-direction: column;
+        }
+        .threed-title {
+            font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase;
+            padding: 8px 12px 4px 12px; background: #f8fafc; border-bottom: 1px solid #f1f5f9;
+        }
+        #canvas3D { flex: 1; width: 100%; height: 100%; cursor: move; }
+    </style>
+</head>
+<body>
+
+    <div id="mobile-warning">
+        <div class="phone-icon mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            </svg>
+        </div>
+        <h2 class="text-2xl font-bold mb-2">Koordinat Sistemi İçin Çevirin</h2>
+        <p class="text-slate-400 text-sm max-w-xs">Grafikleri detaylı incelemek için yatay mod gereklidir.</p>
+    </div>
+
+<aside>
+    <div class="flex items-center gap-3 mb-2">
+        <a href="../../dersler/matematik.html" class="p-2 hover:bg-orange-100 rounded-full text-orange-600 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" /></svg>
+        </a>
+        <h1 class="font-bold text-xl text-slate-800">Grafikler</h1>
+    </div>
+
+    <div class="section-title">Fonksiyon Tipi</div>
+    <div class="grid grid-cols-2 gap-2 mb-4">
+        <div class="func-btn active" onclick="app.setMode('linear', this)">Doğrusal</div>
+        <div class="func-btn" onclick="app.setMode('quadratic', this)">Parabol</div>
+        <div class="func-btn" onclick="app.setMode('cubic', this)">Kübik</div>
+        <div class="func-btn" onclick="app.setMode('sine', this)">Sinüs</div>
+    </div>
+
+    <div class="section-title">Denklem</div>
+    <div class="equation-box mb-4" id="equationDisplay">
+        f(x) = x
+    </div>
+
+    <div class="section-title">Katsayılar</div>
+    <div class="control-group">
+        <div class="prop-row">
+            <div class="label-val">
+                <span class="text-slate-500 font-bold">a</span>
+                <span id="valA" class="text-orange-600 font-bold">1.0</span>
+            </div>
+            <input type="range" id="slA" min="-5" max="5" step="0.1" value="1">
+        </div>
+
+        <div class="prop-row">
+            <div class="label-val">
+                <span class="text-slate-500 font-bold">b</span>
+                <span id="valB" class="text-orange-600 font-bold">0.0</span>
+            </div>
+            <input type="range" id="slB" min="-10" max="10" step="0.5" value="0">
+        </div>
+
+        <div class="prop-row" id="rowC" style="display:none">
+            <div class="label-val">
+                <span class="text-slate-500 font-bold">c</span>
+                <span id="valC" class="text-orange-600 font-bold">0.0</span>
+            </div>
+            <input type="range" id="slC" min="-10" max="10" step="0.5" value="0">
+        </div>
+
+        <div class="prop-row" id="rowD" style="display:none">
+            <div class="label-val">
+                <span class="text-slate-500 font-bold">d</span>
+                <span id="valD" class="text-orange-600 font-bold">0.0</span>
+            </div>
+            <input type="range" id="slD" min="-5" max="5" step="0.5" value="0">
+        </div>
+    </div>
+
+    <button class="w-full py-3 mt-auto bg-slate-800 text-white rounded-xl font-bold text-xs hover:bg-slate-700 transition" onclick="app.reset()">GRAFİĞİ SIFIRLA</button>
+</aside>
+
+<main>
+    <div class="data-card">
+        <div class="text-[10px] font-extrabold text-slate-400 uppercase mb-3 tracking-widest border-b border-slate-100 pb-2">Analiz</div>
+        
+        <div class="flex justify-between items-center mb-2">
+            <span class="text-xs font-bold text-slate-500">İmleç:</span>
+            <span class="font-mono text-xs font-bold text-slate-800" id="cursorPos">(-, -)</span>
+        </div>
+
+        <div class="flex justify-between items-center mb-2">
+            <span class="text-xs font-bold text-slate-500">f(x):</span>
+            <span class="font-mono text-sm font-bold text-orange-600" id="funcVal">-</span>
+        </div>
+
+        <div class="mt-3 pt-2 border-t border-slate-100">
+             <div class="text-[9px] text-slate-400 mb-1" id="specialPointLabel">Özel Nokta</div>
+             <div class="text-xs font-bold text-slate-700" id="specialPointVal">-</div>
+        </div>
+    </div>
+
+    <canvas id="simCanvas"></canvas>
+
+    <div class="threed-card">
+        <div class="threed-title">3D GÖRÜNÜM (Z = f(X,Y))</div>
+        <canvas id="canvas3D"></canvas>
+    </div>
+</main>
+
+<script>
+    const app = {
+        canvas: document.getElementById('simCanvas'),
+        canvas3D: document.getElementById('canvas3D'),
+        ctx: null, ctx3D: null,
+        width: 0, height: 0,
+        
+        // Durum
+        mode: 'linear', // linear, quadratic, cubic, sine
+        a: 1, b: 0, c: 0, d: 0,
+        
+        // 2D Grid Ayarları
+        scale: 40,
+        offsetX: 0, offsetY: 0,
+        mouseX: 0, mouseY: 0,
+
+        // 3D Ayarları
+        rotX: 0.8, rotY: 0.6,
+        
+        init() {
+            this.ctx = this.canvas.getContext('2d');
+            this.ctx3D = this.canvas3D.getContext('2d');
+            this.resize();
+            window.addEventListener('resize', () => this.resize());
+            
+            // Mouse İzleme (2D)
+            this.canvas.addEventListener('mousemove', (e) => {
+                const rect = this.canvas.getBoundingClientRect();
+                this.mouseX = e.clientX - rect.left;
+                this.mouseY = e.clientY - rect.top;
+                this.updateCursorData();
+                this.draw(); 
+            });
+
+            // 3D Döndürme Olayı
+            this.canvas3D.addEventListener('mousemove', (e) => {
+                if(e.buttons === 1) {
+                    this.rotY += e.movementX * 0.01;
+                    this.rotX += e.movementY * 0.01;
+                    this.draw3D();
+                }
+            });
+
+            // Sliderlar
+            ['slA', 'slB', 'slC', 'slD'].forEach(id => {
+                document.getElementById(id).oninput = (e) => {
+                    const key = id.replace('sl', '').toLowerCase();
+                    this[key] = parseFloat(e.target.value);
+                    document.getElementById('val' + key.toUpperCase()).innerText = this[key].toFixed(1);
+                    this.updateEquation();
+                    this.draw();
+                    this.draw3D(); // 3D grafiği de güncelle
+                };
+            });
+
+            this.setMode('linear', document.querySelector('.func-btn'));
+            this.loop();
+        },
+
+        resize() {
+            // 2D Canvas
+            this.width = this.canvas.width = this.canvas.parentElement.clientWidth;
+            this.height = this.canvas.height = this.canvas.parentElement.clientHeight;
+            this.offsetX = this.width / 2;
+            this.offsetY = this.height / 2;
+            
+            // 3D Canvas
+            this.canvas3D.width = this.canvas3D.clientWidth;
+            this.canvas3D.height = this.canvas3D.clientHeight;
+
+            this.draw();
+            this.draw3D();
+        },
+
+        setMode(mode, el) {
+            this.mode = mode;
+            document.querySelectorAll('.func-btn').forEach(b => b.classList.remove('active'));
+            if(el) el.classList.add('active');
+
+            const rowC = document.getElementById('rowC');
+            const rowD = document.getElementById('rowD');
+            
+            if(mode === 'linear') { rowC.style.display = 'none'; rowD.style.display = 'none'; }
+            else if (mode === 'quadratic') { rowC.style.display = 'flex'; rowD.style.display = 'none'; }
+            else if (mode === 'cubic') { rowC.style.display = 'flex'; rowD.style.display = 'flex'; }
+            else if (mode === 'sine') { rowC.style.display = 'flex'; rowD.style.display = 'flex'; }
+
+            this.reset();
+        },
+
+        reset() {
+            if(this.mode === 'linear') { this.a = 1; this.b = 0; }
+            if(this.mode === 'quadratic') { this.a = 1; this.b = 0; this.c = 0; }
+            if(this.mode === 'cubic') { this.a = 1; this.b = 0; this.c = 0; this.d = 0; }
+            if(this.mode === 'sine') { this.a = 1; this.b = 1; this.c = 0; this.d = 0; }
+
+            document.getElementById('slA').value = this.a;
+            document.getElementById('slB').value = this.b;
+            document.getElementById('slC').value = this.c;
+            document.getElementById('slD').value = this.d;
+
+            ['A','B','C','D'].forEach(k => document.getElementById('val'+k).innerText = this[k.toLowerCase()].toFixed(1));
+            
+            this.updateEquation();
+            this.draw();
+            this.draw3D();
+        },
+
+        updateEquation() {
+            let eq = "";
+            const fmt = (n) => (n >= 0 ? "+ " + n : "- " + Math.abs(n));
+            
+            if(this.mode === 'linear') eq = `f(x) = ${this.a}x ${fmt(this.b)}`;
+            else if (this.mode === 'quadratic') eq = `f(x) = ${this.a}x² ${fmt(this.b)}x ${fmt(this.c)}`;
+            else if (this.mode === 'cubic') eq = `f(x) = ${this.a}x³ ${fmt(this.b)}x² ${fmt(this.c)}x ${fmt(this.d)}`;
+            else if (this.mode === 'sine') eq = `f(x) = ${this.a} sin(${this.b}x ${fmt(this.c)}) ${fmt(this.d)}`;
+            
+            document.getElementById('equationDisplay').innerText = eq;
+        },
+
+        calculateY(x) {
+            if(this.mode === 'linear') return this.a * x + this.b;
+            if(this.mode === 'quadratic') return this.a * x * x + this.b * x + this.c;
+            if(this.mode === 'cubic') return this.a * Math.pow(x,3) + this.b * Math.pow(x,2) + this.c * x + this.d;
+            if(this.mode === 'sine') return this.a * Math.sin(this.b * x + this.c) + this.d;
+            return 0;
+        },
+
+        // --- 3D ÇİZİM MANTIĞI ---
+        calculateZ3D(x, y) {
+            // Basit bir genelleme: f(x,y) = f(x) + f(y) benzeri bir kombinasyonla yüzey oluştur
+            // Veya rotasyonel cisim gibi: R = sqrt(x^2+y^2), Z = f(R)
+            
+            // Burada "Extrusion" mantığı kullanalım: Z = f(x) (y boyunca sabit)
+            // Veya daha estetik bir yüzey için: Z = f(x) * cos(y/5) gibi varyasyonlar
+            
+            // En anlaşılır olan: Z = f(R) yani döndürülmüş cisim (Surface of Revolution)
+            const r = Math.sqrt(x*x + y*y); 
+            // Ancak negatif x'ler için f(x) farklı olabilir, o yüzden basit r kullanımı parabolde çanak yapar, linearda koni yapar.
+            
+            if(this.mode === 'linear') return this.a * x + this.b + (y * 0.5); // Düzlem
+            if(this.mode === 'quadratic') return (this.a * (x*x + y*y) / 5) + this.c; // Paraboloid (Çanak)
+            if(this.mode === 'sine') return this.a * Math.sin(this.b * x + this.c) * Math.cos(y); // Dalgalı yüzey
+            
+            return this.calculateY(x); // Fallback
+        },
+
+        project3D(x, y, z, cx, cy) {
+            // Basit İzometrik benzeri projeksiyon
+            // X ekseni sağa, Y ekseni içeri (derinlik), Z ekseni yukarı
+            // Rotasyon matrisleri uygulanmalı
+            
+            // Y ekseni etrafında dönme (rotY)
+            let x1 = x * Math.cos(this.rotY) - z * Math.sin(this.rotY);
+            let z1 = x * Math.sin(this.rotY) + z * Math.cos(this.rotY);
+            
+            // X ekseni etrafında dönme (rotX)
+            let y2 = y * Math.cos(this.rotX) - z1 * Math.sin(this.rotX);
+            let z2 = y * Math.sin(this.rotX) + z1 * Math.cos(this.rotX);
+            
+            // Perspektif
+            const scale = 300 / (400 + y2); // Z-depth scale
+            return {
+                x: cx + x1 * scale * 20,
+                y: cy - z2 * scale * 20
+            };
+        },
+
+        draw3D() {
+            const ctx = this.ctx3D;
+            const w = this.canvas3D.width;
+            const h = this.canvas3D.height;
+            const cx = w / 2;
+            const cy = h / 2;
+
+            ctx.clearRect(0, 0, w, h);
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = "rgba(249, 115, 22, 0.4)"; // Turuncu saydam
+
+            // Mesh oluştur
+            const range = 4;
+            const step = 0.8; 
+            
+            for(let x = -range; x <= range; x += step) {
+                for(let y = -range; y <= range; y += step) {
+                    const z = this.calculateZ3D(x, y);
+                    const p = this.project3D(x, y, z, cx, cy);
+
+                    // X komşusu
+                    if(x + step <= range) {
+                        const zNextX = this.calculateZ3D(x + step, y);
+                        const pNextX = this.project3D(x + step, y, zNextX, cx, cy);
+                        ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(pNextX.x, pNextX.y); ctx.stroke();
+                    }
+                    // Y komşusu
+                    if(y + step <= range) {
+                        const zNextY = this.calculateZ3D(x, y + step);
+                        const pNextY = this.project3D(x, y + step, zNextY, cx, cy);
+                        ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(pNextY.x, pNextY.y); ctx.stroke();
+                    }
+                }
+            }
+            
+            // Eksenler
+            ctx.strokeStyle = "#94a3b8"; ctx.lineWidth = 2;
+            const origin = this.project3D(0,0,0,cx,cy);
+            const xAxis = this.project3D(range+1,0,0,cx,cy);
+            const yAxis = this.project3D(0,range+1,0,cx,cy);
+            const zAxis = this.project3D(0,0,range+1,cx,cy);
+            
+            ctx.beginPath(); ctx.moveTo(origin.x, origin.y); ctx.lineTo(xAxis.x, xAxis.y); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(origin.x, origin.y); ctx.lineTo(yAxis.x, yAxis.y); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(origin.x, origin.y); ctx.lineTo(zAxis.x, zAxis.y); ctx.stroke();
+        },
+
+        updateCursorData() {
+            const mathX = (this.mouseX - this.offsetX) / this.scale;
+            const mathY = -(this.mouseY - this.offsetY) / this.scale;
+            const actualY = this.calculateY(mathX);
+
+            document.getElementById('cursorPos').innerText = `(${mathX.toFixed(2)}, ${mathY.toFixed(2)})`;
+            document.getElementById('funcVal').innerText = actualY.toFixed(3);
+
+            const label = document.getElementById('specialPointLabel');
+            const val = document.getElementById('specialPointVal');
+            
+            if(this.mode === 'quadratic' && this.a !== 0) {
+                const vx = -this.b / (2 * this.a);
+                const vy = this.calculateY(vx);
+                label.innerText = "Tepe Noktası (Vertex)";
+                val.innerText = `(${vx.toFixed(2)}, ${vy.toFixed(2)})`;
+            } else if (this.mode === 'linear') {
+                label.innerText = "Y-Ekseni Kesim";
+                val.innerText = `(0, ${this.b})`;
+            } else {
+                 label.innerText = "Analiz";
+                 val.innerText = "Grafik incelemesi";
+            }
+        },
+
+        draw() {
+            const ctx = this.ctx;
+            ctx.clearRect(0, 0, this.width, this.height);
+
+            // GRID
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = "#e2e8f0";
+            ctx.beginPath();
+            for (let x = this.offsetX % this.scale; x < this.width; x += this.scale) {
+                ctx.moveTo(x, 0); ctx.lineTo(x, this.height);
+            }
+            for (let y = this.offsetY % this.scale; y < this.height; y += this.scale) {
+                ctx.moveTo(0, y); ctx.lineTo(this.width, y);
+            }
+            ctx.stroke();
+
+            // EKSENLER
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = "#94a3b8";
+            ctx.beginPath();
+            ctx.moveTo(0, this.offsetY); ctx.lineTo(this.width, this.offsetY);
+            ctx.moveTo(this.offsetX, 0); ctx.lineTo(this.offsetX, this.height);
+            ctx.stroke();
+
+            // FONKSİYON 2D
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = "#f97316"; 
+            ctx.beginPath();
+            let firstPoint = true;
+            for (let px = 0; px < this.width; px++) {
+                const mathX = (px - this.offsetX) / this.scale;
+                const mathY = this.calculateY(mathX);
+                const py = this.offsetY - (mathY * this.scale);
+
+                if (py < -this.height || py > this.height * 2) {
+                   if(!firstPoint) ctx.stroke();
+                   firstPoint = true;
+                   continue;
+                }
+                if (firstPoint) { ctx.moveTo(px, py); firstPoint = false; } else { ctx.lineTo(px, py); }
+            }
+            ctx.stroke();
+
+            // CURSOR
+            const mathX = (this.mouseX - this.offsetX) / this.scale;
+            const functionY = this.calculateY(mathX);
+            const cursorYPixel = this.offsetY - (functionY * this.scale);
+
+            ctx.beginPath(); ctx.fillStyle = "#f97316";
+            ctx.arc(this.mouseX, cursorYPixel, 5, 0, Math.PI*2); ctx.fill();
+            
+            ctx.setLineDash([4, 4]); ctx.lineWidth = 1; ctx.strokeStyle = "#cbd5e1";
+            ctx.beginPath(); ctx.moveTo(this.mouseX, cursorYPixel); ctx.lineTo(this.mouseX, this.offsetY); ctx.stroke();
+            ctx.setLineDash([]);
+        },
+
+        loop() {
+            // 3D sürekli dönsün (opsiyonel)
+            this.rotY += 0.005;
+            this.draw3D();
+            requestAnimationFrame(() => this.loop());
+        }
+    };
+
+    app.init();
+</script>
+</body>
+</html>
