@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geometri Laboratuvarı | Teorim</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-app: #f8fafc;
+            --bg-panel: #ffffff;
+            --col-primary: #f97316; /* Turuncu */
+            --col-sec: #3b82f6;    /* Mavi */
+            --col-ter: #10b981;    /* Yeşil */
+            --text-main: #334155;
+            --text-muted: #94a3b8;
+            --border: #e2e8f0;
+            --radius: 20px;
+        }
+
+        body { 
+            margin: 0; background: var(--bg-app); 
+            font-family: 'Inter', sans-serif; 
+            height: 100vh; display: flex; overflow: hidden; color: var(--text-main);
+        }
+
+        /* MOBİL UYARI */
+        #mobile-warning { 
+            display: none; position: fixed; inset: 0; 
+            background: #0f172a; color: white; z-index: 9999; 
+            flex-direction: column; align-items: center; justify-content: center; 
+            text-align: center; padding: 20px; 
+        }
+        @media (max-width: 768px) or (orientation: portrait) { #mobile-warning { display: flex; } }
+        .phone-icon { animation: phoneBounce 1.5s infinite ease-in-out; }
+        @keyframes phoneBounce {
+            0%, 100% { transform: translateY(0) rotate(-5deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+
+        /* SOL PANEL */
+        aside { 
+            width: 360px; flex-shrink: 0; background: var(--bg-panel); 
+            border-right: 1px solid var(--border); padding: 24px; 
+            display: flex; flex-direction: column; gap: 20px; 
+            z-index: 30; box-shadow: 10px 0 30px rgba(0,0,0,0.02);
+            overflow-y: auto;
+        }
+
+        .section-header {
+            font-size: 0.7rem; font-weight: 800; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 1.5px;
+            margin-bottom: 8px; border-bottom: 1px solid var(--border); padding-bottom: 6px;
+        }
+
+        /* VERİ KARTLARI */
+        .data-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .stat-card {
+            background: #f8fafc; border: 1px solid var(--border);
+            border-radius: 12px; padding: 12px;
+            display: flex; flex-direction: column; gap: 4px;
+        }
+        .stat-label { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; }
+        .stat-value { font-family: 'Menlo', monospace; font-size: 1rem; font-weight: 700; color: var(--text-main); }
+        .stat-unit { font-size: 0.7rem; color: #cbd5e1; font-weight: 400; margin-left: 2px; }
+
+        .angle-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+        .angle-badge {
+            width: 24px; height: 24px; border-radius: 6px; 
+            display: flex; justify-content: center; align-items: center;
+            font-weight: 700; font-size: 0.75rem; color: white;
+        }
+
+        /* ANALİZ KUTUSU */
+        .analysis-box {
+            background: #fff7ed; border: 1px solid #ffedd5;
+            border-radius: 12px; padding: 16px;
+            border-left: 4px solid var(--col-primary);
+        }
+        .analysis-title { font-size: 0.75rem; font-weight: 800; color: #9a3412; text-transform: uppercase; margin-bottom: 4px; }
+        .analysis-text { font-size: 0.9rem; font-weight: 600; color: #c2410c; }
+
+        /* BUTONLAR */
+        .btn-reset {
+            width: 100%; padding: 14px; background: #f1f5f9; color: #64748b;
+            border: none; border-radius: 12px; font-weight: 700; cursor: pointer;
+            transition: all 0.2s; font-size: 0.85rem; margin-top: auto;
+        }
+        .btn-reset:hover { background: #e2e8f0; color: #0f172a; }
+
+        /* ANA ALAN */
+        main { 
+            flex: 1; display: flex; flex-direction: column; 
+            padding: 24px; gap: 24px; background: #f8fafc;
+            overflow: hidden;
+        }
+
+        .canvas-container {
+            flex: 1; background: white; border-radius: var(--radius);
+            border: 1px solid var(--border); box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05);
+            position: relative; overflow: hidden; cursor: crosshair;
+        }
+        canvas { display: block; width: 100%; height: 100%; }
+
+        /* SAĞ ÜST FORMÜL KARTI */
+        .formula-card {
+            position: absolute; top: 20px; right: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 16px; border-radius: 12px;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            backdrop-filter: blur(8px); pointer-events: none;
+            max-width: 250px;
+            transition: all 0.3s ease;
+        }
+        .formula-title {
+            font-size: 0.7rem; font-weight: 800; color: #94a3b8; 
+            text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;
+        }
+        .formula-content {
+            font-family: 'Menlo', monospace; font-size: 0.9rem; 
+            font-weight: 700; color: var(--col-primary);
+        }
+        .formula-desc {
+            font-size: 0.75rem; color: var(--text-main); margin-top: 4px; line-height: 1.4;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="mobile-warning">
+        <div class="phone-icon mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            </svg>
+        </div>
+        <h2 class="text-2xl font-bold mb-2">Yatay Moda Geçin</h2>
+        <p class="text-slate-400 text-sm max-w-xs">Geometri laboratuvarı için geniş ekran gereklidir.</p>
+    </div>
+
+<aside>
+    <div class="flex items-center gap-3 mb-2">
+        <a href="../../dersler/matematik.html" class="p-2 hover:bg-orange-50 rounded-full text-orange-600 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+        </a>
+        <h1 class="font-bold text-xl text-slate-800">Üçgenler</h1>
+    </div>
+
+    <div class="section-header">Açılar</div>
+    <div class="stat-card">
+        <div class="angle-row">
+            <div class="flex items-center gap-2">
+                <div class="angle-badge bg-orange-500">A</div>
+                <span class="text-sm font-bold text-slate-600">Açısı</span>
+            </div>
+            <span class="stat-value text-orange-600" id="valA">60°</span>
+        </div>
+        <div class="angle-row">
+            <div class="flex items-center gap-2">
+                <div class="angle-badge bg-blue-500">B</div>
+                <span class="text-sm font-bold text-slate-600">Açısı</span>
+            </div>
+            <span class="stat-value text-blue-600" id="valB">60°</span>
+        </div>
+        <div class="angle-row">
+            <div class="flex items-center gap-2">
+                <div class="angle-badge bg-emerald-500">C</div>
+                <span class="text-sm font-bold text-slate-600">Açısı</span>
+            </div>
+            <span class="stat-value text-emerald-600" id="valC">60°</span>
+        </div>
+        <div class="text-[10px] text-slate-400 text-right mt-1 border-t border-slate-100 pt-1">
+            Toplam: 180°
+        </div>
+    </div>
+
+    <div class="section-header">Kenarlar & Alan</div>
+    <div class="data-grid">
+        <div class="stat-card">
+            <span class="stat-label">Kenar a</span>
+            <span class="stat-value" id="sideA">0 <span class="stat-unit">br</span></span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">Kenar b</span>
+            <span class="stat-value" id="sideB">0 <span class="stat-unit">br</span></span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">Kenar c</span>
+            <span class="stat-value" id="sideC">0 <span class="stat-unit">br</span></span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">Çevre</span>
+            <span class="stat-value" id="valPerimeter">0 <span class="stat-unit">br</span></span>
+        </div>
+    </div>
+    <div class="stat-card mt-2 bg-slate-50">
+        <div class="flex justify-between items-center">
+            <span class="stat-label text-slate-500">Alan (Heron)</span>
+            <span class="stat-value text-slate-800" id="valArea">0 <span class="stat-unit">br²</span></span>
+        </div>
+    </div>
+
+    <div class="section-header mt-4">Üçgen Tipi</div>
+    <div class="analysis-box">
+        <div class="analysis-title">Analiz Sonucu</div>
+        <div class="analysis-text" id="typeText">Eşkenar Üçgen</div>
+        <div class="text-xs text-orange-800/60 mt-1" id="typeSubText">Tüm kenarlar ve açılar eşit.</div>
+    </div>
+
+    <button class="btn-reset" onclick="app.reset()">ŞEKLİ SIFIRLA</button>
+</aside>
+
+<main>
+    <div class="canvas-container">
+        <canvas id="geoCanvas"></canvas>
+        
+        <div class="formula-card" id="formulaCard">
+            <div class="formula-title">ALAN HESAPLAMA</div>
+            <div class="formula-content" id="formulaMath">Alan = (a²·√3)/4</div>
+            <div class="formula-desc" id="formulaDesc">Eşkenar üçgen olduğu için tek kenar uzunluğu yeterlidir.</div>
+        </div>
+    </div>
+</main>
+
+<script>
+    const app = {
+        canvas: document.getElementById('geoCanvas'),
+        ctx: null,
+        width: 0, height: 0,
+        
+        // Köşe Noktaları (A, B, C)
+        points: [
+            { x: 0, y: 0, label: 'A', color: '#f97316' }, 
+            { x: 0, y: 0, label: 'B', color: '#3b82f6' }, 
+            { x: 0, y: 0, label: 'C', color: '#10b981' }  
+        ],
+        
+        draggingPoint: null,
+
+        init() {
+            this.ctx = this.canvas.getContext('2d');
+            const resizeObserver = new ResizeObserver(() => this.resize());
+            resizeObserver.observe(this.canvas.parentElement);
+            
+            this.canvas.addEventListener('mousedown', e => this.handleStart(e));
+            this.canvas.addEventListener('mousemove', e => this.handleMove(e));
+            window.addEventListener('mouseup', () => this.handleEnd());
+            this.canvas.addEventListener('touchstart', e => this.handleStart(e), {passive: false});
+            window.addEventListener('touchmove', e => this.handleMove(e), {passive: false});
+            window.addEventListener('touchend', () => this.handleEnd());
+
+            setTimeout(() => this.resize(), 50);
+        },
+
+        resize() {
+            const container = this.canvas.parentElement;
+            this.width = container.offsetWidth;
+            this.height = container.offsetHeight;
+            this.canvas.width = this.width;
+            this.canvas.height = this.height;
+            this.reset();
+        },
+
+        reset() {
+            const cx = this.width / 2;
+            const cy = this.height / 2;
+            const sideLength = 300;
+            const height = sideLength * Math.sqrt(3) / 2;
+            const rTop = (2/3) * height;
+            const rBase = (1/3) * height;
+
+            this.points[0].x = cx;
+            this.points[0].y = cy - rTop;
+            this.points[1].x = cx - sideLength / 2;
+            this.points[1].y = cy + rBase;
+            this.points[2].x = cx + sideLength / 2;
+            this.points[2].y = cy + rBase;
+            
+            this.draw();
+            this.updateStats();
+        },
+
+        getMousePos(evt) {
+            const rect = this.canvas.getBoundingClientRect();
+            const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
+            const clientY = evt.touches ? evt.touches[0].clientY : evt.clientY;
+            return { x: clientX - rect.left, y: clientY - rect.top };
+        },
+
+        handleStart(e) {
+            const pos = this.getMousePos(e);
+            for (let p of this.points) {
+                const dx = pos.x - p.x;
+                const dy = pos.y - p.y;
+                if (dx*dx + dy*dy < 400) { 
+                    this.draggingPoint = p;
+                    e.preventDefault();
+                    return;
+                }
+            }
+        },
+
+        handleMove(e) {
+            if (!this.draggingPoint) {
+                const pos = this.getMousePos(e);
+                let hit = false;
+                for (let p of this.points) {
+                    if ((pos.x - p.x)**2 + (pos.y - p.y)**2 < 400) hit = true;
+                }
+                this.canvas.style.cursor = hit ? 'move' : 'default';
+                return;
+            }
+            e.preventDefault();
+            const pos = this.getMousePos(e);
+            const pad = 20;
+            this.draggingPoint.x = Math.max(pad, Math.min(this.width - pad, pos.x));
+            this.draggingPoint.y = Math.max(pad, Math.min(this.height - pad, pos.y));
+            this.draw();
+            this.updateStats();
+        },
+
+        handleEnd() { this.draggingPoint = null; },
+
+        dist(p1, p2) { return Math.sqrt((p1.x - p2.x)**2 + (p1.y - p2.y)**2); },
+
+        calculateAngle(p1, center, p2) {
+            const a = this.dist(center, p2);
+            const b = this.dist(center, p1);
+            const c = this.dist(p1, p2);
+            const cosVal = (a*a + b*b - c*c) / (2*a*b);
+            const rad = Math.acos(Math.max(-1, Math.min(1, cosVal)));
+            return rad * 180 / Math.PI;
+        },
+
+        draw() {
+            const ctx = this.ctx;
+            const [A, B, C] = this.points;
+            ctx.clearRect(0, 0, this.width, this.height);
+
+            ctx.fillStyle = "rgba(249, 115, 22, 0.05)"; 
+            ctx.beginPath(); ctx.moveTo(A.x, A.y); ctx.lineTo(B.x, B.y); ctx.lineTo(C.x, C.y); ctx.closePath(); ctx.fill();
+
+            ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 3; ctx.lineJoin = "round";
+            ctx.beginPath(); ctx.moveTo(A.x, A.y); ctx.lineTo(B.x, B.y); ctx.lineTo(C.x, C.y); ctx.closePath(); ctx.stroke();
+
+            this.drawAngle(A, C, B, '#f97316');
+            this.drawAngle(B, A, C, '#3b82f6');
+            this.drawAngle(C, B, A, '#10b981');
+
+            this.points.forEach(p => {
+                ctx.fillStyle = "white"; ctx.strokeStyle = p.color; ctx.lineWidth = 4;
+                ctx.beginPath(); ctx.arc(p.x, p.y, 8, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+                
+                ctx.fillStyle = "#334155"; ctx.font = "bold 14px Inter";
+                const cx = (A.x + B.x + C.x) / 3; const cy = (A.y + B.y + C.y) / 3;
+                const dirX = p.x - cx; const dirY = p.y - cy;
+                const len = Math.sqrt(dirX*dirX + dirY*dirY);
+                const push = 25;
+                ctx.fillText(p.label, p.x + (dirX/len)*push - 5, p.y + (dirY/len)*push + 5);
+            });
+        },
+
+        drawAngle(center, p1, p2, color) {
+            const ctx = this.ctx;
+            const radius = 30;
+            const ang1 = Math.atan2(p1.y - center.y, p1.x - center.x);
+            const ang2 = Math.atan2(p2.y - center.y, p2.x - center.x);
+            
+            ctx.beginPath(); ctx.lineWidth = 2; ctx.strokeStyle = color;
+            const v1 = {x: p1.x - center.x, y: p1.y - center.y};
+            const v2 = {x: p2.x - center.x, y: p2.y - center.y};
+            const cross = v1.x * v2.y - v1.y * v2.x;
+            ctx.arc(center.x, center.y, radius, ang1, ang2, cross < 0); ctx.stroke();
+        },
+
+        updateStats() {
+            const [A, B, C] = this.points;
+            const scale = 0.1;
+            const cLen = this.dist(A, B) * scale;
+            const aLen = this.dist(B, C) * scale;
+            const bLen = this.dist(A, C) * scale;
+
+            const degA = this.calculateAngle(B, A, C);
+            const degB = this.calculateAngle(A, B, C);
+            const degC = 180 - degA - degB;
+
+            document.getElementById('valA').innerText = degA.toFixed(1) + "°";
+            document.getElementById('valB').innerText = degB.toFixed(1) + "°";
+            document.getElementById('valC').innerText = degC.toFixed(1) + "°";
+
+            document.getElementById('sideA').innerHTML = aLen.toFixed(1) + ' <span class="stat-unit">br</span>';
+            document.getElementById('sideB').innerHTML = bLen.toFixed(1) + ' <span class="stat-unit">br</span>';
+            document.getElementById('sideC').innerHTML = cLen.toFixed(1) + ' <span class="stat-unit">br</span>';
+
+            const perim = aLen + bLen + cLen;
+            document.getElementById('valPerimeter').innerHTML = perim.toFixed(1) + ' <span class="stat-unit">br</span>';
+
+            const s = perim / 2;
+            const area = Math.sqrt(s * (s - aLen) * (s - bLen) * (s - cLen));
+            document.getElementById('valArea').innerHTML = area.toFixed(1) + ' <span class="stat-unit">br²</span>';
+
+            const angles = [degA, degB, degC];
+            const sides = [aLen, bLen, cLen].sort((x,y) => x-y);
+            
+            // Üçgen Türü Belirleme & Dinamik Formül Güncelleme
+            let title = ""; let sub = ""; 
+            let formula = ""; let fDesc = "";
+            let isRight = false;
+
+            // Açı Kontrolü
+            if (angles.some(a => Math.abs(a - 90) < 1.0)) { 
+                title = "Dik Üçgen"; 
+                sub = "Bir açısı 90 derecedir."; 
+                isRight = true;
+            } else if (angles.some(a => a > 90)) { 
+                title = "Geniş Açılı Üçgen"; 
+                sub = "Bir açısı 90 dereceden büyüktür."; 
+            } else { 
+                title = "Dar Açılı Üçgen"; 
+                sub = "Tüm açıları 90 dereceden küçüktür."; 
+            }
+
+            // Kenar Kontrolü & Formül Mantığı
+            if (Math.abs(sides[0] - sides[2]) < 1.0) { 
+                // Eşkenar
+                title = "Eşkenar Üçgen"; 
+                sub = "Tüm kenarlar ve açılar (60°) eşittir.";
+                formula = "Alan = (a²·√3) / 4";
+                fDesc = "Eşkenar üçgende tüm kenarlar eşittir, sadece bir kenar uzunluğu yeterlidir.";
+            } else if (Math.abs(sides[0] - sides[1]) < 1.0 || Math.abs(sides[1] - sides[2]) < 1.0) {
+                // İkizkenar
+                title += " (İkizkenar)"; 
+                sub += " İki kenar uzunluğu eşittir.";
+                if (isRight) {
+                     formula = "Alan = (a · c) / 2"; // Basitleştirilmiş
+                     fDesc = "İkizkenar Dik üçgen: Dik kenarlar çarpımının yarısı.";
+                } else {
+                     formula = "Alan = (b · h) / 2";
+                     fDesc = "Taban (b) ve o tabana ait yükseklik (h) çarpımının yarısı.";
+                }
+            } else {
+                // Çeşitkenar
+                title += " (Çeşitkenar)";
+                if (isRight) {
+                    formula = "Alan = (a · c) / 2"; // Dik kenarlar (sembolik)
+                    fDesc = "Dik üçgenlerde alan, dik kenarların çarpımının yarısıdır.";
+                } else {
+                    formula = "Alan = √[s(s-a)(s-b)(s-c)]";
+                    fDesc = "Heron Formülü: Üç kenar uzunluğu bilinen genel üçgenler için kullanılır. (s = Çevre/2)";
+                }
+            }
+
+            document.getElementById('typeText').innerText = title;
+            document.getElementById('typeSubText').innerText = sub;
+            
+            // Formül Kartını Güncelle
+            document.getElementById('formulaMath').innerText = formula;
+            document.getElementById('formulaDesc').innerText = fDesc;
+        }
+    };
+
+    app.init();
+</script>
+</body>
+</html>
