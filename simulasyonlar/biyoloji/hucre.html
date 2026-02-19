@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hücre Bölünmesi | Teorim</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-app: #f8fafc;
+            --bg-panel: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #94a3b8;
+            --col-accent: #f97316; /* Mitoz Rengi */
+            --col-purple: #8b5cf6; /* Mayoz Rengi */
+            --border: #e2e8f0;
+        }
+
+        body { 
+            margin: 0; padding: 0; background: var(--bg-app); 
+            color: var(--text-main); font-family: 'Inter', sans-serif; 
+            height: 100vh; display: flex; overflow: hidden; 
+        }
+
+        /* --- MOBİL UYARI --- */
+        #mobile-warning { 
+            display: none; position: fixed; inset: 0; 
+            background: #0f172a; color: white; z-index: 9999; 
+            flex-direction: column; align-items: center; justify-content: center; 
+            text-align: center; padding: 24px; 
+        }
+        @media (max-width: 1024px) { #mobile-warning { display: flex; } }
+        
+        .phone-bounce { animation: bounce 1.5s infinite; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+
+        /* --- SIDEBAR --- */
+        aside { 
+            width: 340px; flex-shrink: 0; background: var(--bg-panel); 
+            border-right: 1px solid var(--border); padding: 32px 24px; 
+            display: flex; flex-direction: column; gap: 20px; 
+            z-index: 20;
+        }
+
+        /* HEADER (Trigonometri Stili - Hover Efekti) */
+        .lab-header { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+        .back-circle { 
+            width: 40px; height: 40px; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-muted); transition: all 0.2s; cursor: pointer;
+        }
+        /* Hover rengi moda göre JS ile değişecek */
+        .back-circle:hover { background: #f1f5f9; color: var(--text-main); }
+        .lab-header h1 { font-weight: 700; font-size: 1.4rem; color: #1e293b; letter-spacing: -0.5px; }
+
+        /* MOD SEÇİCİ (TAB) */
+        .mode-switch {
+            display: flex; background: #f1f5f9; padding: 4px; border-radius: 12px; margin-bottom: 8px;
+        }
+        .mode-btn {
+            flex: 1; border: none; background: transparent; padding: 8px;
+            font-size: 0.8rem; font-weight: 600; color: var(--text-muted);
+            border-radius: 8px; cursor: pointer; transition: all 0.2s;
+        }
+        .mode-btn.active { background: white; shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .mode-btn.active.mitoz { color: var(--col-accent); }
+        .mode-btn.active.mayoz { color: var(--col-purple); }
+
+        /* STEPPER */
+        .stepper { display: flex; justify-content: space-between; align-items: center; position: relative; padding: 0 4px; margin-top: 10px; }
+        .stepper::before { content: ''; position: absolute; top: 50%; left: 0; width: 100%; height: 2px; background: #f1f5f9; transform: translateY(-50%); }
+        .dot { width: 10px; height: 10px; background: white; border: 2px solid #cbd5e1; border-radius: 50%; z-index: 1; transition: 0.3s; }
+        .dot.active { transform: scale(1.2); }
+
+        /* BİLGİ KARTI */
+        .info-card { background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 20px; }
+        .info-card .title { font-size: 1.1rem; font-weight: 700; color: #1e293b; margin-bottom: 6px; }
+        .info-card .desc { font-size: 0.85rem; color: #64748b; line-height: 1.5; }
+
+        /* CANLI VERİ KARTI */
+        .live-analytics { background: #1e293b; border-radius: 16px; padding: 16px; color: white; margin-top: auto; transition: background 0.3s; }
+        .data-row { display: flex; justify-content: space-between; margin-top: 6px; font-size: 0.75rem; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 4px; }
+        .data-row:last-child { border: none; }
+        .data-val { font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+
+        /* BUTONLAR */
+        .controls { display: flex; gap: 8px; }
+        .btn {
+            height: 48px; border-radius: 12px; font-weight: 600; cursor: pointer; border: none;
+            transition: 0.2s; font-size: 0.85rem; display: flex; justify-content: center; align-items: center;
+        }
+        .btn-prev, .btn-reset { width: 48px; background: #f1f5f9; color: var(--text-muted); flex-shrink: 0; }
+        .btn-prev:hover, .btn-reset:hover { background: #e2e8f0; color: #1e293b; }
+        .btn-next { flex: 1; color: white; gap: 6px; } /* Rengi JS ile atanacak */
+        .btn-next:hover { opacity: 0.9; transform: translateY(-1px); }
+
+        main { flex: 1; background: #f8fafc; position: relative; }
+        canvas { display: block; width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+
+    <div id="mobile-warning">
+        <div class="phone-bounce">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+        </div>
+        <h2 class="text-xl font-bold mt-4">Cihazı Çevirin</h2>
+        <p class="text-slate-400 text-sm mt-2">Laboratuvar yatay ekran gerektirir.</p>
+    </div>
+
+<aside>
+    <div class="lab-header">
+        <a href="../../dersler/biyoloji.html" class="back-circle" id="backBtn">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" /></svg>
+        </a>
+        <h1 id="headerTitle">Hücre Bölünmesi</h1>
+    </div>
+
+    <div class="mode-switch">
+        <button class="mode-btn active mitoz" onclick="app.setMode('mitoz')">Mitoz</button>
+        <button class="mode-btn mayoz" onclick="app.setMode('mayoz')">Mayoz</button>
+    </div>
+    
+    <div class="stepper" id="stepper">
+        </div>
+
+    <div class="info-card">
+        <div class="title" id="pTitle">...</div>
+        <div class="desc" id="pDesc">...</div>
+    </div>
+
+    <div class="live-analytics" id="liveCard">
+        <p class="opacity-50 font-bold uppercase text-[9px] tracking-widest text-center mb-2">CANLI ANALİZ</p>
+        <div class="data-row"><span>Hücre Sayısı:</span><span id="cellCount" class="data-val">1</span></div>
+        <div class="data-row"><span>Kromozom:</span><span id="chromoCount" class="data-val">-</span></div>
+        <div class="data-row"><span>Çeşitlilik:</span><span id="variation" class="data-val">-</span></div>
+    </div>
+
+    <div class="controls">
+        <button class="btn btn-prev" onclick="app.prev()"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg></button>
+        <button class="btn btn-reset" onclick="app.reset()"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg></button>
+        <button class="btn btn-next" id="nextBtn" onclick="app.next()"><span id="btnText">BAŞLA</span><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg></button>
+    </div>
+</aside>
+
+<main id="container">
+    <canvas id="simCanvas"></canvas>
+</main>
+
+<script>
+    const app = {
+        canvas: document.getElementById('simCanvas'),
+        ctx: null,
+        mode: 'mitoz', // 'mitoz' or 'mayoz'
+        phase: 0,
+        chromosomes: [],
+        progress: 0,
+        
+        // Renkler
+        colors: {
+            mitoz: '#f97316',
+            mayoz: '#8b5cf6',
+            bg: '#f8fafc',
+            chrome1: ['#f97316', '#3b82f6', '#10b981', '#ef4444'], // Mitoz kromozomları
+            chrome2: ['#8b5cf6', '#d946ef', '#06b6d4', '#84cc16']  // Mayoz kromozomları
+        },
+
+        data: {
+            mitoz: [
+                { t: "1. İnterfaz", d: "Hazırlık evresi. DNA eşlenir, kromatin iplikler dağınıktır.", b: "PROFAZ", c: "2n = 4", v: "Yok" },
+                { t: "2. Profaz", d: "Kromozomlar belirginleşir, çekirdek zarı erir.", b: "METAFAZ", c: "2n = 4", v: "Yok" },
+                { t: "3. Metafaz", d: "Kromozomlar ekvatoral düzlemde tek sıra dizilir.", b: "ANAFAZ", c: "2n = 4", v: "Yok" },
+                { t: "4. Anafaz", d: "Kardeş kromatitler ayrılarak zıt kutuplara çekilir.", b: "TELOFAZ", c: "4n (Geçici)", v: "Yok" },
+                { t: "5. Telofaz", d: "Sitokinez gerçekleşir, 2 özdeş hücre oluşur.", b: "BAŞA DÖN", c: "2n = 4", v: "Yok" }
+            ],
+            mayoz: [
+                { t: "1. İnterfaz", d: "Mayoz öncesi hazırlık. DNA eşlenir.", b: "MAYOZ I", c: "2n = 4", v: "Yok" },
+                { t: "2. Profaz I & Metafaz I", d: "Homolog kromozomlar eşleşir (Tetrat). Parça değişimi olur ve çift sıra dizilirler.", b: "ANAFAZ I", c: "2n = 4", v: "Var (Crossing Over)" },
+                { t: "3. Anafaz I", d: "Homolog kromozomlar birbirinden ayrılır. Kromozom sayısı yarıya iner.", b: "MAYOZ II", c: "2n = 4", v: "Var" },
+                { t: "4. Metafaz II & Anafaz II", d: "İkinci bölünme başlar. Bu kez kardeş kromatitler ayrılır.", b: "SONUÇ", c: "n = 2", v: "Var" },
+                { t: "5. Sonuç", d: "Bölünme tamamlanır. Genetik olarak farklı 4 haploid (n) hücre oluşur.", b: "BAŞA DÖN", c: "n = 2", v: "Var" }
+            ]
+        },
+
+        init() {
+            this.ctx = this.canvas.getContext('2d');
+            this.resize();
+            window.addEventListener('resize', () => this.resize());
+            this.setMode('mitoz'); // Varsayılan mod
+            this.loop();
+        },
+
+        setMode(m) {
+            this.mode = m;
+            this.phase = 0;
+            this.progress = 0;
+            
+            // UI Güncelleme
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector(`.mode-btn.${m}`).classList.add('active');
+            
+            const color = m === 'mitoz' ? this.colors.mitoz : this.colors.mayoz;
+            document.getElementById('nextBtn').style.backgroundColor = color;
+            document.getElementById('liveCard').style.backgroundColor = m === 'mitoz' ? '#1e293b' : '#4c1d95'; // Mayozda daha morumsu kart
+            
+            // Back button hover rengi ayarı (CSS variable yerine inline stil ile basit çözüm)
+            const backBtn = document.getElementById('backBtn');
+            backBtn.style.color = color;
+            backBtn.onmouseenter = () => { backBtn.style.backgroundColor = (m==='mitoz' ? '#fff7ed' : '#f5f3ff'); };
+            backBtn.onmouseleave = () => { backBtn.style.backgroundColor = 'transparent'; };
+
+            this.initChromo();
+            this.updateUI();
+        },
+
+        resize() {
+            this.canvas.width = this.canvas.parentElement.clientWidth;
+            this.canvas.height = this.canvas.parentElement.clientHeight;
+        },
+
+        initChromo() {
+            this.chromosomes = [];
+            const palette = this.mode === 'mitoz' ? this.colors.chrome1 : this.colors.chrome2;
+            
+            // 4 Kromozom (2 Çift)
+            for(let i=0; i<4; i++) {
+                // p:0 sol/üst parça, p:1 sağ/alt parça (kromatit)
+                this.chromosomes.push({ id:i, p:0, c: palette[i], x:0, y:0, a:0, tx:0, ty:0, ta:0 });
+                this.chromosomes.push({ id:i, p:1, c: palette[i], x:0, y:0, a:0, tx:0, ty:0, ta:0 });
+            }
+        },
+
+        next() {
+            this.phase++;
+            if(this.phase > 4) { this.phase = 0; this.initChromo(); }
+            this.updateUI();
+        },
+        prev() { if(this.phase > 0) { this.phase--; this.updateUI(); } },
+        reset() { this.phase = 0; this.initChromo(); this.updateUI(); },
+
+        updateUI() {
+            const info = this.data[this.mode][this.phase];
+            document.getElementById('pTitle').innerText = info.t;
+            document.getElementById('pDesc').innerText = info.d;
+            document.getElementById('btnText').innerText = info.b;
+            
+            // Canlı Veri
+            document.getElementById('cellCount').innerText = (this.phase === 4 ? (this.mode === 'mitoz' ? '2' : '4') : '1');
+            document.getElementById('chromoCount').innerText = info.c;
+            document.getElementById('variation').innerText = info.v;
+            document.querySelector('.data-val').style.color = this.mode === 'mitoz' ? this.colors.mitoz : '#d8b4fe';
+
+            // Stepper (Noktalar)
+            const stepper = document.getElementById('stepper');
+            stepper.innerHTML = '';
+            for(let i=0; i<5; i++) {
+                const d = document.createElement('div');
+                d.className = `dot ${i === this.phase ? 'active' : ''}`;
+                if(i === this.phase) {
+                    d.style.borderColor = this.mode === 'mitoz' ? this.colors.mitoz : this.colors.mayoz;
+                    d.style.backgroundColor = this.mode === 'mitoz' ? this.colors.mitoz : this.colors.mayoz;
+                }
+                stepper.appendChild(d);
+            }
+
+            this.setTargets();
+            this.progress = 0;
+        },
+
+        setTargets() {
+            const pole = 220;
+            this.chromosomes.forEach(c => {
+                // --- MİTOZ HEDEFLERİ ---
+                if(this.mode === 'mitoz') {
+                    if(this.phase === 0) { // İnterfaz
+                        c.tx = (Math.random()-0.5)*100; c.ty = (Math.random()-0.5)*100; c.ta = Math.random()*Math.PI;
+                    } else if(this.phase === 1) { // Profaz
+                        const gx = (Math.random()-0.5)*120; const gy = (Math.random()-0.5)*120; 
+                        c.tx = gx; c.ty = gy; c.ta = Math.random()*Math.PI;
+                    } else if(this.phase === 2) { // Metafaz (Dikey Tek Sıra)
+                        c.tx = 0; c.ty = (c.id - 1.5) * 55; c.ta = Math.PI/2;
+                    } else if(this.phase === 3) { // Anafaz (Yatay Ayrılma)
+                        c.tx = c.p === 0 ? -pole : pole; c.ty = (c.id - 1.5) * 55; c.ta = Math.PI/2;
+                    } else if(this.phase === 4) { // Telofaz
+                        const mx = c.p === 0 ? -240 : 240;
+                        c.tx = mx + (Math.random()-0.5)*60; c.ty = (Math.random()-0.5)*60; c.ta = Math.random()*Math.PI;
+                    }
+                } 
+                // --- MAYOZ HEDEFLERİ ---
+                else {
+                    if(this.phase === 0) { // İnterfaz
+                         c.tx = (Math.random()-0.5)*100; c.ty = (Math.random()-0.5)*100; c.ta = Math.random()*Math.PI;
+                    } else if(this.phase === 1) { // Profaz I / Metafaz I (Tetrat - Çift Sıra)
+                        // Homologlar yan yana (0-1 çifti, 2-3 çifti)
+                        const pair = Math.floor(c.id / 2); // 0 veya 1
+                        const side = c.id % 2 === 0 ? -1 : 1; // Sol veya sağ
+                        c.tx = side * 30; 
+                        c.ty = (pair - 0.5) * 80; 
+                        c.ta = Math.PI/2;
+                    } else if(this.phase === 2) { // Anafaz I (Homologlar Ayrılır - Kromozom Bütün Gider)
+                        const side = c.id % 2 === 0 ? -1 : 1;
+                        c.tx = side * 180; // Kutuplara git
+                        c.ty = (Math.floor(c.id/2) - 0.5) * 80;
+                        c.ta = Math.PI/2;
+                        // Kardeşler hala birleşik, bu yüzden p0 ve p1 aynı yere yakın
+                        if(c.p === 1) c.tx += 5; 
+                    } else if(this.phase === 3) { // Metafaz II / Anafaz II (4 Kutba dağılım)
+                        // Artık 4 kutup var gibi düşünelim: Sol-Üst, Sol-Alt, Sağ-Üst, Sağ-Alt
+                        // c.id 0->Sol, 1->Sağ, 2->Sol, 3->Sağ gibi dağıldı önceki evrede.
+                        // Şimdi kardeşler ayrılacak.
+                        const side = c.id % 2 === 0 ? -1 : 1; // Ana taraf
+                        const subSide = c.p === 0 ? -1 : 1; // Kardeş ayrımı (Yukarı/Aşağı gibi açalım)
+                        
+                        // Biraz hileli görselleştirme: 2 ana hücre var, içlerinde ayrılıyorlar
+                        c.tx = (side * 240) + (subSide * 40); 
+                        c.ty = (Math.floor(c.id/2) - 0.5) * 80; 
+                        c.ta = Math.PI/2;
+                    } else if(this.phase === 4) { // Sonuç (4 Hücre)
+                        // 4 ayrı köşe
+                        const col = c.id % 2 === 0 ? -1 : 1; // Sol / Sağ ana grup
+                        const row = c.p === 0 ? -1 : 1; // Üst / Alt
+                        c.tx = col * 200 + (Math.random()-0.5)*30;
+                        c.ty = row * 100 + (Math.random()-0.5)*30;
+                        c.ta = Math.random()*Math.PI;
+                    }
+                }
+            });
+        },
+
+        lerp(s, e, t) { return s + (e - s) * t; },
+
+        draw() {
+            const ctx = this.ctx; const cx = this.canvas.width/2; const cy = this.canvas.height/2;
+            ctx.clearRect(0,0, this.canvas.width, this.canvas.height);
+            this.progress = Math.min(1, this.progress + 0.04);
+            
+            const mainColor = this.mode === 'mitoz' ? this.colors.mitoz : this.colors.mayoz;
+
+            // --- 1. HÜCRE ZARI ÇİZİMİ ---
+            ctx.strokeStyle = mainColor; ctx.lineWidth = 4; ctx.fillStyle = this.mode==='mitoz' ? '#fff7ed' : '#f5f3ff';
+            
+            if(this.phase < 4) {
+                // Tek Hücre veya Uzayan Hücre
+                let w = (this.phase === 3 || (this.mode==='mayoz' && this.phase===2)) ? 550 : 320;
+                ctx.beginPath(); ctx.ellipse(cx, cy, w/2, 160, 0, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+            } else {
+                // Bölünmüş Hücreler
+                const sep = this.lerp(0, 240, this.progress);
+                if(this.mode === 'mitoz') {
+                    // 2 Hücre
+                    ctx.beginPath(); ctx.arc(cx - sep, cy, 140, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+                    ctx.beginPath(); ctx.arc(cx + sep, cy, 140, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+                } else {
+                    // 4 Hücre (Mayoz Sonu)
+                    // Sol grup
+                    ctx.beginPath(); ctx.arc(cx - 200, cy - 100, 70, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+                    ctx.beginPath(); ctx.arc(cx - 200, cy + 100, 70, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+                    // Sağ grup
+                    ctx.beginPath(); ctx.arc(cx + 200, cy - 100, 70, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+                    ctx.beginPath(); ctx.arc(cx + 200, cy + 100, 70, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+                }
+            }
+
+            // --- 2. ÇEKİRDEK VE SENTROZOMLAR ---
+            // Sentrozomlar (Kutuplar)
+            if(this.phase > 0 && this.phase < 4) {
+                ctx.fillStyle = '#334155';
+                const spread = (this.phase===3 || (this.mode==='mayoz' && this.phase===2)) ? 280 : 160;
+                ctx.beginPath(); ctx.arc(cx - spread, cy, 6, 0, Math.PI*2); ctx.fill(); // Sol
+                ctx.beginPath(); ctx.arc(cx + spread, cy, 6, 0, Math.PI*2); ctx.fill(); // Sağ
+            }
+
+            // --- 3. KROMOZOMLAR ---
+            this.chromosomes.forEach((c, idx) => {
+                // Animasyon enterpolasyonu
+                c.x = this.lerp(c.x, c.tx, 0.08); 
+                c.y = this.lerp(c.y, c.ty, 0.08); 
+                c.a = this.lerp(c.a, c.ta, 0.08);
+
+                ctx.save(); 
+                ctx.translate(cx + c.x, cy + c.y); 
+                ctx.rotate(c.a); 
+                ctx.strokeStyle = c.c; 
+                ctx.lineCap = 'round';
+                
+                // Kromozom Şekli (X, V veya I)
+                // Mitoz Anafaz veya Mayoz Anafaz II'de 'V' şekli (Kardeşler ayrıldı)
+                const isSeparating = (this.mode === 'mitoz' && this.phase === 3) || (this.mode === 'mayoz' && this.phase === 3);
+                
+                if(this.phase === 0 || this.phase === 4) {
+                    // Dağınık iplik
+                    ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(-10,-5); ctx.quadraticCurveTo(0,15,10,5); ctx.stroke();
+                } else if (isSeparating) {
+                    // V Şekli (Kutuplara çekilme)
+                    ctx.lineWidth = 9; 
+                    const dir = (c.x > 0) ? -1 : 1; // Merkeze bakacak şekilde
+                    ctx.beginPath(); ctx.moveTo(-12*dir, -12); ctx.quadraticCurveTo(0,0, -12*dir, 12); ctx.stroke();
+                } else {
+                    // X Şekli (Tam Kromozom)
+                    ctx.lineWidth = 10; ctx.beginPath();
+                    // Sol parça
+                    if(c.p === 0) { ctx.moveTo(-12, -16); ctx.quadraticCurveTo(0,0, -12, 16); }
+                    // Sağ parça
+                    else { ctx.moveTo(12, -16); ctx.quadraticCurveTo(0,0, 12, 16); }
+                    ctx.stroke();
+                    
+                    // Sentromer (Beyaz nokta) - Sadece sol parçayı çizerken tek bir nokta koyalım
+                    if(c.p === 0) { ctx.fillStyle='white'; ctx.beginPath(); ctx.arc(0,0,4,0,Math.PI*2); ctx.fill(); }
+                }
+                ctx.restore();
+            });
+
+            // --- 4. İĞ İPLİKLERİ ---
+            if(this.phase === 2 || this.phase === 3) {
+                ctx.globalCompositeOperation = 'destination-over'; 
+                ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 1;
+                const spread = (this.phase===3 || (this.mode==='mayoz' && this.phase===2)) ? 280 : 160;
+                
+                this.chromosomes.forEach(c => { 
+                    // Kromozom hangi kutba yakınsa oradan çizgi çek
+                    const poleX = (c.x < 0) ? (cx - spread) : (cx + spread);
+                    ctx.beginPath(); ctx.moveTo(poleX, cy); ctx.lineTo(cx + c.x, cy + c.y); ctx.stroke(); 
+                });
+                ctx.globalCompositeOperation = 'source-over';
+            }
+        },
+        loop() { this.draw(); requestAnimationFrame(() => this.loop()); }
+    };
+    app.init();
+</script>
+</body>
+</html>
