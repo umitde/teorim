@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fotosentez | Teorim</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-app: #f8fafc;
+            --bg-panel: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #94a3b8;
+            --col-accent: #10b981; /* Fotosentez Yeşili */
+            --border: #e2e8f0;
+        }
+
+        body { 
+            margin: 0; padding: 0; background: var(--bg-app); 
+            color: var(--text-main); font-family: 'Inter', sans-serif; 
+            height: 100vh; display: flex; overflow: hidden; 
+        }
+
+        /* --- MOBİL UYARI --- */
+        #mobile-warning { display: none; position: fixed; inset: 0; background: #0f172a; color: white; z-index: 9999; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; }
+        @media (max-width: 1024px) { #mobile-warning { display: flex; } }
+        .phone-bounce { animation: bounce 1.5s infinite; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+
+        /* --- SIDEBAR --- */
+        aside { 
+            width: 340px; flex-shrink: 0; background: var(--bg-panel); 
+            border-right: 1px solid var(--border); padding: 32px 24px; 
+            display: flex; flex-direction: column; gap: 24px; z-index: 20;
+        }
+
+        /* HEADER */
+        .lab-header { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+        .back-circle { 
+            width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            color: var(--text-muted); transition: all 0.2s; cursor: pointer;
+        }
+        .back-circle:hover { background: #ecfdf5; color: var(--col-accent); }
+        .lab-header h1 { font-weight: 700; font-size: 1.4rem; color: #1e293b; letter-spacing: -0.5px; }
+
+        /* SLIDER KONTROLLERİ */
+        .control-group { display: flex; flex-direction: column; gap: 8px; }
+        .control-label { font-size: 0.8rem; font-weight: 600; color: #475569; display: flex; justify-content: space-between; align-items: center; }
+        .badge { font-size: 0.7rem; padding: 2px 8px; border-radius: 12px; background: #f1f5f9; color: #64748b; }
+        input[type="range"] {
+            width: 100%; height: 6px; background: #e2e8f0; border-radius: 4px; appearance: none; cursor: pointer;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none; width: 18px; height: 18px; border-radius: 50%; background: var(--col-accent); border: 3px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.15); transition: transform 0.1s;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.1); }
+
+        /* BİLGİ KARTI */
+        .info-card { background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 20px; }
+        .info-card .title { font-size: 1.1rem; font-weight: 700; color: #1e293b; margin-bottom: 6px; }
+        .info-card .desc { font-size: 0.85rem; color: #64748b; line-height: 1.5; }
+
+        /* CANLI VERİ KARTI */
+        .live-analytics { background: #1e293b; border-radius: 16px; padding: 16px; color: white; margin-top: auto; transition: background 0.3s; }
+        .data-row { display: flex; justify-content: space-between; margin-top: 8px; font-size: 0.75rem; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 4px; }
+        .data-row:last-child { border: none; }
+        .data-val { font-family: 'JetBrains Mono', monospace; font-weight: 600; color: var(--col-accent); }
+
+        /* BUTONLAR */
+        .controls { display: flex; gap: 8px; }
+        .btn-reset {
+            width: 100%; height: 48px; border-radius: 12px; font-weight: 600; cursor: pointer; border: none;
+            transition: 0.2s; font-size: 0.85rem; display: flex; justify-content: center; align-items: center;
+            background: #f1f5f9; color: var(--text-muted);
+        }
+        .btn-reset:hover { background: #e2e8f0; color: #1e293b; }
+
+        main { flex: 1; background: #f0fdf4; position: relative; }
+        canvas { display: block; width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+
+    <div id="mobile-warning">
+        <div class="phone-bounce">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+        </div>
+        <h2 class="text-xl font-bold mt-4">Cihazı Çevirin</h2>
+        <p class="text-slate-400 text-sm mt-2">Laboratuvar yatay ekran gerektirir.</p>
+    </div>
+
+<aside>
+    <div class="lab-header">
+        <a href="../../dersler/biyoloji.html" class="back-circle">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" /></svg>
+        </a>
+        <h1>Fotosentez</h1>
+    </div>
+
+    <div class="space-y-6 mt-4">
+        <div class="control-group">
+            <div class="control-label"><span>☀️ Işık Şiddeti</span><span id="lblLight" class="badge">Orta</span></div>
+            <input type="range" id="slLight" min="0" max="100" value="50" style="accent-color: #f59e0b;">
+        </div>
+        <div class="control-group">
+            <div class="control-label"><span>💧 Su Miktarı</span><span id="lblWater" class="badge">Normal</span></div>
+            <input type="range" id="slWater" min="0" max="100" value="60" style="accent-color: #3b82f6;">
+        </div>
+        <div class="control-group">
+            <div class="control-label"><span>☁️ CO₂ Oranı</span><span id="lblCo2" class="badge">Normal</span></div>
+            <input type="range" id="slCo2" min="0" max="100" value="50" style="accent-color: #64748b;">
+        </div>
+    </div>
+
+    <div class="info-card">
+        <div class="title" id="statusTitle" style="color: #10b981;">Dengeli Reaksiyon</div>
+        <div class="desc" id="statusDesc">Kloroplast, ışık enerjisiyle suyu parçalar (H₂O) ve CO₂'yi kullanarak besin (Glikoz) sentezler. Yan ürün O₂'dir.</div>
+    </div>
+
+    <div class="live-analytics" id="liveCard">
+        <p class="opacity-50 font-bold uppercase text-[9px] tracking-widest text-center mb-2">REAKSİYON HIZI</p>
+        <div class="data-row"><span>Verimlilik:</span><span id="valATP" class="data-val">50%</span></div>
+        <div class="data-row"><span>O₂ Çıkışı:</span><span id="valO2" class="data-val">Stabil</span></div>
+        <div class="data-row"><span>Glikoz (Besin):</span><span id="valGlucose" class="data-val">Orta</span></div>
+    </div>
+
+    <div class="controls">
+        <button class="btn btn-reset" onclick="sim.reset()">SİSTEMİ SIFIRLA</button>
+    </div>
+</aside>
+
+<main id="container">
+    <canvas id="simCanvas"></canvas>
+</main>
+
+<script>
+    const sim = {
+        canvas: document.getElementById('simCanvas'),
+        ctx: null,
+        light: 50, water: 60, co2: 50, rate: 0.5, time: 0,
+        particles: [],
+
+        init() {
+            this.ctx = this.canvas.getContext('2d');
+            this.resize();
+            window.addEventListener('resize', () => this.resize());
+            document.getElementById('slLight').oninput = (e) => { this.light = parseInt(e.target.value); this.updateLogic(); };
+            document.getElementById('slWater').oninput = (e) => { this.water = parseInt(e.target.value); this.updateLogic(); };
+            document.getElementById('slCo2').oninput = (e) => { this.co2 = parseInt(e.target.value); this.updateLogic(); };
+            this.updateLogic();
+            this.loop();
+        },
+        resize() { this.canvas.width = this.canvas.parentElement.clientWidth; this.canvas.height = this.canvas.parentElement.clientHeight; },
+        reset() {
+            document.getElementById('slLight').value = 50; this.light = 50;
+            document.getElementById('slWater').value = 60; this.water = 60;
+            document.getElementById('slCo2').value = 50; this.co2 = 50;
+            this.particles = []; this.updateLogic();
+        },
+        updateLogic() {
+            this.rate = Math.min(this.light, this.water, this.co2) / 100;
+            document.getElementById('lblLight').innerText = this.light < 30 ? "Düşük" : (this.light > 70 ? "Yüksek" : "Orta");
+            document.getElementById('lblWater').innerText = this.water < 30 ? "Az" : (this.water > 70 ? "Bol" : "Normal");
+            document.getElementById('lblCo2').innerText = this.co2 < 30 ? "Az" : (this.co2 > 70 ? "Yoğun" : "Normal");
+
+            const ratePerc = Math.round(this.rate * 100);
+            document.getElementById('valATP').innerText = ratePerc + "%";
+            document.getElementById('valO2').innerText = ratePerc < 30 ? "Düşük" : (ratePerc > 70 ? "Yüksek" : "Stabil");
+            document.getElementById('valGlucose').innerText = ratePerc < 30 ? "Az" : (ratePerc > 70 ? "Bol" : "Orta");
+
+            const title = document.getElementById('statusTitle');
+            const card = document.getElementById('liveCard');
+            if(this.rate < 0.3) { title.innerText = "Yetersiz Kaynak"; title.style.color = "#ef4444"; card.style.backgroundColor = "#991b1b"; }
+            else if (this.rate > 0.8) { title.innerText = "Maksimum Verim"; title.style.color = "#10b981"; card.style.backgroundColor = "#065f46"; }
+            else { title.innerText = "Dengeli Reaksiyon"; title.style.color = "#10b981"; card.style.backgroundColor = "#1e293b"; }
+        },
+        
+        spawn(type) {
+            const w = this.canvas.width; const h = this.canvas.height; const cx = w/2; const cy = h/2;
+            let x, y, vx, vy;
+            if(type === 'h2o') { x = cx + (Math.random()-0.5)*100; y = h+20; vx = 0; vy = -1.5 - Math.random(); }
+            else if(type === 'co2') { x = -20; y = cy + (Math.random()-0.5)*150; vx = 1 + Math.random(); vy = (Math.random()-0.5); }
+            // O2 ÇIKIŞI DÜZELTİLDİ: Merkezden yukarı doğru hızlıca
+            else if(type === 'o2') { x = cx + (Math.random()-0.5)*80; y = cy - 20; vx = (Math.random()-0.5)*0.5; vy = -2.5 - Math.random(); }
+            else if(type === 'glu') { x = cx + (Math.random()-0.5)*100; y = cy; vx = (Math.random()-0.5); vy = 1 + Math.random(); }
+            this.particles.push({ type, x, y, vx, vy, life: 200 });
+        },
+
+        drawDroplet(x, y, color) {
+            const ctx = this.ctx; ctx.fillStyle = color; ctx.beginPath();
+            ctx.moveTo(x, y); ctx.bezierCurveTo(x - 5, y + 5, x - 10, y + 15, x, y + 20);
+            ctx.bezierCurveTo(x + 10, y + 15, x + 5, y + 5, x, y); ctx.fill();
+        },
+        drawHexagon(x, y, size, color) {
+            const ctx = this.ctx; ctx.fillStyle = color; ctx.beginPath();
+            for (let i = 0; i < 6; i++) {
+                ctx.lineTo(x + size * Math.cos(i * 2 * Math.PI / 6), y + size * Math.sin(i * 2 * Math.PI / 6));
+            } ctx.fill();
+        },
+
+        draw() {
+            const ctx = this.ctx; const w = this.canvas.width; const h = this.canvas.height; const cx = w/2; const cy = h/2;
+            ctx.clearRect(0,0,w,h); this.time++;
+
+            const sunInt = this.light/100;
+            const sunX = w-80, sunY = 80;
+            const gradient = ctx.createRadialGradient(sunX, sunY, 20, cx, cy, w);
+            gradient.addColorStop(0, `rgba(253, 224, 71, ${0.2 + sunInt*0.3})`); gradient.addColorStop(1, "rgba(255,255,255,0)");
+            ctx.fillStyle = gradient; ctx.fillRect(0,0,w,h);
+            
+            ctx.fillStyle = "#fbbf24"; ctx.beginPath(); ctx.arc(sunX, sunY, 30 + 10*sunInt, 0, Math.PI*2); ctx.fill();
+            ctx.strokeStyle = "rgba(251, 191, 36, 0.6)"; ctx.lineWidth = 3;
+            for(let i=0; i<12; i++) {
+                const a = (i/12)*Math.PI*2 + this.time*0.01;
+                ctx.beginPath(); ctx.moveTo(sunX + Math.cos(a)*40, sunY + Math.sin(a)*40);
+                ctx.lineTo(sunX + Math.cos(a)*(60+30*sunInt), sunY + Math.sin(a)*(60+30*sunInt)); ctx.stroke();
+            }
+
+            ctx.strokeStyle = "#4d7c0f"; ctx.lineWidth = 14; ctx.fillStyle = "#dcfce7";
+            ctx.beginPath(); ctx.roundRect(cx - 320, cy - 220, 640, 440, 60); ctx.fill(); ctx.stroke();
+            
+            ctx.fillStyle = "#10b981"; ctx.strokeStyle = "#065f46"; ctx.lineWidth = 5;
+            ctx.beginPath(); ctx.ellipse(cx, cy, 240, 150, 0, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+
+            ctx.fillStyle = "#047857";
+            [ -100, 0, 100 ].forEach(gx => {
+                for(let j=0; j<5; j++) { ctx.beginPath(); ctx.ellipse(cx+gx, cy-50 + j*25, 35, 10, 0, 0, Math.PI*2); ctx.fill(); }
+            });
+
+            if(this.water > 20 && this.time % Math.max(5, 40 - Math.floor(this.water/3)) === 0) this.spawn('h2o');
+            if(this.co2 > 20 && this.time % Math.max(5, 40 - Math.floor(this.co2/3)) === 0) this.spawn('co2');
+            if(this.rate > 0.1 && this.time % Math.max(5, 40 - Math.floor(this.rate*35)) === 0) { this.spawn('o2'); this.spawn('glu'); }
+
+            this.particles.forEach((p, i) => {
+                p.x += p.vx; p.y += p.vy; p.life--;
+                if(p.life <= 0) { this.particles.splice(i,1); return; }
+
+                if(p.type === 'h2o') {
+                    if(p.y > cy+100) this.drawDroplet(p.x, p.y, "#3b82f6");
+                } else if(p.type === 'co2') {
+                     if(p.x < cx-200) { ctx.fillStyle = "#64748b"; ctx.beginPath(); ctx.arc(p.x, p.y, 8, 0, Math.PI*2); ctx.fill(); }
+                } else if(p.type === 'o2') {
+                    // O2 ÇİZİMİ DÜZELTİLDİ: Hemen çiziliyor ve yukarı gidiyor
+                    ctx.fillStyle = "#4ade80"; ctx.beginPath(); ctx.arc(p.x, p.y, 8, 0, Math.PI*2); ctx.fill(); ctx.strokeStyle="#bbf7d0"; ctx.lineWidth=2; ctx.stroke();
+                } else if(p.type === 'glu') {
+                    if(p.y > cy+100) this.drawHexagon(p.x, p.y, 12, "#f59e0b");
+                }
+                
+                // Kloroplast içi yavaşlatma efekti (O2 hariç)
+                if(p.type !== 'o2' && p.y > cy-120 && p.y < cy+120 && p.x > cx-220 && p.x < cx+220) {
+                    ctx.fillStyle = "rgba(255,255,255,0.5)"; ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI*2); ctx.fill();
+                    p.vx *= 0.9; p.vy *= 0.9; p.life -= 2;
+                }
+            });
+
+            ctx.font = "600 12px JetBrains Mono"; ctx.textAlign = "center";
+            ctx.fillStyle = "#3b82f6"; ctx.fillText("H₂O Girişi", cx, h-20);
+            ctx.fillStyle = "#64748b"; ctx.fillText("CO₂ Girişi", 40, cy);
+            ctx.fillStyle = "#4ade80"; ctx.fillText("O₂ Çıkışı", cx, 40);
+            ctx.fillStyle = "#f59e0b"; ctx.fillText("Besin (Glikoz)", cx, h-60);
+        },
+        loop() { this.draw(); requestAnimationFrame(() => this.loop()); }
+    };
+    sim.init();
+</script>
+</body>
+</html>
