@@ -110,6 +110,28 @@
             animation: heatWave 0.8s infinite ease-in-out;
         }
 
+        /* 7. ORGANİK KİMYA (Salınan Keton Molekülü) */
+        @keyframes organicFloat {
+            0%, 100% { transform: translateY(0) rotate(-2deg); }
+            50% { transform: translateY(-10px) rotate(2deg); }
+        }
+        .org-mol-container {
+            animation: organicFloat 3s infinite ease-in-out;
+            width: 100px; height: 60px; position: relative;
+            margin-top: 15px;
+        }
+        .org-bond { 
+            position: absolute; background: #94A3B8; z-index: 1; border-radius: 2px;
+        }
+        .org-c { 
+            position: absolute; width: 18px; height: 18px; background: #334155; 
+            border-radius: 50%; z-index: 2; box-shadow: inset -3px -3px 6px rgba(0,0,0,0.4); 
+        }
+        .org-o { 
+            position: absolute; width: 20px; height: 20px; background: #EF4444; 
+            border-radius: 50%; z-index: 2; box-shadow: inset -3px -3px 6px rgba(0,0,0,0.3); 
+        }
+
     </style>
 </head>  
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
@@ -232,6 +254,24 @@
                 <div class="p-5">
                     <h3 class="font-bold text-slate-800 group-hover:text-purple-600 transition-colors">Tepkime Hızı</h3>
                     <p class="text-xs text-slate-500 mt-2 leading-relaxed">Çarpışma teorisi ve aktivasyon enerjisi. Sıcaklık ve derişimin reaksiyon hızına etkisini görün.</p>
+                </div>
+            </a>
+
+            <a href="../simulasyonlar/kimya/organik-kimya.html" class="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-purple-200 transition-all duration-300 overflow-hidden">
+                <div class="h-40 bg-slate-50 relative overflow-hidden border-b border-slate-100 flex items-center justify-center">
+                    <div class="org-mol-container">
+                        <div class="org-bond" style="width: 45px; height: 5px; left: 8px; top: 35px; transform: rotate(-30deg);"></div>
+                        <div class="org-bond" style="width: 45px; height: 5px; left: 45px; top: 35px; transform: rotate(30deg);"></div>
+                        <div class="org-bond" style="width: 5px; height: 30px; left: 46px; top: -5px;"></div>
+                        <div class="org-bond" style="width: 5px; height: 30px; left: 54px; top: -5px;"></div> <div class="org-c" style="left: -2px; top: 48px;"></div>
+                        <div class="org-c" style="left: 43px; top: 20px;"></div>
+                        <div class="org-c" style="left: 88px; top: 48px;"></div>
+                        <div class="org-o" style="left: 42px; top: -15px;"></div>
+                    </div>
+                </div>
+                <div class="p-5">
+                    <h3 class="font-bold text-slate-800 group-hover:text-purple-600 transition-colors">Organik Mimar</h3>
+                    <p class="text-xs text-slate-500 mt-2 leading-relaxed">Karbon iskeletleri ve fonksiyonel gruplar. Kendi organik molekülünüzü inşa edin ve kimyasal profillerini inceleyin.</p>
                 </div>
             </a>
 
