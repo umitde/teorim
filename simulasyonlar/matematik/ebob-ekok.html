@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EBOB - EKOK | Teorim</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-app: #f8fafc;
+            --bg-panel: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --col-accent: #f97316; /* Teorim Turuncusu */
+            
+            --col-a: #3b82f6;      /* Mavi */
+            --col-b: #f97316;      /* Turuncu */
+            --col-div: #8b5cf6;    /* Mor */
+            
+            --border: #e2e8f0;
+            --radius: 16px;
+        }
+
+        body { 
+            margin: 0; padding: 0; background: var(--bg-app); 
+            color: var(--text-main); font-family: 'Inter', sans-serif; 
+            height: 100vh; display: flex; overflow: hidden; 
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* --- MOBİL UYARI --- */
+        #mobile-warning { 
+            display: none; position: fixed; inset: 0; background: #0f172a; color: white; 
+            z-index: 9999; flex-direction: column; align-items: center; justify-content: center; 
+            text-align: center; padding: 24px; 
+        }
+        @media (max-width: 768px) or (orientation: portrait) { #mobile-warning { display: flex; } }
+
+        @keyframes phoneBounce {
+            0%, 100% { transform: translateY(0) rotate(-5deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+        .phone-icon { animation: phoneBounce 1.5s infinite ease-in-out; }
+
+        /* --- SOL PANEL --- */
+        aside { 
+            width: 340px; flex-shrink: 0; background: var(--bg-panel); 
+            border-right: 1px solid var(--border); padding: 24px; 
+            display: flex; flex-direction: column; gap: 20px; 
+            z-index: 20; box-shadow: 4px 0 20px rgba(0,0,0,0.03);
+            overflow-y: auto;
+        }
+
+        .header { display: flex; align-items: center; gap: 14px; margin-bottom: 4px; }
+        .back-btn {
+            width: 44px; height: 44px; border-radius: 14px; background: #fff7ed; color: var(--col-accent);
+            display: flex; align-items: center; justify-content: center; transition: 0.2s; cursor: pointer;
+            border: 1px solid #ffedd5;
+        }
+        .back-btn:hover { background: #ffedd5; transform: translateX(-2px); }
+        h1 { font-weight: 800; font-size: 1.3rem; letter-spacing: -0.5px; }
+
+        .type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+        .type-btn {
+            background: #ffffff; border: 1px solid var(--border); padding: 12px;
+            border-radius: 12px; cursor: pointer; font-size: 0.8rem; font-weight: 800;
+            transition: all 0.2s; text-align: center; color: #475569;
+        }
+        .type-btn:hover { background: #f1f5f9; border-color: #cbd5e1; }
+        .type-btn.active { background: var(--col-accent); color: white; border-color: var(--col-accent); box-shadow: 0 4px 10px rgba(249, 115, 22, 0.25); }
+
+        .ctrl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .ctrl-btn {
+            padding: 10px; border: 1px solid var(--border); border-radius: 10px; background: #f8fafc; 
+            cursor: pointer; font-weight: 700; font-size: 0.75rem; color: var(--text-main); transition: 0.2s;
+        }
+        .ctrl-btn:hover { border-color: var(--col-accent); color: var(--col-accent); }
+        .ctrl-btn.active { background: #fff7ed; border-color: var(--col-accent); color: var(--col-accent); }
+
+        .section-title {
+            font-size: 0.7rem; font-weight: 800; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 1px;
+            margin-bottom: 8px; border-bottom: 1px solid var(--border); padding-bottom: 4px;
+        }
+
+        .control-group { background: #f8fafc; padding: 16px; border-radius: var(--radius); border: 1px solid var(--border); }
+        .prop-row { display: flex; flex-direction: column; gap: 4px; margin-bottom: 15px; font-size: 0.8rem; font-weight: 700; }
+        .prop-row:last-child { margin-bottom: 0; }
+        .label-val { display: flex; justify-content: space-between; align-items: center; }
+        .val-badge { font-family: 'JetBrains Mono'; font-weight: 800; color: white; font-size: 0.85rem; padding: 4px 10px; border-radius: 8px; }
+        
+        input[type="range"] { width: 100%; height: 6px; background: #e2e8f0; border-radius: 4px; appearance: none; cursor: pointer; margin-top: 6px; }
+        input[type=range]::-webkit-slider-thumb { appearance: none; width: 20px; height: 20px; background: white; border: 4px solid; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: 0.1s; }
+        input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+        #inpA::-webkit-slider-thumb { border-color: var(--col-a); }
+        #inpB::-webkit-slider-thumb { border-color: var(--col-b); }
+        #inpDiv::-webkit-slider-thumb { border-color: var(--col-div); }
+
+        /* --- SAĞ PANEL --- */
+        main { flex: 1; position: relative; background: #ffffff; overflow: hidden; }
+        main::before {
+            content: ''; position: absolute; inset: 0;
+            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 30px 30px; opacity: 0.5; pointer-events: none;
+        }
+        canvas { display: block; width: 100%; height: 100%; position: absolute; z-index: 10; }
+
+        /* Veri Kartı HUD */
+        .data-card {
+            position: absolute; top: 20px; right: 20px; z-index: 20;
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px);
+            padding: 18px 24px; border-radius: var(--radius); border: 1px solid var(--border);
+            min-width: 260px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); pointer-events: none;
+        }
+
+        /* Lejant */
+        .legend-overlay {
+            position: absolute; bottom: 20px; right: 20px; z-index: 20;
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(5px);
+            border: 1px solid var(--border); border-radius: 12px; padding: 12px 16px;
+            display: flex; gap: 16px; pointer-events: none; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        }
+        .leg-item { display: flex; align-items: center; gap: 6px; font-size: 0.75rem; font-weight: 700; color: #475569; }
+        .dot { width: 12px; height: 12px; border-radius: 50%; box-shadow: inset -2px -2px 4px rgba(0,0,0,0.2); }
+    </style>
+</head>
+<body>
+
+<div id="mobile-warning">
+    <div class="phone-icon mb-6">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+        </svg>
+    </div>
+    <h2 class="text-2xl font-bold mb-2">Yatay Konuma Geçin</h2>
+    <p class="text-slate-400 text-sm max-w-xs">Matematik laboratuvarını tam görebilmek için cihazınızı yan çevirin.</p>
+</div>
+
+<aside>
+    <div class="header">
+        <a href="../../dersler/matematik.html" class="back-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" /></svg>
+        </a>
+        <h1>EBOB - EKOK</h1>
+    </div>
+
+    <div class="type-grid">
+        <button class="type-btn" id="btnEbob" onclick="sim.setMode('ebob')">EBOB (Bölen)</button>
+        <button class="type-btn active" id="btnEkok" onclick="sim.setMode('ekok')">EKOK (Kat)</button>
+    </div>
+
+    <div class="ctrl-grid">
+        <button class="ctrl-btn" id="btnPause" onclick="sim.togglePause()">⏸ DURDUR</button>
+        <button class="ctrl-btn" onclick="sim.resetAnim()">↺ BAŞA SAR</button>
+    </div>
+
+    <div class="section-title">Değerler</div>
+    <div class="control-group">
+        <div class="prop-row">
+            <div class="label-val"><span style="color: var(--col-a);">Sayı A</span><span id="lblA" class="val-badge" style="background: var(--col-a);">6</span></div>
+            <input type="range" id="inpA" min="4" max="20" value="6" oninput="sim.updateVal('valA', this.value)">
+        </div>
+        <div class="prop-row mt-4">
+            <div class="label-val"><span style="color: var(--col-b);">Sayı B</span><span id="lblB" class="val-badge" style="background: var(--col-b);">8</span></div>
+            <input type="range" id="inpB" min="4" max="20" value="8" oninput="sim.updateVal('valB', this.value)">
+        </div>
+    </div>
+
+    <div class="control-group" id="panelEbob" style="display:none; margin-top:-8px;">
+        <div class="prop-row">
+            <div class="label-val"><span style="color: var(--col-div);">Bölücü Boyutu</span><span id="lblDiv" class="val-badge" style="background: var(--col-div);">2</span></div>
+            <input type="range" id="inpDiv" min="1" max="12" value="2" oninput="sim.updateVal('divider', this.value)">
+        </div>
+    </div>
+
+    <div class="mt-auto p-4 bg-orange-50 border border-orange-100 rounded-xl">
+        <p class="text-[10px] font-extrabold text-orange-500 uppercase mb-1">Teorem Notu</p>
+        <p class="text-[11px] text-slate-700 leading-relaxed" id="teoremNotu">EKOK (En Küçük Ortak Kat), iki sayının katlarının buluştuğu ilk noktadır. Sayılar katlanarak ilerler.</p>
+    </div>
+
+    <button class="w-full py-3 bg-slate-800 text-white rounded-xl font-bold text-xs hover:bg-slate-700 transition" onclick="sim.resetAll()">SİSTEMİ SIFIRLA</button>
+</aside>
+
+<main id="container">
+    <div class="data-card">
+        <div class="text-[10px] font-extrabold text-slate-400 uppercase mb-3 border-b border-slate-100 pb-2">Analiz Raporu</div>
+        <div id="hudContent"></div>
+    </div>
+
+    <canvas id="simCanvas"></canvas>
+
+    <div class="legend-overlay">
+        <div class="leg-item"><div class="dot" style="background: var(--col-a);"></div> Sayı A</div>
+        <div class="leg-item"><div class="dot" style="background: var(--col-b);"></div> Sayı B</div>
+        <div class="leg-item"><div class="dot" style="background: #10b981;"></div> Ortak Nokta</div>
+    </div>
+</main>
+
+<script>
+const sim = {
+    canvas: document.getElementById('simCanvas'),
+    ctx: null, w: 0, h: 0,
+    
+    state: { mode: 'ekok', valA: 6, valB: 8, divider: 2, time: 0, isPaused: false },
+
+    colors: { a: '#3b82f6', b: '#f97316', div: '#8b5cf6', green: '#10b981', red: '#ef4444', text: '#0f172a', grid: '#94a3b8' },
+
+    init() {
+        this.ctx = this.canvas.getContext('2d');
+        this.resize();
+        window.addEventListener('resize', () => this.resize());
+        this.setMode(this.state.mode);
+        requestAnimationFrame(() => this.loop());
+    },
+
+    resize() {
+        const el = document.getElementById('container');
+        const dpr = window.devicePixelRatio || 1;
+        this.w = el.clientWidth; this.h = el.clientHeight;
+        this.canvas.width = this.w * dpr; this.canvas.height = this.h * dpr;
+        this.ctx.scale(dpr, dpr);
+    },
+
+    updateVal(key, val) {
+        this.state[key] = parseInt(val);
+        if(key === 'valA') document.getElementById('lblA').innerText = val;
+        if(key === 'valB') document.getElementById('lblB').innerText = val;
+        if(key === 'divider') document.getElementById('lblDiv').innerText = val;
+        if(key !== 'divider' || this.state.mode === 'ebob') this.state.time = 0;
+    },
+
+    setMode(m) {
+        this.state.mode = m; this.state.time = 0; this.state.isPaused = false;
+        this.updatePlayButtonUI();
+
+        document.getElementById('btnEbob').className = m === 'ebob' ? 'type-btn active' : 'type-btn';
+        document.getElementById('btnEkok').className = m === 'ekok' ? 'type-btn active' : 'type-btn';
+        document.getElementById('panelEbob').style.display = m === 'ebob' ? 'block' : 'none';
+
+        document.getElementById('teoremNotu').innerText = m === 'ebob' 
+            ? "EBOB (En Büyük Ortak Bölen), iki sayıyı da kalansız bölen en büyük sayıdır. Çubuklar parçalara ayrılır."
+            : "EKOK (En Küçük Ortak Kat), iki sayının katlarının buluştuğu ilk noktadır. Sayılar katlanarak ilerler.";
+    },
+
+    togglePause() { this.state.isPaused = !this.state.isPaused; this.updatePlayButtonUI(); },
+    
+    updatePlayButtonUI() {
+        const btn = document.getElementById('btnPause');
+        btn.innerText = this.state.isPaused ? "▶ OYNAT" : "⏸ DURDUR";
+        btn.className = this.state.isPaused ? "ctrl-btn active" : "ctrl-btn";
+    },
+
+    resetAnim() { this.state.time = 0; if(this.state.isPaused) this.togglePause(); },
+
+    resetAll() {
+        document.getElementById('inpA').value = 6;
+        document.getElementById('inpB').value = 8;
+        document.getElementById('inpDiv').value = 2;
+        this.updateVal('valA', 6);
+        this.updateVal('valB', 8);
+        this.updateVal('divider', 2);
+        this.setMode('ekok');
+    },
+
+    gcd: (a, b) => !b ? a : sim.gcd(b, a % b),
+    lcm: (a, b) => (a * b) / sim.gcd(a, b),
+
+    loop() {
+        this.ctx.clearRect(0, 0, this.w, this.h);
+        if (this.state.mode === 'ebob') this.drawEBOB(); else this.drawEKOK();
+        if (!this.state.isPaused) this.state.time += 0.5;
+        requestAnimationFrame(() => this.loop());
+    },
+
+    drawEBOB() {
+        const s = this.state; const ctx = this.ctx; const scale = 25;
+        const totalW = Math.max(s.valA, s.valB) * scale;
+        const startX = (this.w - totalW) / 2; const centerY = this.h / 2;
+
+        this.drawBar(startX, centerY - 80, s.valA, s.divider, scale, this.colors.a, "Sayı A");
+        this.drawBar(startX, centerY + 30, s.valB, s.divider, scale, this.colors.b, "Sayı B");
+
+        const isCommon = (s.valA % s.divider === 0) && (s.valB % s.divider === 0);
+        const isGCD = isCommon && (s.divider === this.gcd(s.valA, s.valB));
+
+        ctx.textAlign = "center"; ctx.font = "bold 20px Inter";
+        if (isCommon) {
+            const pulse = 1 + Math.sin(s.time * 0.1) * 0.05;
+            ctx.save(); ctx.translate(this.w/2, this.h - 60); ctx.scale(pulse, pulse);
+            ctx.fillStyle = this.colors.green;
+            ctx.fillText(isGCD ? "🏆 EN BÜYÜK ORTAK BÖLEN (EBOB)" : "✅ TAM BÖLÜNDÜ (Ortak Bölen)", 0, 0);
+            ctx.restore();
+        } else {
+            ctx.fillStyle = this.colors.text;
+            ctx.fillText(`Seçilen Parça: ${s.divider}. Kalan Var!`, this.w/2, this.h - 60);
+        }
+
+        const hud = document.getElementById('hudContent');
+        hud.innerHTML = `
+            <div class="flex justify-between items-center text-xs mb-2"><span>Şu anki bölücü:</span><span class="font-bold text-slate-800">${s.divider}</span></div>
+            <div class="flex justify-between items-center text-xs mb-4"><span>Durum:</span><span class="font-bold ${isCommon ? 'text-emerald-500' : 'text-rose-500'}">${isCommon ? 'Tam Bölündü' : 'Kalan Var'}</span></div>
+            ${isGCD ? `<div class="mt-2 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded bg-emerald-100 text-emerald-700 inline-block">EBOB Bulundu</div>` : ''}
+        `;
+    },
+
+    drawBar(x, y, total, div, scale, color, label) {
+        const ctx = this.ctx;
+        ctx.fillStyle = color; ctx.font = "bold 14px Inter"; ctx.textAlign = "left";
+        ctx.fillText(`${label}: ${total}`, x, y - 8);
+
+        ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.globalAlpha = 0.2;
+        ctx.strokeRect(x, y, total * scale, 40); ctx.globalAlpha = 1.0;
+
+        const count = Math.floor(total / div); const remainder = total % div;
+
+        for(let i=0; i<count; i++) {
+            const tx = x + (i * div * scale);
+            ctx.fillStyle = (remainder === 0) ? color : '#cbd5e1'; 
+            if (remainder === 0) ctx.globalAlpha = 0.6 + (Math.sin(this.state.time * 0.1 + i)*0.2); else ctx.globalAlpha = 0.8;
+            ctx.fillRect(tx + 2, y + 2, (div * scale) - 4, 36);
+            ctx.strokeStyle = "white"; ctx.strokeRect(tx + 2, y + 2, (div * scale) - 4, 36);
+        }
+
+        if (remainder > 0) {
+            const rx = x + (count * div * scale);
+            ctx.fillStyle = this.colors.red; ctx.globalAlpha = 1;
+            ctx.fillRect(rx, y + 6, remainder * scale, 28);
+            ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.font = "bold 14px Inter";
+            ctx.fillText("?", rx + (remainder*scale)/2, y + 26);
+        }
+        ctx.globalAlpha = 1;
+    },
+
+    drawEKOK() {
+        const s = this.state; const ctx = this.ctx; const scale = 20;
+        const target = this.lcm(s.valA, s.valB);
+        
+        const cycle = (target * scale) + 300; 
+        const speed = 2;
+        let currentPx = (s.time * speed) % (cycle * 1.5); 
+
+        let camX = currentPx - (this.w / 2) + 100; if (camX < 0) camX = 0;
+
+        ctx.save(); ctx.translate(-camX, 0);
+
+        const startX = 100; const trackY1 = this.h / 2 - 60; const trackY2 = this.h / 2 + 60;
+
+        ctx.beginPath(); ctx.strokeStyle = this.colors.grid; ctx.moveTo(startX, this.h/2); ctx.lineTo(startX + cycle + 1000, this.h/2); ctx.stroke();
+
+        const ekokX = startX + (target * scale);
+        ctx.strokeStyle = this.colors.green; ctx.lineWidth = 3; ctx.setLineDash([8, 8]);
+        ctx.beginPath(); ctx.moveTo(ekokX, trackY1 - 40); ctx.lineTo(ekokX, trackY2 + 40); ctx.stroke(); ctx.setLineDash([]);
+
+        ctx.fillStyle = this.colors.green; ctx.font = "bold 16px Inter"; ctx.textAlign = "center";
+        ctx.fillText(`EKOK: ${target}`, ekokX, trackY1 - 50);
+
+        this.drawRunner(startX, trackY1, s.valA, scale, this.colors.a, currentPx);
+        this.drawRunner(startX, trackY2, s.valB, scale, this.colors.b, currentPx);
+
+        ctx.restore();
+
+        const currentVal = Math.floor(currentPx / scale);
+        const stepA = Math.floor(currentVal / s.valA);
+        const stepB = Math.floor(currentVal / s.valB);
+
+        const hud = document.getElementById('hudContent');
+        hud.innerHTML = `
+            <div class="flex justify-between items-center text-xs mb-2"><span>Anlık Konum:</span><span class="font-bold text-slate-800">${currentVal}</span></div>
+            <div class="flex flex-col gap-1 text-[11px] text-slate-500 mb-3">
+                <div class="flex justify-between"><span class="text-blue-500">A Katı:</span><span>${stepA} x ${s.valA}</span></div>
+                <div class="flex justify-between"><span class="text-orange-500">B Katı:</span><span>${stepB} x ${s.valB}</span></div>
+            </div>
+            ${currentVal >= target ? `<div class="mt-1 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded bg-emerald-100 text-emerald-700 inline-block">Buluşma Sağlandı</div>` : `<div class="mt-1 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded bg-slate-100 text-slate-500 inline-block">İlerleniyor...</div>`}
+        `;
+    },
+
+    drawRunner(startX, y, step, scale, color, currentDist) {
+        const ctx = this.ctx; const stepPx = step * scale;
+        const count = Math.floor(currentDist / stepPx);
+        
+        for(let i=0; i<=count; i++) {
+            const dx = startX + (i * stepPx);
+            ctx.fillStyle = color; ctx.globalAlpha = 0.4;
+            ctx.beginPath(); ctx.arc(dx, y, 5, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = this.colors.text; ctx.font = "10px Inter"; ctx.textAlign = "center"; ctx.fillText(i*step, dx, y + 20);
+        }
+
+        const headX = startX + currentDist;
+        ctx.globalAlpha = 1; ctx.fillStyle = color; ctx.shadowBlur = 8; ctx.shadowColor = "rgba(0,0,0,0.2)";
+        ctx.beginPath(); ctx.arc(headX, y, 10, 0, Math.PI*2); ctx.fill(); ctx.shadowBlur = 0;
+
+        const currentStep = Math.floor(currentDist / stepPx);
+        ctx.fillStyle = this.colors.text; ctx.font = "bold 12px Inter"; ctx.fillText(`${currentStep}. Kat`, headX, y - 18);
+    }
+};
+
+window.addEventListener('load', () => sim.init());
+</script>
+</body>
+</html>
