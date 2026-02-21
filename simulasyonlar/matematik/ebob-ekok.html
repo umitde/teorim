@@ -52,15 +52,7 @@
             overflow-y: auto;
         }
 
-        .header { display: flex; align-items: center; gap: 14px; margin-bottom: 4px; }
-        .back-btn {
-            width: 44px; height: 44px; border-radius: 14px; background: #fff7ed; color: var(--col-accent);
-            display: flex; align-items: center; justify-content: center; transition: 0.2s; cursor: pointer;
-            border: 1px solid #ffedd5;
-        }
-        .back-btn:hover { background: #ffedd5; transform: translateX(-2px); }
-        h1 { font-weight: 800; font-size: 1.3rem; letter-spacing: -0.5px; }
-
+        /* Geri Butonu Düzeltildi */
         .type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
         .type-btn {
             background: #ffffff; border: 1px solid var(--border); padding: 12px;
@@ -138,11 +130,11 @@
 </div>
 
 <aside>
-    <div class="header">
-        <a href="../../dersler/matematik.html" class="back-btn">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" /></svg>
+    <div class="flex items-center gap-3 mb-4">
+        <a href="../../dersler/matematik.html" class="p-2 hover:bg-orange-100 rounded-full text-orange-600 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
         </a>
-        <h1>EBOB - EKOK</h1>
+        <h1 class="font-bold text-xl text-slate-800">EBOB - EKOK</h1>
     </div>
 
     <div class="type-grid">
@@ -150,12 +142,12 @@
         <button class="type-btn active" id="btnEkok" onclick="sim.setMode('ekok')">EKOK (Kat)</button>
     </div>
 
-    <div class="ctrl-grid">
+    <div class="ctrl-grid" id="animControls">
         <button class="ctrl-btn" id="btnPause" onclick="sim.togglePause()">⏸ DURDUR</button>
         <button class="ctrl-btn" onclick="sim.resetAnim()">↺ BAŞA SAR</button>
     </div>
 
-    <div class="section-title">Değerler</div>
+    <div class="section-title mt-2">Değerler</div>
     <div class="control-group">
         <div class="prop-row">
             <div class="label-val"><span style="color: var(--col-a);">Sayı A</span><span id="lblA" class="val-badge" style="background: var(--col-a);">6</span></div>
@@ -179,7 +171,7 @@
         <p class="text-[11px] text-slate-700 leading-relaxed" id="teoremNotu">EKOK (En Küçük Ortak Kat), iki sayının katlarının buluştuğu ilk noktadır. Sayılar katlanarak ilerler.</p>
     </div>
 
-    <button class="w-full py-3 bg-slate-800 text-white rounded-xl font-bold text-xs hover:bg-slate-700 transition" onclick="sim.resetAll()">SİSTEMİ SIFIRLA</button>
+    <button class="w-full py-3 mt-4 bg-slate-800 text-white rounded-xl font-bold text-xs hover:bg-slate-700 transition" onclick="sim.resetAll()">SİSTEMİ SIFIRLA</button>
 </aside>
 
 <main id="container">
@@ -236,6 +228,9 @@ const sim = {
 
         document.getElementById('btnEbob').className = m === 'ebob' ? 'type-btn active' : 'type-btn';
         document.getElementById('btnEkok').className = m === 'ekok' ? 'type-btn active' : 'type-btn';
+        
+        // EBOB Modunda animasyon butonlarını gizle, bölücü ayarını göster
+        document.getElementById('animControls').style.display = m === 'ebob' ? 'none' : 'grid';
         document.getElementById('panelEbob').style.display = m === 'ebob' ? 'block' : 'none';
 
         document.getElementById('teoremNotu').innerText = m === 'ebob' 
@@ -284,16 +279,29 @@ const sim = {
         const isCommon = (s.valA % s.divider === 0) && (s.valB % s.divider === 0);
         const isGCD = isCommon && (s.divider === this.gcd(s.valA, s.valB));
 
-        ctx.textAlign = "center"; ctx.font = "bold 20px Inter";
+        ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        
+        // Animasyonlu Yazı (Düzeltildi)
         if (isCommon) {
             const pulse = 1 + Math.sin(s.time * 0.1) * 0.05;
-            ctx.save(); ctx.translate(this.w/2, this.h - 60); ctx.scale(pulse, pulse);
-            ctx.fillStyle = this.colors.green;
-            ctx.fillText(isGCD ? "🏆 EN BÜYÜK ORTAK BÖLEN (EBOB)" : "✅ TAM BÖLÜNDÜ (Ortak Bölen)", 0, 0);
+            ctx.save(); 
+            ctx.translate(this.w/2, this.h - 60); 
+            ctx.scale(pulse, pulse);
+            
+            ctx.fillStyle = "#d1fae5"; // emerald-100
+            ctx.beginPath(); ctx.roundRect(-160, -20, 320, 40, 10); ctx.fill();
+            
+            ctx.fillStyle = "#047857"; // emerald-700
+            ctx.font = "800 13px Inter";
+            ctx.fillText(isGCD ? "🏆 EN BÜYÜK ORTAK BÖLEN (EBOB)" : "✅ TAM BÖLÜNDÜ (ORTAK BÖLEN)", 0, 1);
             ctx.restore();
         } else {
-            ctx.fillStyle = this.colors.text;
-            ctx.fillText(`Seçilen Parça: ${s.divider}. Kalan Var!`, this.w/2, this.h - 60);
+            ctx.fillStyle = "#f1f5f9"; // slate-100
+            ctx.beginPath(); ctx.roundRect(-120 + this.w/2, -20 + this.h - 60, 240, 40, 10); ctx.fill();
+            
+            ctx.fillStyle = "#64748b"; // slate-500
+            ctx.font = "700 13px Inter";
+            ctx.fillText(`SEÇİLEN BÖLEN: ${s.divider} (KALAN VAR)`, this.w/2, this.h - 59);
         }
 
         const hud = document.getElementById('hudContent');
@@ -306,7 +314,7 @@ const sim = {
 
     drawBar(x, y, total, div, scale, color, label) {
         const ctx = this.ctx;
-        ctx.fillStyle = color; ctx.font = "bold 14px Inter"; ctx.textAlign = "left";
+        ctx.fillStyle = color; ctx.font = "bold 14px Inter"; ctx.textAlign = "left"; ctx.textBaseline = "bottom";
         ctx.fillText(`${label}: ${total}`, x, y - 8);
 
         ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.globalAlpha = 0.2;
@@ -326,8 +334,8 @@ const sim = {
             const rx = x + (count * div * scale);
             ctx.fillStyle = this.colors.red; ctx.globalAlpha = 1;
             ctx.fillRect(rx, y + 6, remainder * scale, 28);
-            ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.font = "bold 14px Inter";
-            ctx.fillText("?", rx + (remainder*scale)/2, y + 26);
+            ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.font = "bold 14px Inter";
+            ctx.fillText("?", rx + (remainder*scale)/2, y + 20);
         }
         ctx.globalAlpha = 1;
     },
@@ -352,7 +360,7 @@ const sim = {
         ctx.strokeStyle = this.colors.green; ctx.lineWidth = 3; ctx.setLineDash([8, 8]);
         ctx.beginPath(); ctx.moveTo(ekokX, trackY1 - 40); ctx.lineTo(ekokX, trackY2 + 40); ctx.stroke(); ctx.setLineDash([]);
 
-        ctx.fillStyle = this.colors.green; ctx.font = "bold 16px Inter"; ctx.textAlign = "center";
+        ctx.fillStyle = this.colors.green; ctx.font = "bold 16px Inter"; ctx.textAlign = "center"; ctx.textBaseline = "bottom";
         ctx.fillText(`EKOK: ${target}`, ekokX, trackY1 - 50);
 
         this.drawRunner(startX, trackY1, s.valA, scale, this.colors.a, currentPx);
@@ -383,7 +391,7 @@ const sim = {
             const dx = startX + (i * stepPx);
             ctx.fillStyle = color; ctx.globalAlpha = 0.4;
             ctx.beginPath(); ctx.arc(dx, y, 5, 0, Math.PI*2); ctx.fill();
-            ctx.fillStyle = this.colors.text; ctx.font = "10px Inter"; ctx.textAlign = "center"; ctx.fillText(i*step, dx, y + 20);
+            ctx.fillStyle = this.colors.text; ctx.font = "10px Inter"; ctx.textAlign = "center"; ctx.textBaseline = "top"; ctx.fillText(i*step, dx, y + 15);
         }
 
         const headX = startX + currentDist;
@@ -391,7 +399,7 @@ const sim = {
         ctx.beginPath(); ctx.arc(headX, y, 10, 0, Math.PI*2); ctx.fill(); ctx.shadowBlur = 0;
 
         const currentStep = Math.floor(currentDist / stepPx);
-        ctx.fillStyle = this.colors.text; ctx.font = "bold 12px Inter"; ctx.fillText(`${currentStep}. Kat`, headX, y - 18);
+        ctx.fillStyle = this.colors.text; ctx.font = "bold 12px Inter"; ctx.textBaseline = "bottom"; ctx.fillText(`${currentStep}. Kat`, headX, y - 18);
     }
 };
 
