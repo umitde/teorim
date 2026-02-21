@@ -104,6 +104,41 @@
             margin-left: -30px;
             animation: moveTangent 3s infinite ease-in-out;
         }
+
+        /* Asal Çarpanlar (Ağaç Dallanması) */
+        @keyframes pulseSplit {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+        .anim-prime-root { width: 32px; height: 32px; background: #3B82F6; border-radius: 50%; animation: pulseSplit 2s infinite; position: relative; z-index: 2; display:flex; align-items:center; justify-center; color:white; font-size:12px; font-weight:bold; }
+        .anim-prime-leaf { width: 24px; height: 24px; background: #60A5FA; border-radius: 50%; position: absolute; top: 45px; animation: pulseSplit 2s infinite 0.5s; z-index: 2; }
+        .anim-prime-line { width: 2px; height: 35px; background: #CBD5E1; position: absolute; top: 15px; z-index: 1; }
+    
+        /* Çarpanlara Ayırma (Blokların Birleşmesi) */
+        @keyframes slideBlocks1 { 0%, 100% { transform: translate(-5px, -5px); } 50% { transform: translate(0, 0); } }
+        @keyframes slideBlocks2 { 0%, 100% { transform: translate(5px, 5px); } 50% { transform: translate(0, 0); } }
+        .anim-factor-1 { width: 36px; height: 36px; background: rgba(59, 130, 246, 0.15); border: 2px solid #3B82F6; animation: slideBlocks1 3s infinite ease-in-out; border-radius: 4px; }
+        .anim-factor-2 { width: 24px; height: 36px; background: rgba(96, 165, 250, 0.15); border: 2px solid #60A5FA; animation: slideBlocks2 3s infinite ease-in-out; border-radius: 4px; }
+    
+        /* Doğrusal Denklemler (Eğim Değiştiren Doğru) */
+        @keyframes rotateLine { 0%, 100% { transform: rotate(-20deg); } 50% { transform: rotate(35deg); } }
+        .anim-linear-line { width: 100px; height: 3px; background: #3B82F6; position: absolute; transform-origin: center; animation: rotateLine 4s infinite ease-in-out; border-radius: 2px; }
+    
+        /* EBOB - EKOK (Eşitlenen Çubuklar) */
+        @keyframes syncBars { 0%, 100% { width: 30px; } 50% { width: 80px; } }
+        .anim-gcd-bar1 { height: 12px; background: #3B82F6; border-radius: 6px; width: 80px; margin-bottom: 8px; }
+        .anim-gcd-bar2 { height: 12px; background: #93C5FD; border-radius: 6px; animation: syncBars 3s infinite ease-in-out; }
+    
+        /* Faktöriyel (Düşen Sayılar) */
+        @keyframes dropIn { 0%, 100% { transform: translateY(-15px); opacity: 0; } 20%, 80% { transform: translateY(0); opacity: 1; } }
+        .anim-slot { width: 28px; height: 28px; border: 2px dashed #94A3B8; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #3B82F6; margin: 0 4px; }
+        .anim-slot span { animation: dropIn 3s infinite; opacity: 0; }
+    
+        /* Galton Kutusu (Seken Top) */
+        @keyframes fallBounce { 0% { transform: translate(0, -30px); opacity: 0; } 25% { transform: translate(-15px, 0px); opacity: 1; } 50% { transform: translate(0px, 30px); opacity: 1; } 75% { transform: translate(15px, 60px); opacity: 1; } 100% { transform: translate(15px, 60px); opacity: 0; } }
+        .anim-galton-ball { width: 10px; height: 10px; background: #3B82F6; border-radius: 50%; position: absolute; animation: fallBounce 2.5s infinite; }
+        .anim-peg { width: 6px; height: 6px; background: #CBD5E1; border-radius: 50%; position: absolute; }
+            
     </style>
 </head>  
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
@@ -220,6 +255,92 @@
                 <div class="p-5">
                     <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">Türev ve Eğim</h3>
                     <p class="text-xs text-slate-500 mt-2 leading-relaxed">Bir eğrinin anlık değişim hızı. Teğetin eğimi ile türev arasındaki ilişkiyi kavrayın.</p>
+                </div>
+            </a>
+
+            <a href="../simulasyonlar/matematik/asal-carpanlar.html" class="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-blue-200 transition-all duration-300 overflow-hidden">
+                <div class="h-40 bg-slate-50 relative overflow-hidden border-b border-slate-100 flex items-center justify-center flex-col">
+                    <div class="relative flex justify-center items-start h-20 w-32">
+                        <div class="anim-prime-line" style="transform: rotate(30deg); transform-origin: top; left: 50%;"></div>
+                        <div class="anim-prime-line" style="transform: rotate(-30deg); transform-origin: top; left: 50%;"></div>
+                        <div class="anim-prime-root flex items-center justify-center">12</div>
+                        <div class="anim-prime-leaf" style="left: 20px;"></div>
+                        <div class="anim-prime-leaf" style="right: 20px;"></div>
+                    </div>
+                </div>
+                <div class="p-5">
+                    <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">Asal Çarpanlar</h3>
+                    <p class="text-xs text-slate-500 mt-2 leading-relaxed">Sayıların temel yapı taşlarını keşfedin. Çarpan ağacı ile sayıları asal bileşenlerine ayırın.</p>
+                </div>
+            </a>
+
+            <a href="../simulasyonlar/matematik/carpanlara-ayirma.html" class="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-blue-200 transition-all duration-300 overflow-hidden">
+                <div class="h-40 bg-slate-50 relative overflow-hidden border-b border-slate-100 flex items-center justify-center gap-1">
+                    <div class="anim-factor-1"></div>
+                    <div class="anim-factor-2"></div>
+                </div>
+                <div class="p-5">
+                    <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">Çarpanlara Ayırma</h3>
+                    <p class="text-xs text-slate-500 mt-2 leading-relaxed">Cebirsel ifadeleri görsel alan modelleriyle daha küçük parçalara veya ortak parantezlere ayırın.</p>
+                </div>
+            </a>
+
+            <a href="../simulasyonlar/matematik/dogrusal-denklemler.html" class="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-blue-200 transition-all duration-300 overflow-hidden">
+                <div class="h-40 bg-slate-50 relative overflow-hidden border-b border-slate-100 flex items-center justify-center">
+                    <div class="absolute w-full h-[1px] bg-slate-300"></div>
+                    <div class="absolute h-full w-[1px] bg-slate-300"></div>
+                    <div class="anim-linear-line"></div>
+                </div>
+                <div class="p-5">
+                    <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">Doğrusal Denklemler</h3>
+                    <p class="text-xs text-slate-500 mt-2 leading-relaxed">Eğim (m) ve y-kesen (n) değerlerini değiştirerek doğru grafiklerinin nasıl hareket ettiğini izleyin.</p>
+                </div>
+            </a>
+
+            <a href="../simulasyonlar/matematik/ebob-ekok.html" class="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-blue-200 transition-all duration-300 overflow-hidden">
+                <div class="h-40 bg-slate-50 relative overflow-hidden border-b border-slate-100 flex flex-col items-center justify-center">
+                    <div class="w-24 relative flex flex-col items-start">
+                        <div class="absolute h-full w-[1px] bg-slate-300 border-dashed left-0"></div>
+                        <div class="absolute h-full w-[1px] bg-slate-300 border-dashed right-0"></div>
+                        <div class="anim-gcd-bar1"></div>
+                        <div class="anim-gcd-bar2"></div>
+                    </div>
+                </div>
+                <div class="p-5">
+                    <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">EBOB - EKOK</h3>
+                    <p class="text-xs text-slate-500 mt-2 leading-relaxed">Sayıların en büyük ortak bölenini ve en küçük ortak katını senkronize olan çubuklarla görselleştirin.</p>
+                </div>
+            </a>
+
+            <a href="../simulasyonlar/matematik/faktoriyel.html" class="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-blue-200 transition-all duration-300 overflow-hidden">
+                <div class="h-40 bg-slate-50 relative overflow-hidden border-b border-slate-100 flex items-center justify-center">
+                    <div class="anim-slot"><span style="animation-delay: 0s;">3</span></div>
+                    <div class="text-slate-400 font-bold text-sm">x</div>
+                    <div class="anim-slot"><span style="animation-delay: 0.5s;">2</span></div>
+                    <div class="text-slate-400 font-bold text-sm">x</div>
+                    <div class="anim-slot"><span style="animation-delay: 1s;">1</span></div>
+                </div>
+                <div class="p-5">
+                    <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">Faktöriyel & Permütasyon</h3>
+                    <p class="text-xs text-slate-500 mt-2 leading-relaxed">Sıralama olasılıklarını ve kombinasyon hesaplamalarını interaktif slotlarla deneyimleyin.</p>
+                </div>
+            </a>
+
+            <a href="../simulasyonlar/matematik/galton.html" class="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-blue-200 transition-all duration-300 overflow-hidden">
+                <div class="h-40 bg-slate-50 relative overflow-hidden border-b border-slate-100 flex items-center justify-center">
+                    <div class="relative w-20 h-24 mt-4">
+                        <div class="anim-peg" style="top: 0; left: 50%;"></div>
+                        <div class="anim-peg" style="top: 25px; left: 30%;"></div>
+                        <div class="anim-peg" style="top: 25px; left: 70%;"></div>
+                        <div class="anim-peg" style="top: 50px; left: 10%;"></div>
+                        <div class="anim-peg" style="top: 50px; left: 50%;"></div>
+                        <div class="anim-peg" style="top: 50px; left: 90%;"></div>
+                        <div class="anim-galton-ball" style="top: -10px; left: calc(50% - 5px);"></div>
+                    </div>
+                </div>
+                <div class="p-5">
+                    <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">Galton Kutusu</h3>
+                    <p class="text-xs text-slate-500 mt-2 leading-relaxed">Merkezi limit teoremini ve normal dağılım eğrisinin düşen toplarla nasıl oluştuğunu simüle edin.</p>
                 </div>
             </a>
 
