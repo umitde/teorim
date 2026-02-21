@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asal Çarpanlar | Teorim</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-app: #f8fafc;
+            --bg-panel: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --col-accent: #6366f1; /* İndigo */
+            --col-prime: #10b981;  /* Asal - Zümrüt Yeşili */
+            --col-comp: #f43f5e;   /* Bileşik - Gül Kurusu */
+            --border: #e2e8f0;
+            --radius: 16px;
+        }
+
+        body { 
+            margin: 0; padding: 0; background: var(--bg-app); 
+            color: var(--text-main); font-family: 'Inter', sans-serif; 
+            height: 100vh; display: flex; overflow: hidden; 
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* --- MOBİL UYARI --- */
+        #mobile-warning { 
+            display: none; position: fixed; inset: 0; background: #0f172a; color: white; 
+            z-index: 9999; flex-direction: column; align-items: center; justify-content: center; 
+            text-align: center; padding: 24px; 
+        }
+        @media (max-width: 768px) or (orientation: portrait) { #mobile-warning { display: flex; } }
+
+        @keyframes phoneBounce {
+            0%, 100% { transform: translateY(0) rotate(-5deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+        .phone-icon { animation: phoneBounce 1.5s infinite ease-in-out; }
+
+        /* --- SOL PANEL --- */
+        aside { 
+            width: 320px; flex-shrink: 0; background: var(--bg-panel); 
+            border-right: 1px solid var(--border); padding: 24px; 
+            display: flex; flex-direction: column; gap: 20px; 
+            z-index: 20; box-shadow: 4px 0 20px rgba(0,0,0,0.03);
+            overflow-y: auto;
+        }
+
+        .section-title {
+            font-size: 0.7rem; font-weight: 800; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 1px;
+            margin-bottom: 8px; border-bottom: 1px solid var(--border); padding-bottom: 4px;
+        }
+
+        .control-group { background: #f8fafc; padding: 16px; border-radius: var(--radius); border: 1px solid var(--border); }
+        .prop-row { display: flex; flex-direction: column; gap: 4px; margin-bottom: 15px; font-size: 0.8rem; font-weight: 700; }
+        .label-val { display: flex; justify-content: space-between; align-items: center; }
+        .val-badge { font-family: 'JetBrains Mono'; font-weight: 800; color: white; font-size: 0.85rem; background: var(--col-accent); padding: 4px 10px; border-radius: 8px; box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3); }
+        
+        input[type="range"] { width: 100%; height: 6px; background: #e2e8f0; border-radius: 4px; appearance: none; cursor: pointer; margin-top: 6px; }
+        input[type=range]::-webkit-slider-thumb { appearance: none; width: 20px; height: 20px; background: white; border: 4px solid var(--col-accent); border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: 0.1s; }
+        input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+
+        .info-row { display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 600; color: #64748b; margin-bottom: 8px; border-bottom: 1px dashed #e2e8f0; padding-bottom: 6px; }
+        .info-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .info-val { font-weight: 800; color: var(--text-main); font-family: 'Inter', sans-serif; }
+
+        /* --- SAĞ PANEL --- */
+        main { flex: 1; position: relative; background: #ffffff; overflow: hidden; }
+        canvas { display: block; width: 100%; height: 100%; position: absolute; z-index: 10; }
+
+        /* Veri Kartı */
+        .data-card {
+            position: absolute; top: 20px; right: 20px; z-index: 20;
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(5px);
+            padding: 15px 20px; border-radius: var(--radius); border: 1px solid var(--border);
+            min-width: 220px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); pointer-events: none;
+        }
+
+        /* Lejant */
+        .legend-overlay {
+            position: absolute; bottom: 20px; right: 20px; z-index: 20;
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(5px);
+            border: 1px solid var(--border); border-radius: 12px; padding: 12px 16px;
+            display: flex; gap: 16px; pointer-events: none; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        }
+        .leg-item { display: flex; align-items: center; gap: 6px; font-size: 0.75rem; font-weight: 700; color: #475569; }
+        .dot { width: 12px; height: 12px; border-radius: 50%; box-shadow: inset -2px -2px 4px rgba(0,0,0,0.2); }
+    </style>
+</head>
+<body>
+
+<div id="mobile-warning">
+    <div class="phone-icon mb-6">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+        </svg>
+    </div>
+    <h2 class="text-2xl font-bold mb-2">Yatay Konuma Geçin</h2>
+    <p class="text-slate-400 text-sm max-w-xs">Matematik ağacını tam boyutlu inceleyebilmek için cihazınızı yan çevirin.</p>
+</div>
+
+<aside>
+    <div class="flex items-center gap-3 mb-4">
+        <a href="../../dersler/matematik.html" class="p-2 hover:bg-indigo-100 rounded-full text-indigo-600 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+        </a>
+        <h1 class="font-bold text-xl text-slate-800">Asal Çarpanlar</h1>
+    </div>
+
+    <div class="section-title">Hesaplama</div>
+    <div class="control-group">
+        <div class="prop-row">
+            <div class="label-val"><span>Hedef Sayı:</span><span id="uiNum" class="val-badge">36</span></div>
+            <input type="range" id="slNum" min="2" max="120" value="36" oninput="sim.updateTarget(this.value)">
+        </div>
+    </div>
+
+    <div class="section-title">Matematiksel Veriler</div>
+    <div class="control-group">
+        <div class="info-row"><span>Asal Çarpan Sayısı:</span><span class="info-val text-indigo-600" id="uiPrimeCount">2</span></div>
+        <div class="info-row"><span>En Büyük Asal:</span><span class="info-val text-emerald-500" id="uiMaxPrime">3</span></div>
+        <div class="info-row"><span>Durum:</span><span class="info-val text-rose-500" id="uiStatus">Bileşik</span></div>
+    </div>
+
+    <button class="w-full py-3 mt-auto bg-slate-800 text-white rounded-xl font-bold text-xs hover:bg-slate-700 transition" onclick="sim.reset()">SİSTEMİ SIFIRLA</button>
+</aside>
+
+<main id="container">
+    <div class="data-card">
+        <div class="text-[10px] font-extrabold text-slate-400 uppercase mb-3 border-b border-slate-100 pb-2">Analiz Raporu</div>
+        <div class="flex justify-between items-center text-xs mb-2 gap-4"><span>Seçilen Sayı:</span><span id="hudTarget" class="font-bold text-slate-900 text-sm">36</span></div>
+        <div class="flex flex-col text-xs gap-1 mt-3">
+            <span class="text-slate-500">Asal Çarpanların Çarpımı:</span>
+            <span id="hudResult" class="font-mono font-bold text-emerald-500 text-base mt-1">2 x 2 x 3 x 3 = 36</span>
+        </div>
+    </div>
+
+    <canvas id="simCanvas"></canvas>
+
+    <div class="legend-overlay">
+        <div class="leg-item"><div class="dot" style="background: var(--col-prime);"></div> Asal Sayı</div>
+        <div class="leg-item"><div class="dot" style="background: var(--col-comp);"></div> Bileşik Sayı</div>
+    </div>
+</main>
+
+<script>
+const sim = {
+    canvas: document.getElementById('simCanvas'),
+    ctx: null, w: 0, h: 0,
+    
+    targetNumber: 36,
+    treeData: [], 
+    time: 0, 
+    
+    nodeRadius: 22,
+    levelHeight: 85,
+    
+    init() {
+        this.ctx = this.canvas.getContext('2d');
+        this.resize();
+        window.addEventListener('resize', () => this.resize());
+        
+        this.generateTree();
+        requestAnimationFrame((t) => this.loop(t));
+    },
+
+    resize() {
+        const el = document.getElementById('container');
+        const dpr = window.devicePixelRatio || 1;
+        this.w = el.clientWidth; this.h = el.clientHeight;
+        this.canvas.width = this.w * dpr; this.canvas.height = this.h * dpr;
+        this.ctx.scale(dpr, dpr);
+        if (this.treeData.length > 0) this.generateTree();
+    },
+
+    reset() {
+        this.targetNumber = 36;
+        document.getElementById('slNum').value = 36;
+        this.updateTarget(36);
+    },
+
+    updateTarget(val) {
+        this.targetNumber = parseInt(val);
+        document.getElementById('uiNum').innerText = this.targetNumber;
+        document.getElementById('hudTarget').innerText = this.targetNumber;
+        this.generateTree();
+    },
+
+    checkPrime(n) {
+        if (n < 2) return false;
+        for (let i = 2; i <= Math.sqrt(n); i++) {
+            if (n % i === 0) return false;
+        }
+        return true;
+    },
+
+    getSmallestFactor(n) {
+        for (let i = 2; i <= Math.sqrt(n); i++) {
+            if (n % i === 0) return i;
+        }
+        return n;
+    },
+
+    generateTree() {
+        this.time = 0;
+        this.treeData = [];
+        
+        const calculateNodes = (val, x, y, width, parentIndex, depth) => {
+            const nodeIndex = this.treeData.length;
+            const isPrime = this.checkPrime(val);
+            
+            this.treeData.push({
+                val: val, x: x, y: y, r: this.nodeRadius,
+                isPrime: isPrime, parentIndex: parentIndex,
+                depth: depth, spawnTime: depth * 15
+            });
+
+            if (!isPrime) {
+                let factor1 = this.getSmallestFactor(val);
+                let factor2 = val / factor1;
+                const offset = width / 4; 
+                
+                calculateNodes(factor1, x - offset, y + this.levelHeight, width / 2, nodeIndex, depth + 1);
+                calculateNodes(factor2, x + offset, y + this.levelHeight, width / 2, nodeIndex, depth + 1);
+            }
+        };
+
+        // Kök Düğüm
+        calculateNodes(this.targetNumber, this.w / 2, 70, this.w * 0.7, -1, 0);
+        this.updateHUD();
+    },
+
+    updateHUD() {
+        const primes = [];
+        this.treeData.forEach(n => { if(n.isPrime) primes.push(n.val); });
+        primes.sort((a,b) => a-b);
+        
+        // Benzersiz asallar ve max
+        const uniquePrimes = [...new Set(primes)];
+        const maxPrime = uniquePrimes.length > 0 ? Math.max(...uniquePrimes) : '-';
+        
+        document.getElementById('uiPrimeCount').innerText = uniquePrimes.length;
+        document.getElementById('uiMaxPrime').innerText = maxPrime;
+        
+        const isTargetPrime = this.checkPrime(this.targetNumber);
+        const statusEl = document.getElementById('uiStatus');
+        statusEl.innerText = isTargetPrime ? 'Asal' : 'Bileşik';
+        statusEl.className = isTargetPrime ? 'info-val text-emerald-500' : 'info-val text-rose-500';
+
+        const resultStr = primes.length > 0 ? primes.join(" x ") + ` = ${this.targetNumber}` : `${this.targetNumber} (Asal)`;
+        document.getElementById('hudResult').innerText = resultStr;
+    },
+
+    drawConnections() {
+        const ctx = this.ctx;
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.lineCap = 'round';
+
+        this.treeData.forEach(node => {
+            if (node.parentIndex !== -1 && this.time > node.spawnTime) {
+                const parent = this.treeData[node.parentIndex];
+                const progress = Math.min(1, (this.time - node.spawnTime) / 8);
+                
+                ctx.beginPath();
+                ctx.moveTo(parent.x, parent.y + node.r);
+                
+                const targetX = parent.x + (node.x - parent.x) * progress;
+                const targetY = (parent.y + node.r) + (node.y - node.r - (parent.y + node.r)) * progress;
+                
+                ctx.lineTo(targetX, targetY);
+                ctx.stroke();
+            }
+        });
+    },
+
+    drawNodes() {
+        const ctx = this.ctx;
+
+        this.treeData.forEach(node => {
+            if (this.time > node.spawnTime) {
+                let scale = Math.min(1, (this.time - node.spawnTime) / 10);
+                const elastic = 1 + Math.sin(scale * Math.PI) * 0.15; 
+                if(scale < 1) scale = scale * elastic; else scale = 1;
+
+                const currentR = node.r * scale;
+
+                let baseColor = node.isPrime ? '#10b981' : '#f43f5e';
+                let darkColor = node.isPrime ? '#047857' : '#be123c';
+
+                const grad = ctx.createRadialGradient(node.x - currentR*0.3, node.y - currentR*0.3, currentR*0.1, node.x, node.y, currentR);
+                grad.addColorStop(0, '#ffffff');
+                grad.addColorStop(0.3, baseColor);
+                grad.addColorStop(1, darkColor);
+
+                ctx.shadowColor = 'rgba(0,0,0,0.15)'; ctx.shadowBlur = 12; ctx.shadowOffsetY = 6;
+                ctx.fillStyle = grad;
+                
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, currentR, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.shadowColor = 'transparent';
+                ctx.fillStyle = '#ffffff';
+                ctx.font = `800 ${16 * scale}px 'Inter'`;
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText(node.val, node.x, node.y + 1);
+            }
+        });
+    },
+
+    loop() {
+        this.ctx.clearRect(0, 0, this.w, this.h);
+        this.time += 0.5;
+
+        this.drawConnections();
+        this.drawNodes();
+
+        requestAnimationFrame(() => this.loop());
+    }
+};
+
+window.addEventListener('load', () => sim.init());
+</script>
+</body>
+</html>
