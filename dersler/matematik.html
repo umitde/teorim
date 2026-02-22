@@ -138,6 +138,71 @@
         @keyframes fallBounce { 0% { transform: translate(0, -30px); opacity: 0; } 25% { transform: translate(-15px, 0px); opacity: 1; } 50% { transform: translate(0px, 30px); opacity: 1; } 75% { transform: translate(15px, 60px); opacity: 1; } 100% { transform: translate(15px, 60px); opacity: 0; } }
         .anim-galton-ball { width: 10px; height: 10px; background: #3B82F6; border-radius: 50%; position: absolute; animation: fallBounce 2.5s infinite; }
         .anim-peg { width: 6px; height: 6px; background: #CBD5E1; border-radius: 50%; position: absolute; }
+
+        /* 13. İntegral (Eğri Altı Alan) */
+        @keyframes fillIntegral {
+            0%, 100% { clip-path: polygon(0 0, 0 100%, 0 100%, 0 0); }
+            50% { clip-path: polygon(0 0, 0 100%, 100% 100%, 100% 0); }
+        }
+        .anim-integral-fill { animation: fillIntegral 3s infinite ease-in-out; fill: rgba(59, 130, 246, 0.15); }
+
+        /* 14. Kesirler (Pasta Dilimi) */
+        @keyframes pulseSlice {
+            0%, 100% { opacity: 0.4; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.05); }
+        }
+        .anim-fraction-slice { animation: pulseSlice 2.5s infinite ease-in-out; transform-origin: center; fill: #3B82F6; }
+
+        /* 15. Köklü Sayılar (İç İçe Geçiş) */
+        @keyframes slideRoot {
+            0%, 100% { transform: translateX(5px); opacity: 0.5; }
+            50% { transform: translateX(0); opacity: 1; color: #2563EB; }
+        }
+        .anim-root-val { animation: slideRoot 3s infinite ease-in-out; display: inline-block; }
+
+        /* 16. Üslü Sayılar (Yüzen Üs) */
+        @keyframes floatExp {
+            0%, 100% { transform: translateY(0); color: #94A3B8; }
+            50% { transform: translateY(-4px); color: #3B82F6; }
+        }
+        .anim-exp-text { animation: floatExp 2.5s infinite ease-in-out; display: inline-block; }
+
+        /* 17. Mantık (Kapı Değişimi) */
+        @keyframes toggleLogic {
+            0%, 45% { color: #94A3B8; }
+            50%, 100% { color: #3B82F6; }
+        }
+        .anim-logic-val { animation: toggleLogic 2s infinite steps(1); }
+
+        /* 18. Permütasyon (Yer Değiştiren Mavi Noktalar) */
+        @keyframes swapPerm1 {
+            0%, 100% { transform: translateX(0); background-color: #3B82F6; }
+            50% { transform: translateX(32px); background-color: #93C5FD; }
+        }
+        @keyframes swapPerm2 {
+            0%, 100% { transform: translateX(0); background-color: #93C5FD; }
+            50% { transform: translateX(-32px); background-color: #3B82F6; }
+        }
+        .anim-perm-1 { animation: swapPerm1 2.5s infinite ease-in-out; }
+        .anim-perm-2 { animation: swapPerm2 2.5s infinite ease-in-out; }
+
+        /* 19. Polinomlar (Mavi Kıvrımlı Yörünge) */
+        @keyframes drawPoly {
+            0% { stroke-dashoffset: 150; }
+            50% { stroke-dashoffset: 0; }
+            100% { stroke-dashoffset: -150; }
+        }
+        .anim-poly-path { stroke-dasharray: 150; animation: drawPoly 4s ease-in-out infinite; stroke: #3B82F6; }
+
+        /* 20. Temel Kavramlar (Sayı Kümeleri / İç İçe Mavi Halkalar) */
+        @keyframes pulseRing {
+            0%, 100% { transform: scale(0.9); opacity: 0.3; border-color: #CBD5E1; }
+            50% { transform: scale(1.05); opacity: 1; border-color: #3B82F6; }
+        }
+        .anim-set-ring { border-radius: 50%; border: 2px solid #CBD5E1; position: absolute; }
+        .anim-set-ring-1 { width: 80px; height: 80px; animation: pulseRing 3s infinite ease-in-out 0s; }
+        .anim-set-ring-2 { width: 55px; height: 55px; animation: pulseRing 3s infinite ease-in-out 0.5s; }
+        .anim-set-ring-3 { width: 30px; height: 30px; animation: pulseRing 3s infinite ease-in-out 1s; }
             
     </style>
 </head>  
@@ -341,6 +406,119 @@
                 <div class="p-5">
                     <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">Galton Kutusu</h3>
                     <p class="text-xs text-slate-500 mt-2 leading-relaxed">Merkezi limit teoremini ve normal dağılım eğrisinin düşen toplarla nasıl oluştuğunu simüle edin.</p>
+                </div>
+            </a>
+
+            <a href="../simulasyonlar/matematik/integral.html" class="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-blue-200 transition-all duration-300 overflow-hidden">
+                <div class="h-40 bg-slate-50 relative overflow-hidden border-b border-slate-100 flex items-center justify-center">
+                    <svg width="100" height="60" viewBox="0 0 100 60">
+                        <path class="anim-integral-fill" d="M10,50 Q50,10 90,50 L90,60 L10,60 Z"/>
+                        <path d="M10,50 Q50,10 90,50" fill="none" stroke="#3B82F6" stroke-width="2.5"/>
+                        <line x1="10" y1="50" x2="10" y2="60" stroke="#94A3B8" stroke-dasharray="2" stroke-width="1.5"/>
+                        <line x1="90" y1="50" x2="90" y2="60" stroke="#94A3B8" stroke-dasharray="2" stroke-width="1.5"/>
+                    </svg>
+                </div>
+                <div class="p-5">
+                    <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">İntegral</h3>
+                    <p class="text-xs text-slate-500 mt-2 leading-relaxed">Eğri altında kalan alanı hesaplayın ve birikimli değişimi görsel olarak test edin.</p>
+                </div>
+            </a>
+
+            <a href="../simulasyonlar/matematik/kesirler.html" class="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-blue-200 transition-all duration-300 overflow-hidden">
+                <div class="h-40 bg-slate-50 relative overflow-hidden border-b border-slate-100 flex items-center justify-center">
+                    <svg width="60" height="60" viewBox="0 0 60 60">
+                        <circle cx="30" cy="30" r="28" fill="none" stroke="#E2E8F0" stroke-width="4"/>
+                        <path class="anim-fraction-slice" d="M30,30 L30,2 A28,28 0 0,1 54.2,16 Z"/>
+                        <line x1="30" y1="30" x2="30" y2="2" stroke="#fff" stroke-width="2"/>
+                        <line x1="30" y1="30" x2="54.2" y2="16" stroke="#fff" stroke-width="2"/>
+                        <line x1="30" y1="30" x2="10" y2="50" stroke="#fff" stroke-width="2"/>
+                    </svg>
+                </div>
+                <div class="p-5">
+                    <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">Kesirler</h3>
+                    <p class="text-xs text-slate-500 mt-2 leading-relaxed">Bütünün parçalarını, denk kesirleri ve rasyonel oranları görselleştirerek modelleyin.</p>
+                </div>
+            </a>
+
+            <a href="../simulasyonlar/matematik/koklu-sayilar.html" class="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-blue-200 transition-all duration-300 overflow-hidden">
+                <div class="h-40 bg-slate-50 relative overflow-hidden border-b border-slate-100 flex items-center justify-center font-serif font-bold text-3xl text-slate-300 tracking-wider">
+                    <span class="text-slate-400">√</span>
+                    <span class="anim-root-val text-slate-700 ml-1">16</span> 
+                    <span class="mx-3 text-slate-300 font-sans text-2xl">=</span> 
+                    <span class="text-blue-500">4</span>
+                </div>
+                <div class="p-5">
+                    <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">Köklü Sayılar</h3>
+                    <p class="text-xs text-slate-500 mt-2 leading-relaxed">Karekök, küpkök ve irrasyonel sayıların geometrik izdüşümlerini interaktif inceleyin.</p>
+                </div>
+            </a>
+
+            <a href="../simulasyonlar/matematik/uslu-sayilar.html" class="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-blue-200 transition-all duration-300 overflow-hidden">
+                <div class="h-40 bg-slate-50 relative overflow-hidden border-b border-slate-100 flex items-center justify-center text-slate-700 font-bold">
+                    <div class="flex items-start">
+                        <span class="text-4xl text-slate-600">2</span>
+                        <span class="anim-exp-text text-xl ml-1">3</span>
+                    </div>
+                    <span class="mx-3 text-slate-300 font-sans text-2xl">=</span> 
+                    <span class="text-3xl text-blue-500">8</span>
+                </div>
+                <div class="p-5">
+                    <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">Üslü Sayılar</h3>
+                    <p class="text-xs text-slate-500 mt-2 leading-relaxed">Üstel büyümeyi, taban-üs ilişkisini ve formüllerin logaritmik karşılıklarını analiz edin.</p>
+                </div>
+            </a>
+
+            <a href="../simulasyonlar/matematik/mantik.html" class="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-blue-200 transition-all duration-300 overflow-hidden">
+                <div class="h-40 bg-slate-50 relative overflow-hidden border-b border-slate-100 flex items-center justify-center font-mono font-bold text-xl text-slate-500">
+                    <span>1</span> 
+                    <span class="mx-3 text-slate-300">∨</span> 
+                    <span class="anim-logic-val">0</span> 
+                    <span class="mx-3 text-slate-300">≡</span> 
+                    <span class="text-blue-500">1</span>
+                </div>
+                <div class="p-5">
+                    <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">Mantık</h3>
+                    <p class="text-xs text-slate-500 mt-2 leading-relaxed">Önermeler, doğruluk tabloları ve "VE, VEYA, İSE" bağlaçlarını dijital kapılarla test edin.</p>
+                </div>
+            </a>
+
+            <a href="../simulasyonlar/matematik/permutasyon.html" class="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-blue-200 transition-all duration-300 overflow-hidden">
+                <div class="h-40 bg-slate-50 relative overflow-hidden border-b border-slate-100 flex items-center justify-center gap-2">
+                    <div class="w-7 h-7 rounded-full bg-blue-500 anim-perm-1"></div>
+                    <div class="w-7 h-7 rounded-full bg-blue-300 anim-perm-2"></div>
+                    <div class="w-7 h-7 rounded-full bg-slate-200"></div>
+                </div>
+                <div class="p-5">
+                    <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">Permütasyon Kombinasyon</h3>
+                    <p class="text-xs text-slate-500 mt-2 leading-relaxed">Nesnelerin sıralama (permütasyon) ve seçilme (kombinasyon) varyasyonlarını simüle edin.</p>
+                </div>
+            </a>
+
+            <a href="../simulasyonlar/matematik/polinom.html" class="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-blue-200 transition-all duration-300 overflow-hidden">
+                <div class="h-40 bg-slate-50 relative overflow-hidden border-b border-slate-100 flex items-center justify-center">
+                    <svg width="100" height="60" viewBox="0 0 100 60" class="overflow-visible">
+                        <path d="M0,50 C30,-10 70,70 100,10" fill="none" stroke-width="3" class="anim-poly-path" stroke-linecap="round"/>
+                        <line x1="0" y1="30" x2="100" y2="30" stroke="#CBD5E1" stroke-width="1.5" stroke-dasharray="3"/>
+                        <line x1="50" y1="0" x2="50" y2="60" stroke="#CBD5E1" stroke-width="1.5" stroke-dasharray="3"/>
+                    </svg>
+                </div>
+                <div class="p-5">
+                    <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">Polinomlar</h3>
+                    <p class="text-xs text-slate-500 mt-2 leading-relaxed">Dereceleri, katsayıları ve polinom fonksiyonlarının grafik üzerindeki bükülmelerini izleyin.</p>
+                </div>
+            </a>
+
+            <a href="../simulasyonlar/matematik/sayi-kumeleri.html" class="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-blue-200 transition-all duration-300 overflow-hidden">
+                <div class="h-40 bg-slate-50 relative overflow-hidden border-b border-slate-100 flex items-center justify-center">
+                    <div class="anim-set-ring-1 anim-set-ring"></div>
+                    <div class="anim-set-ring-2 anim-set-ring"></div>
+                    <div class="anim-set-ring-3 anim-set-ring flex items-center justify-center">
+                        <span class="text-[10px] font-bold text-blue-500">N</span>
+                    </div>
+                </div>
+                <div class="p-5">
+                    <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">Temel Kavramlar</h3>
+                    <p class="text-xs text-slate-500 mt-2 leading-relaxed">Sayı kümelerini (Doğal, Tam, Rasyonel, Reel) ve aralarındaki kapsama hiyerarşisini analiz edin.</p>
                 </div>
             </a>
 
