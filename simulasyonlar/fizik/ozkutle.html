@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Özkütle | Teorim</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-app: #f8fafc;
+            --accent: #f97316; /* Teorim Fizik Turuncusu */
+            --accent-soft: #fff7ed;
+            --border: #e2e8f0;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+        }
+
+        body { margin: 0; padding: 0; background: var(--bg-app); color: var(--text-dark); font-family: 'Inter', sans-serif; height: 100vh; display: flex; overflow: hidden; }
+
+        #mobile-warning { display: none; position: fixed; inset: 0; background: #0f172a; color: white; z-index: 10000; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; }
+        @media (max-width: 768px) or (orientation: portrait) { 
+            #mobile-warning { display: flex; } 
+            #app-container { display: none; }
+        }
+
+        @keyframes phoneBounce { 0%, 100% { transform: translateY(0) rotate(-5deg); } 50% { transform: translateY(-20px) rotate(5deg); } }
+        .phone-icon { animation: phoneBounce 1.5s infinite ease-in-out; }
+        
+        aside { width: 360px; flex-shrink: 0; background: white; border-right: 1px solid var(--border); padding: 24px; display: flex; flex-direction: column; gap: 20px; z-index: 20; overflow-y: auto; box-shadow: 4px 0 20px rgba(0,0,0,0.02); }
+
+        .header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+        .back-btn { padding: 8px; border-radius: 9999px; transition: 0.2s; color: var(--accent); cursor: pointer; display: flex; align-items: center; justify-content: center; background: transparent; }
+        .back-btn:hover { background: var(--accent-soft); transform: translateX(-2px); }
+        .header-title { font-weight: 700; font-size: 1.1rem; color: var(--text-dark); }
+
+        .math-card { background: #1e293b; color: white; padding: 20px; border-radius: 20px; text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.1); position: relative; overflow: hidden; border: 1px solid #334155; flex-shrink: 0; }
+        .math-card::after { content: ''; position: absolute; top: -50%; right: -50%; width: 100%; height: 100%; background: var(--accent); opacity: 0.15; filter: blur(60px); transform: rotate(-45deg); pointer-events: none;}
+        .card-label { font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; position: relative; z-index: 2; }
+        .card-display { font-family: 'JetBrains Mono'; font-size: 1.6rem; font-weight: 800; color: #f1f5f9; position: relative; z-index: 2; letter-spacing: -1px; }
+        .hierarchy { font-size: 11px; color: var(--accent); margin-top: 8px; font-weight: 800; letter-spacing: 1px; }
+
+        .section-title { font-size: 11px; font-weight: 800; color: #cbd5e1; text-transform: uppercase; letter-spacing: 1.5px; border-bottom: 2px solid var(--border); padding-bottom: 4px; }
+
+        .control-group { background: #f8fafc; padding: 14px; border-radius: 16px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; }
+        .slider-row { display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: 12px; color: var(--text-dark); }
+        
+        .surface-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+        .surf-btn { padding: 10px; font-size: 12px; font-family: 'Inter'; font-weight: 700; border: 2px solid var(--border); background: white; border-radius: 10px; color: var(--text-muted); cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .surf-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .surf-btn.active { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+        .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+
+        input[type="range"] { -webkit-appearance: none; background: #cbd5e1; height: 6px; border-radius: 4px; outline: none; width: 100%; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: var(--accent); border: 3px solid white; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+
+        .analysis-group { background: #f8fafc; padding: 14px; border-radius: 16px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 12px; flex-shrink: 0; }
+        .analysis-item { display: flex; justify-content: space-between; align-items: center; }
+        .a-label { font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; }
+        .a-val { font-size: 14px; font-weight: 800; color: var(--text-dark); font-family: 'JetBrains Mono'; }
+
+        .btn-modern { width: 100%; padding: 12px; font-size: 12px; font-family: 'Inter'; font-weight: 700; border: none; background: #e2e8f0; border-radius: 10px; color: var(--text-muted); cursor: pointer; transition: 0.2s; text-align: center; }
+        .btn-modern:hover { background: #cbd5e1; color: var(--text-dark); }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover { background: #ea580c; color: white; }
+
+        main { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; background: white; overflow: hidden; }
+        .dots { position: absolute; inset: 0; background-image: radial-gradient(var(--border) 1.5px, transparent 1.5px); background-size: 40px 40px; pointer-events: none; opacity: 0.7; }
+        canvas#simCanvas { position: absolute; z-index: 10; width: 100%; height: 100%; cursor: grab; }
+        canvas#simCanvas:active { cursor: grabbing; }
+        
+        .overlay-instruction { position: absolute; top: 40px; left: 50%; transform: translateX(-50%); background: #1e293b; color: white; padding: 10px 24px; border-radius: 30px; font-weight: 700; font-size: 13px; pointer-events: none; box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 20; letter-spacing: 0.5px; }
+
+        .data-tooltip { position: absolute; pointer-events: none; background: rgba(15, 23, 42, 0.85); color: white; padding: 10px 14px; border-radius: 12px; font-size: 12px; font-weight: 600; display: none; z-index: 50; line-height: 1.6; backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 15px rgba(0,0,0,0.2); }
+        .tt-val { font-family: 'JetBrains Mono'; color: var(--accent); }
+    </style>
+</head>
+<body>
+
+<div id="mobile-warning">
+    <div class="phone-icon mb-6">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+        </svg>
+    </div>
+    <h2 class="text-2xl font-bold mb-2">Yatay Konuma Geçin</h2>
+    <p class="text-slate-400 text-sm max-w-xs">Görsel laboratuvar için cihazınızı yan veya geniş ekrana çevirin.</p>
+</div>
+
+<div id="app-container" class="w-full h-full flex">
+    <aside>
+        <div class="header">
+            <div class="back-btn" onclick="window.history.back()">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7h18" /></svg>
+            </div>
+            <h1 class="header-title">Özkütle</h1>
+        </div>
+
+        <div class="math-card">
+            <div class="card-label">Özkütle (Yoğunluk) Formülü</div>
+            <div class="card-display">d = m / V</div>
+            <div class="hierarchy">d<sub>cisim</sub> < d<sub>sıvı</sub> ise yüzer</div>
+        </div>
+
+        <div>
+            <div class="section-title mb-3">Hazır Materyaller</div>
+            <div class="surface-grid" style="grid-template-columns: 1fr 1fr;">
+                <button class="surf-btn" onclick="app.spawnObject('wood')"><span class="dot" style="background:#d97706"></span> Tahta (0.6)</button>
+                <button class="surf-btn" onclick="app.spawnObject('ice')"><span class="dot" style="background:#bae6fd"></span> Buz (0.9)</button>
+                <button class="surf-btn" onclick="app.spawnObject('brick')"><span class="dot" style="background:#991b1b"></span> Tuğla (2.0)</button>
+                <button class="surf-btn" onclick="app.spawnObject('gold')"><span class="dot" style="background:#facc15"></span> Altın (19.3)</button>
+            </div>
+        </div>
+
+        <div>
+            <div class="section-title mb-3">Özel Madde Yarat</div>
+            <div class="control-group">
+                <div class="slider-row"><span>Kütle (m):</span> <span id="valMass" class="text-orange-500 font-mono">5.0 kg</span></div>
+                <input type="range" id="slMass" min="1" max="20" step="0.5" value="5">
+                
+                <div class="slider-row mt-2"><span>Hacim (V):</span> <span id="valVol" class="text-orange-500 font-mono">5.0 L</span></div>
+                <input type="range" id="slVol" min="1" max="10" step="0.5" value="5">
+
+                <div class="flex justify-between items-center bg-slate-100 p-2 rounded-lg mt-2 border border-slate-200">
+                    <span class="text-[10px] font-bold text-slate-500 uppercase">Özkütle (d)</span>
+                    <span class="font-mono font-bold text-slate-800" id="valDensity">1.00 g/cm³</span>
+                </div>
+                
+                <button class="btn-modern btn-primary mt-1" onclick="app.spawnCustom()">Sahneye Ekle</button>
+            </div>
+        </div>
+
+        <div>
+            <div class="section-title mb-3">Sıvı Ortamı (<span id="lblLiquidD">1.0 g/cm³</span>)</div>
+            <div class="control-group">
+                <div class="surface-grid" style="grid-template-columns: repeat(3, 1fr);">
+                    <button class="surf-btn" onclick="app.setLiquid(0.8, 'oil', this)">Yağ</button>
+                    <button class="surf-btn active" onclick="app.setLiquid(1.0, 'water', this)">Su</button>
+                    <button class="surf-btn" onclick="app.setLiquid(1.4, 'honey', this)">Bal</button>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top: auto;">
+            <button class="btn-modern" onclick="app.resetScene()">Sahneyi Temizle</button>
+        </div>
+    </aside>
+
+    <main id="mainContainer">
+        <div class="dots"></div>
+        <div class="overlay-instruction">Kutuları Suya At ve Yoğunluklarını Karşılaştır</div>
+        <div class="data-tooltip" id="tooltip"></div>
+        
+        <div class="absolute top-6 right-6 bg-white/90 backdrop-blur-md border border-slate-200 shadow-sm p-4 rounded-2xl z-20">
+            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Beher Analizi</div>
+            <div class="flex justify-between gap-4 mb-1">
+                <span class="text-sm font-semibold text-slate-700">Başlangıç:</span>
+                <span class="text-sm font-mono text-slate-500">100.0 L</span>
+            </div>
+            <div class="flex justify-between gap-4 mb-1">
+                <span class="text-sm font-semibold text-slate-700">Toplam Hacim:</span>
+                <span class="text-sm font-mono font-bold text-slate-800" id="lblTotalVol">100.0 L</span>
+            </div>
+            <div class="flex justify-between gap-4 pt-1 border-t border-slate-200">
+                <span class="text-sm font-semibold text-orange-500">Yükselme:</span>
+                <span class="text-sm font-mono font-bold text-orange-500" id="lblRiseVol">+0.0 L</span>
+            </div>
+        </div>
+
+        <canvas id="simCanvas"></canvas>
+    </main>
+</div>
+
+<script>
+const app = {
+    canvas: document.getElementById('simCanvas'),
+    ctx: null,
+    main: document.getElementById('mainContainer'),
+    width: 0, height: 0,
+
+    liquid: { 
+        y: 300, 
+        density: 1.0, 
+        color: "rgba(56, 189, 248, 0.4)", 
+        baseLevel: 300,
+        volume: 100,
+        displaced: 0
+    },
+    
+    objects: [],
+    draggedObj: null,
+    dragOffset: {x:0, y:0},
+    gravity: 0.5,
+
+    init() {
+        this.ctx = this.canvas.getContext('2d');
+        
+        this.resize();
+        window.addEventListener('resize', () => this.resize());
+        
+        this.setupEvents();
+        this.setupUI();
+        
+        // Başlangıç objeleri
+        this.spawnObject('wood', this.width/2 - 120, 100);
+        this.spawnObject('brick', this.width/2 + 120, 100);
+
+        this.loop();
+    },
+
+    resize() {
+        if (window.innerWidth <= 768) return;
+        const dpr = window.devicePixelRatio || 1;
+        this.width = this.main.clientWidth || 800;
+        this.height = this.main.clientHeight || 600;
+        
+        this.canvas.width = this.width * dpr;
+        this.canvas.height = this.height * dpr;
+        this.ctx.scale(dpr, dpr);
+
+        this.liquid.baseLevel = this.height - 80; // Alttan boşluk
+    },
+
+    setupUI() {
+        const updateCalc = () => {
+            const m = parseFloat(document.getElementById('slMass').value);
+            const v = parseFloat(document.getElementById('slVol').value);
+            const d = m / v;
+            document.getElementById('valMass').innerText = m.toFixed(1) + " kg";
+            document.getElementById('valVol').innerText = v.toFixed(1) + " L";
+            document.getElementById('valDensity').innerText = d.toFixed(2) + " g/cm³";
+        };
+        document.getElementById('slMass').oninput = updateCalc;
+        document.getElementById('slVol').oninput = updateCalc;
+    },
+
+    resetScene() {
+        this.objects = [];
+        this.liquid.y = this.liquid.baseLevel - 200; 
+    },
+
+    setLiquid(density, type, btn) {
+        this.liquid.density = density;
+        document.getElementById('lblLiquidD').innerText = density.toFixed(2) + " g/cm³";
+        
+        if(type === 'water') this.liquid.color = "rgba(56, 189, 248, 0.4)";
+        else if(type === 'oil') this.liquid.color = "rgba(250, 204, 21, 0.5)"; 
+        else if(type === 'honey') this.liquid.color = "rgba(249, 115, 22, 0.6)"; 
+        
+        document.querySelectorAll('.lq-btn, .surf-btn').forEach(b => {
+            if(b.parentElement.parentElement.parentElement.id === 'liqControls') {
+                 b.classList.remove('active');
+            }
+        });
+        btn.classList.add('active');
+    },
+
+    spawnObject(type, startX, startY) {
+        let m=5, v=5, color="#cbd5e1", label="Bilinmeyen";
+        
+        switch(type) {
+            case 'wood': m=3; v=5; color="#d97706"; label="Tahta"; break; 
+            case 'ice': m=4.6; v=5; color="#bae6fd"; label="Buz"; break; 
+            case 'brick': m=10; v=5; color="#991b1b"; label="Tuğla"; break; 
+            case 'gold': m=19.3; v=1; color="#facc15"; label="Altın"; break; 
+        }
+
+        this.createBox(
+            startX || this.width/2 + (Math.random()*150-75), 
+            startY || 50, 
+            m, v, color, label
+        );
+    },
+
+    spawnCustom() {
+        const m = parseFloat(document.getElementById('slMass').value);
+        const v = parseFloat(document.getElementById('slVol').value);
+        this.createBox(this.width/2, 50, m, v, "#8b5cf6", "Özel");
+    },
+
+    createBox(x, y, m, v, color, label) {
+        const size = Math.sqrt(v * 2500); // 1L = ~50px kenar
+        this.objects.push({
+            x: x, y: y, m: m, v: v,
+            w: size, h: size, 
+            color: color, label: label,
+            vx: 0, vy: 0, onWater: false
+        });
+    },
+
+    updatePhysics() {
+        if (window.innerWidth <= 768) return;
+        
+        let totalSubmergedVol = 0;
+        const baseY = this.liquid.baseLevel - 250; 
+        
+        this.objects.forEach(o => {
+            const waterLevel = this.liquid.y;
+            
+            let submergedH = 0;
+            if (o.y + o.h/2 > waterLevel) {
+                submergedH = (o.y + o.h/2) - waterLevel;
+                if(submergedH > o.h) submergedH = o.h;
+            }
+            
+            if(submergedH > 0) {
+                const ratio = submergedH / o.h;
+                totalSubmergedVol += o.v * ratio;
+                o.onWater = true;
+                
+                const v_sub = o.v * ratio;
+                const F_b = v_sub * this.liquid.density * this.gravity;
+                const G = o.m * this.gravity;
+                const F_net = F_b - G;
+                
+                o.vy *= 0.9; 
+                o.vx *= 0.9;
+                o.vy -= F_net / o.m; 
+            } else {
+                o.onWater = false;
+                o.vy += this.gravity;
+            }
+            
+            if(o === this.draggedObj) {
+                o.vx = 0; o.vy = 0;
+            } else {
+                o.y += o.vy;
+                o.x += o.vx;
+            }
+
+            const floorY = this.liquid.baseLevel;
+            if(o.y + o.h/2 > floorY) {
+                o.y = floorY - o.h/2;
+                o.vy = 0;
+            }
+            
+            const wallL = this.width/2 - 300; // Beher genişliğini ortaladım
+            const wallR = this.width/2 + 300;
+            if(o.x - o.w/2 < wallL) { o.x = wallL + o.w/2; o.vx *= -0.5; }
+            if(o.x + o.w/2 > wallR) { o.x = wallR - o.w/2; o.vx *= -0.5; }
+        });
+
+        // 1 Litre = 8px yükselme simülasyonu
+        const rise = totalSubmergedVol * 8; 
+        const targetY = baseY - rise;
+        this.liquid.y += (targetY - this.liquid.y) * 0.1;
+        this.liquid.displaced = totalSubmergedVol;
+
+        // UI Güncelleme
+        document.getElementById('lblTotalVol').innerText = (100 + this.liquid.displaced).toFixed(1) + " L";
+        document.getElementById('lblRiseVol').innerText = "+" + this.liquid.displaced.toFixed(1) + " L";
+    },
+
+    draw() {
+        if (window.innerWidth <= 768) return;
+        const ctx = this.ctx;
+        ctx.clearRect(0, 0, this.width, this.height);
+
+        const floorY = this.liquid.baseLevel;
+        const wallL = this.width/2 - 300;
+        const wallR = this.width/2 + 300;
+
+        // 1. Cam Beher Çizimi
+        ctx.fillStyle = "rgba(241, 245, 249, 0.4)";
+        ctx.beginPath();
+        if(ctx.roundRect) ctx.roundRect(wallL, 100, 600, floorY - 100 + 20, {tl:0, tr:0, bl:16, br:16});
+        else ctx.fillRect(wallL, 100, 600, floorY - 100 + 20);
+        ctx.fill();
+
+        ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(wallL, 100);
+        ctx.lineTo(wallL, floorY);
+        ctx.arcTo(wallL, floorY + 20, wallL + 20, floorY + 20, 20);
+        ctx.lineTo(wallR - 20, floorY + 20);
+        ctx.arcTo(wallR, floorY + 20, wallR, floorY, 20);
+        ctx.lineTo(wallR, 100);
+        ctx.stroke();
+
+        // 2. Sıvı Çizimi
+        const ly = this.liquid.y;
+        ctx.fillStyle = this.liquid.color;
+        ctx.beginPath();
+        if(ctx.roundRect) ctx.roundRect(wallL + 2, ly, 596, floorY - ly + 18, {tl:0, tr:0, bl:14, br:14});
+        else ctx.fillRect(wallL + 2, ly, 596, floorY - ly + 18);
+        ctx.fill();
+        
+        ctx.strokeStyle = "rgba(255,255,255,0.8)"; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.moveTo(wallL + 2, ly); ctx.lineTo(wallR - 2, ly); ctx.stroke();
+
+        // 3. Ölçek (Cetvel)
+        ctx.fillStyle = "#94a3b8";
+        ctx.font = "bold 11px Inter";
+        ctx.textAlign = "right";
+        for(let y = floorY; y > 150; y -= 40) {
+            ctx.fillRect(wallR - 15, y, 15, 2);
+            let val = 100 + ((floorY - 250) - y)/8; 
+            if(y === floorY - 250) val = 100;
+            if(y % 80 === 0 || y === floorY - 250) ctx.fillText(Math.round(val) + "L", wallR - 20, y + 4);
+        }
+
+        // 4. Objeleri Çiz
+        this.objects.forEach(o => {
+            ctx.save();
+            ctx.translate(o.x, o.y);
+            
+            ctx.shadowBlur = 15; ctx.shadowColor = "rgba(0,0,0,0.15)";
+            
+            ctx.fillStyle = o.color;
+            ctx.beginPath();
+            if(ctx.roundRect) ctx.roundRect(-o.w/2, -o.h/2, o.w, o.h, 6);
+            else ctx.fillRect(-o.w/2, -o.h/2, o.w, o.h);
+            ctx.fill();
+            
+            ctx.shadowBlur = 0;
+            ctx.strokeStyle = "rgba(15, 23, 42, 0.2)"; ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            ctx.fillStyle = o.type === 'ice' ? "#0f172a" : "#fff";
+            ctx.font = "800 13px Inter"; ctx.textAlign = "center";
+            ctx.fillText(o.label, 0, -2);
+            
+            ctx.font = "600 10px JetBrains Mono";
+            const d = (o.m / o.v).toFixed(1);
+            ctx.fillText(`${d} d`, 0, 12);
+            
+            ctx.restore();
+        });
+    },
+
+    setupEvents() {
+        const getPos = (e) => {
+            const rect = this.canvas.getBoundingClientRect();
+            const cx = e.clientX || (e.touches ? e.touches[0].clientX : 0);
+            const cy = e.clientY || (e.touches ? e.touches[0].clientY : 0);
+            return { x: cx - rect.left, y: cy - rect.top };
+        };
+
+        const start = (e) => {
+            if (window.innerWidth <= 768) return;
+            const m = getPos(e);
+            for(let i=this.objects.length-1; i>=0; i--) {
+                const o = this.objects[i];
+                if(Math.abs(m.x - o.x) < o.w/2 && Math.abs(m.y - o.y) < o.h/2) {
+                    this.draggedObj = o;
+                    this.dragOffset.x = m.x - o.x;
+                    this.dragOffset.y = m.y - o.y;
+                    
+                    const tt = document.getElementById('tooltip');
+                    tt.style.display = 'block';
+                    tt.innerHTML = `<span class="text-slate-400 uppercase text-[10px] tracking-wider">${o.label} Modeli</span><br>
+                                    Kütle: <span class="tt-val">${o.m} kg</span><br>
+                                    Hacim: <span class="tt-val">${o.v} L</span><br>
+                                    Özkütle: <span class="tt-val">${(o.m/o.v).toFixed(2)} d</span>`;
+                    break;
+                }
+            }
+        };
+
+        const move = (e) => {
+            if(this.draggedObj) {
+                const m = getPos(e);
+                this.draggedObj.x = m.x - this.dragOffset.x;
+                this.draggedObj.y = m.y - this.dragOffset.y;
+                this.draggedObj.vx = 0; this.draggedObj.vy = 0;
+                
+                const tt = document.getElementById('tooltip');
+                tt.style.left = (e.clientX + 20) + 'px';
+                tt.style.top = (e.clientY + 20) + 'px';
+            }
+        };
+
+        const end = () => { 
+            this.draggedObj = null; 
+            document.getElementById('tooltip').style.display = 'none';
+        };
+
+        this.canvas.addEventListener('mousedown', start);
+        window.addEventListener('mousemove', move);
+        window.addEventListener('mouseup', end);
+        this.canvas.addEventListener('touchstart', (e) => { e.preventDefault(); start(e); }, {passive:false});
+        window.addEventListener('touchmove', (e) => { e.preventDefault(); move(e); }, {passive:false});
+        window.addEventListener('touchend', end);
+    },
+
+    loop() {
+        this.updatePhysics();
+        this.draw();
+        requestAnimationFrame(() => this.loop());
+    }
+};
+
+app.init();
+</script>
+</body>
+</html>
