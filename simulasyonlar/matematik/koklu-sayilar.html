@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Köklü Sayılar | Teorim</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;500;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-app: #f8fafc;
+            --bg-panel: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --col-accent: #f97316; /* Orange */
+            --col-indigo: #4f46e5;
+            --col-emerald: #10b981;
+            --col-rose: #f43f5e;
+            --border: #e2e8f0;
+            --radius: 16px;
+        }
+
+        body { 
+            margin: 0; padding: 0; background: var(--bg-app); 
+            color: var(--text-main); font-family: 'Inter', sans-serif; 
+            height: 100vh; display: flex; overflow: hidden; 
+            -webkit-font-smoothing: antialiased;
+        }
+
+        #mobile-warning { 
+            display: none; position: fixed; inset: 0; background: #0f172a; color: white; 
+            z-index: 9999; flex-direction: column; align-items: center; justify-content: center; 
+            text-align: center; padding: 24px; 
+        }
+        @media (max-width: 768px) or (orientation: portrait) { #mobile-warning { display: flex; } }
+
+        @keyframes phoneBounce { 0%, 100% { transform: translateY(0) rotate(-5deg); } 50% { transform: translateY(-20px) rotate(5deg); } }
+        .phone-icon { animation: phoneBounce 1.5s infinite ease-in-out; }
+
+        aside { 
+            width: 360px; flex-shrink: 0; background: var(--bg-panel); 
+            border-right: 1px solid var(--border); padding: 24px; 
+            display: flex; flex-direction: column; gap: 20px; 
+            z-index: 20; box-shadow: 4px 0 24px rgba(0,0,0,0.04);
+            overflow-y: auto;
+        }
+
+        .header { display: flex; align-items: center; gap: 14px; margin-bottom: 4px; }
+        .back-btn {
+            width: 44px; height: 44px; border-radius: 50%; background: #fff7ed; color: var(--col-accent);
+            display: flex; align-items: center; justify-content: center; transition: 0.2s; cursor: pointer; border: 1px solid #ffedd5;
+        }
+        .back-btn:hover { background: #ffedd5; transform: translateX(-2px); }
+
+        .section-title { font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+
+        .control-group { background: #f8fafc; padding: 16px; border-radius: var(--radius); border: 1px solid var(--border); }
+        .prop-row { display: flex; flex-direction: column; gap: 4px; font-size: 0.8rem; font-weight: 700; }
+        .label-val { display: flex; justify-content: space-between; align-items: center; }
+        
+        .val-badge { font-family: 'JetBrains Mono'; font-weight: 800; color: white; font-size: 0.85rem; padding: 4px 10px; border-radius: 8px; background: var(--col-accent); box-shadow: 0 2px 5px rgba(249, 115, 22, 0.3); transition: 0.3s; }
+        
+        input[type="range"] { width: 100%; height: 6px; background: #e2e8f0; border-radius: 4px; appearance: none; cursor: pointer; margin-top: 6px; }
+        input[type=range]::-webkit-slider-thumb { appearance: none; width: 22px; height: 22px; background: white; border: 4px solid var(--col-accent); border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: 0.1s; }
+        input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+
+        .func-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px; }
+        .func-btn {
+            background: #ffffff; border: 1px solid var(--border); color: var(--text-muted);
+            padding: 8px; border-radius: 10px; cursor: pointer; font-family: 'JetBrains Mono'; font-size: 0.8rem; font-weight: 700;
+            transition: all 0.2s; display: flex; align-items: center; justify-content: center;
+        }
+        .func-btn:hover { border-color: var(--col-accent); color: var(--col-accent); }
+
+        main { flex: 1; position: relative; background: #ffffff; overflow: hidden; }
+        .dot-bg { position: absolute; inset: 0; background-image: radial-gradient(#cbd5e1 1.5px, transparent 1.5px); background-size: 30px 30px; opacity: 0.3; z-index: 1; pointer-events: none; }
+        canvas { display: block; width: 100%; height: 100%; position: absolute; z-index: 10; }
+    </style>
+</head>
+<body>
+
+<div id="mobile-warning">
+    <div class="phone-icon mb-6">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+        </svg>
+    </div>
+    <h2 class="text-2xl font-bold mb-2">Yatay Konuma Geçin</h2>
+    <p class="text-slate-400 text-sm max-w-xs">Matematik simülasyonunu tam görebilmek için cihazınızı yan çevirin.</p>
+</div>
+
+<aside>
+    <div class="flex items-center gap-3 mb-2">
+        <a href="../../dersler/matematik.html" class="p-2 hover:bg-orange-100 rounded-full text-orange-600 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+        </a>
+        <h1 class="font-bold text-xl text-slate-800">Köklü Sayılar</h1>
+    </div>
+
+    <div class="bg-slate-800 text-white p-6 rounded-2xl text-center shadow-lg relative overflow-hidden flex flex-col items-center">
+        <div class="absolute top-0 right-0 w-32 h-32 opacity-10 blur-3xl rounded-full transition-colors duration-500" id="glowCard" style="background-color: var(--col-emerald);"></div>
+        
+        <div class="absolute top-3 right-3 text-[9px] font-extrabold px-2 py-1 rounded tracking-wider transition-colors duration-300" id="badgePerfect" style="background-color: var(--col-emerald); color: white;">
+            TAM KARE
+        </div>
+
+        <div class="text-slate-400 font-bold text-xs uppercase tracking-widest mb-2">Kenar Uzunluğu</div>
+        
+        <div class="flex items-center justify-center font-mono tracking-tight relative z-10 w-full mt-2">
+            <span class="text-slate-500 text-5xl font-light mr-1">√</span>
+            <span class="text-white text-5xl font-extrabold" id="uiArea">16</span>
+            <span class="text-slate-500 text-3xl mx-3 font-light" id="uiEq">=</span>
+            <span class="text-4xl font-extrabold transition-colors duration-300" id="uiSide" style="color: var(--col-emerald);">4</span>
+        </div>
+    </div>
+
+    <div class="section-title mt-2">Birim Kare (Alan) Ayarı</div>
+    <div class="control-group">
+        <div class="prop-row">
+            <div class="label-val"><span class="text-slate-600">Alan Değeri</span><span id="lblArea" class="val-badge">16</span></div>
+            <input type="range" id="slArea" min="1" max="100" step="1" value="16" oninput="sim.setArea(this.value)">
+        </div>
+        
+        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-4 mb-1 pl-1">Hızlı Seçim</div>
+        <div class="func-grid">
+            <button class="func-btn" onclick="sim.setArea(9)">9</button>
+            <button class="func-btn" onclick="sim.setArea(25)">25</button>
+            <button class="func-btn" onclick="sim.setArea(50)">50</button>
+            <button class="func-btn" onclick="sim.setArea(81)">81</button>
+        </div>
+    </div>
+
+    <div class="mt-auto p-4 border rounded-xl transition-colors duration-300" id="infoBox">
+        <p class="text-[10px] font-extrabold uppercase mb-1" id="infoTitle">Mükemmel Kare</p>
+        <p class="text-[11px] leading-relaxed" id="infoDesc">Bu alandan kusursuz bir kare oluşturulabilir. Kenar uzunluğu tam sayıdır.</p>
+    </div>
+</aside>
+
+<main id="container">
+    <div class="dot-bg"></div>
+    <canvas id="simCanvas"></canvas>
+</main>
+
+<script>
+const sim = {
+    canvas: document.getElementById('simCanvas'),
+    ctx: null, w: 0, h: 0,
+    
+    area: 16, side: 4, isPerfect: true,
+
+    init() {
+        this.ctx = this.canvas.getContext('2d');
+        window.addEventListener('resize', () => this.resize());
+        this.resize();
+        this.setArea(16);
+        requestAnimationFrame(() => this.loop());
+    },
+
+    resize() {
+        const el = document.getElementById('container');
+        const dpr = window.devicePixelRatio || 1;
+        this.w = el.clientWidth; this.h = el.clientHeight;
+        this.canvas.width = this.w * dpr; this.canvas.height = this.h * dpr;
+        this.ctx.scale(dpr, dpr);
+    },
+
+    setArea(val) {
+        val = parseInt(val);
+        document.getElementById('slArea').value = val;
+        
+        this.area = val;
+        this.side = Math.sqrt(val);
+        this.isPerfect = Number.isInteger(this.side);
+
+        this.updateUI();
+    },
+
+    updateUI() {
+        // Kart Güncelleme
+        document.getElementById('lblArea').innerText = this.area;
+        document.getElementById('uiArea').innerText = this.area;
+        document.getElementById('uiSide').innerText = this.isPerfect ? this.side : this.side.toFixed(2);
+        document.getElementById('uiEq').innerText = this.isPerfect ? '=' : '≈';
+
+        // Renkler ve Etiketler
+        const glow = document.getElementById('glowCard');
+        const badge = document.getElementById('badgePerfect');
+        const uiSide = document.getElementById('uiSide');
+        const infoBox = document.getElementById('infoBox');
+        const infoTitle = document.getElementById('infoTitle');
+        const infoDesc = document.getElementById('infoDesc');
+
+        if (this.isPerfect) {
+            glow.style.backgroundColor = 'var(--col-emerald)';
+            badge.style.backgroundColor = 'var(--col-emerald)';
+            badge.innerText = 'TAM KARE';
+            uiSide.style.color = 'var(--col-emerald)';
+            
+            infoBox.style.backgroundColor = '#ecfdf5';
+            infoBox.style.borderColor = '#a7f3d0';
+            infoTitle.style.color = 'var(--col-emerald)';
+            infoDesc.style.color = '#065f46';
+            infoTitle.innerText = 'Mükemmel Kare';
+            infoDesc.innerText = `${this.area} birim kareden kusursuz bir kare oluşturulabilir. Kenar uzunluğu tam sayıdır (${this.side}).`;
+        } else {
+            glow.style.backgroundColor = 'var(--col-rose)';
+            badge.style.backgroundColor = 'var(--col-rose)';
+            badge.innerText = 'İRRASYONEL';
+            uiSide.style.color = 'var(--col-rose)';
+            
+            infoBox.style.backgroundColor = '#fff1f2';
+            infoBox.style.borderColor = '#fecdd3';
+            infoTitle.style.color = 'var(--col-rose)';
+            infoDesc.style.color = '#9f1239';
+            infoTitle.innerText = 'Tam Kare Değil';
+            
+            const lower = Math.floor(this.side);
+            const upper = lower + 1;
+            infoDesc.innerText = `${this.area} sayısı, kenarı ${lower} ile ${upper} arasında olan bir kare oluşturur.`;
+        }
+    },
+
+    loop() {
+        this.ctx.clearRect(0, 0, this.w, this.h);
+        this.drawSquare();
+        requestAnimationFrame(() => this.loop());
+    },
+
+    drawSquare() {
+        const ctx = this.ctx;
+        
+        const unit = Math.min(this.w, this.h) / 14; 
+        const pixelSide = this.side * unit;
+        
+        const sx = (this.w - pixelSide) / 2;
+        const sy = (this.h - pixelSide) / 2;
+
+        const colorMain = this.isPerfect ? '#10b981' : '#f43f5e';
+        const colorFill = this.isPerfect ? 'rgba(16, 185, 129, 0.15)' : 'rgba(244, 63, 94, 0.15)';
+
+        // 1. Ana Kare
+        ctx.fillStyle = colorFill;
+        ctx.strokeStyle = colorMain;
+        ctx.lineWidth = 3;
+        
+        ctx.beginPath(); ctx.roundRect(sx, sy, pixelSide, pixelSide, 8);
+        ctx.fill(); ctx.stroke();
+
+        // 2. İç Izgara
+        ctx.strokeStyle = 'rgba(15, 23, 42, 0.1)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        for(let i = 1; i < this.side; i++) {
+            ctx.moveTo(sx + i * unit, sy); ctx.lineTo(sx + i * unit, sy + pixelSide);
+            ctx.moveTo(sx, sy + i * unit); ctx.lineTo(sx + pixelSide, sy + i * unit);
+        }
+        ctx.stroke();
+
+        // 3. İrrasyonel ise İç Tam Kareyi Göster
+        if (!this.isPerfect) {
+            const floorSide = Math.floor(this.side);
+            const floorPixel = floorSide * unit;
+            
+            ctx.strokeStyle = '#64748b'; ctx.setLineDash([6, 6]); ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.roundRect(sx, sy, floorPixel, floorPixel, 4); ctx.stroke();
+            ctx.setLineDash([]);
+            
+            ctx.fillStyle = '#64748b'; ctx.font = "bold 12px Inter"; ctx.textAlign="left";
+            ctx.fillText(`${floorSide}x${floorSide}`, sx + 8, sy + 20);
+        }
+
+        // 4. Kenar Cetvelleri
+        this.drawRuler(sx, sy - 25, pixelSide, this.side, colorMain, true);
+        this.drawRuler(sx - 25, sy, pixelSide, this.side, colorMain, false);
+
+        // 5. Ortaya Alan Yazısı
+        ctx.fillStyle = colorMain;
+        ctx.font = "800 48px JetBrains Mono";
+        ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.fillText(this.area, sx + pixelSide/2, sy + pixelSide/2 - 5);
+        
+        ctx.font = "600 14px Inter";
+        ctx.fillStyle = "#64748b";
+        ctx.fillText("BİRİM KARE", sx + pixelSide/2, sy + pixelSide/2 + 30);
+    },
+
+    drawRuler(x, y, len, val, color, isHorizontal) {
+        const ctx = this.ctx;
+        ctx.strokeStyle = color; ctx.lineWidth = 2;
+        ctx.beginPath();
+
+        if (isHorizontal) {
+            ctx.moveTo(x, y); ctx.lineTo(x + len, y);
+            ctx.moveTo(x, y - 6); ctx.lineTo(x, y + 6);
+            ctx.moveTo(x + len, y - 6); ctx.lineTo(x + len, y + 6);
+            ctx.stroke();
+
+            ctx.fillStyle = '#ffffff'; ctx.fillRect(x + len/2 - 25, y - 12, 50, 24);
+            ctx.fillStyle = color; ctx.font = "bold 14px JetBrains Mono";
+            ctx.textAlign = "center"; ctx.textBaseline = "middle";
+            ctx.fillText(this.isPerfect ? val : val.toFixed(2), x + len/2, y);
+        } else {
+            ctx.moveTo(x, y); ctx.lineTo(x, y + len);
+            ctx.moveTo(x - 6, y); ctx.lineTo(x + 6, y);
+            ctx.moveTo(x - 6, y + len); ctx.lineTo(x + 6, y + len);
+            ctx.stroke();
+
+            ctx.save();
+            ctx.translate(x, y + len/2); ctx.rotate(-Math.PI / 2);
+            ctx.fillStyle = '#ffffff'; ctx.fillRect(-25, -12, 50, 24);
+            ctx.fillStyle = color; ctx.font = "bold 14px JetBrains Mono";
+            ctx.textAlign = "center"; ctx.textBaseline = "middle";
+            ctx.fillText(this.isPerfect ? val : val.toFixed(2), 0, 0);
+            ctx.restore();
+        }
+    }
+};
+
+window.addEventListener('load', () => sim.init());
+</script>
+</body>
+</html>
