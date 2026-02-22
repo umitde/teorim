@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Piston ve Basınç | Teorim</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-app: #f8fafc;
+            --accent: #f97316;
+            --accent-soft: #fff7ed;
+            --border: #e2e8f0;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+        }
+
+        body { margin: 0; padding: 0; background: var(--bg-app); color: var(--text-dark); font-family: 'Inter', sans-serif; height: 100vh; display: flex; overflow: hidden; }
+
+        #mobile-warning { display: none; position: fixed; inset: 0; background: #0f172a; color: white; z-index: 10000; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; }
+        @media (max-width: 768px) or (orientation: portrait) { 
+            #mobile-warning { display: flex; } 
+            #app-container { display: none; }
+        }
+
+        @keyframes phoneBounce { 0%, 100% { transform: translateY(0) rotate(-5deg); } 50% { transform: translateY(-20px) rotate(5deg); } }
+        .phone-icon { animation: phoneBounce 1.5s infinite ease-in-out; }
+        
+        aside { width: 360px; flex-shrink: 0; background: white; border-right: 1px solid var(--border); padding: 24px; display: flex; flex-direction: column; gap: 20px; z-index: 20; overflow-y: auto; box-shadow: 4px 0 20px rgba(0,0,0,0.02); }
+
+        .header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+        .back-btn { padding: 8px; border-radius: 9999px; transition: 0.2s; color: var(--accent); cursor: pointer; display: flex; align-items: center; justify-content: center; background: transparent; }
+        .back-btn:hover { background: var(--accent-soft); transform: translateX(-2px); }
+        .header-title { font-weight: 700; font-size: 1.1rem; color: var(--text-dark); }
+
+        .math-card { background: #1e293b; color: white; padding: 20px; border-radius: 20px; text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.1); position: relative; overflow: hidden; border: 1px solid #334155; flex-shrink: 0; }
+        .math-card::after { content: ''; position: absolute; top: -50%; right: -50%; width: 100%; height: 100%; background: var(--accent); opacity: 0.15; filter: blur(60px); transform: rotate(-45deg); pointer-events: none;}
+        .card-label { font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; position: relative; z-index: 2; }
+        .card-display { font-family: 'JetBrains Mono'; font-size: 1.5rem; font-weight: 800; color: #f1f5f9; position: relative; z-index: 2; letter-spacing: -1px; }
+        .hierarchy { font-size: 11px; color: var(--accent); margin-top: 8px; font-weight: 800; letter-spacing: 1px; }
+
+        .section-title { font-size: 11px; font-weight: 800; color: #cbd5e1; text-transform: uppercase; letter-spacing: 1.5px; border-bottom: 2px solid var(--border); padding-bottom: 4px; }
+
+        .control-group { background: #f8fafc; padding: 14px; border-radius: 16px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; }
+        .slider-row { display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: 12px; color: var(--text-dark); }
+
+        input[type="range"] { -webkit-appearance: none; background: #cbd5e1; height: 6px; border-radius: 4px; outline: none; width: 100%; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: var(--accent); border: 3px solid white; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+        
+        input[type="range"].temp-slider { background: linear-gradient(to right, #3b82f6, #f97316, #ef4444); }
+        input[type="range"].temp-slider::-webkit-slider-thumb { background: #1e293b; border-color: white; }
+
+        .analysis-group { background: #f8fafc; padding: 14px; border-radius: 16px; border: 1px solid var(--border); display: grid; grid-template-columns: 1fr 1fr; gap: 12px; flex-shrink: 0; }
+        .analysis-item { display: flex; flex-direction: column; gap: 2px; }
+        .a-label { font-size: 9px; font-weight: 800; color: #94a3b8; text-transform: uppercase; }
+        .a-val { font-size: 14px; font-weight: 800; color: var(--text-dark); font-family: 'JetBrains Mono'; }
+
+        main { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; background: white; overflow: hidden; }
+        .dots { position: absolute; inset: 0; background-image: radial-gradient(var(--border) 1.5px, transparent 1.5px); background-size: 40px 40px; pointer-events: none; opacity: 0.7; }
+        canvas#simCanvas { position: absolute; z-index: 10; width: 100%; height: 100%; cursor: grab; }
+        canvas#simCanvas:active { cursor: grabbing; }
+        
+        .overlay-instruction { position: absolute; top: 40px; left: 50%; transform: translateX(-50%); background: #1e293b; color: white; padding: 10px 24px; border-radius: 30px; font-weight: 700; font-size: 13px; pointer-events: none; box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 20; letter-spacing: 0.5px; }
+    </style>
+</head>
+<body>
+
+<div id="mobile-warning">
+    <div class="phone-icon mb-6">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+        </svg>
+    </div>
+    <h2 class="text-2xl font-bold mb-2">Yatay Konuma Geçin</h2>
+    <p class="text-slate-400 text-sm max-w-xs">Görsel laboratuvar için cihazınızı yan veya geniş ekrana çevirin.</p>
+</div>
+
+<div id="app-container" class="w-full h-full flex">
+    <aside>
+        <div class="header">
+            <div class="back-btn" onclick="window.history.back()">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7h18" /></svg>
+            </div>
+            <h1 class="header-title">Piston ve Basınç</h1>
+        </div>
+
+        <div class="math-card">
+            <div class="card-label">İdeal Gaz Yasası</div>
+            <div class="card-display">P · V = n · R · T</div>
+            <div class="hierarchy">Hacim küçüldükçe veya sıcaklık arttıkça basınç artar</div>
+        </div>
+
+        <div>
+            <div class="section-title mb-3">Anlık Ölçümler</div>
+            <div class="analysis-group">
+                <div class="analysis-item"><span class="a-label text-orange-500">Basınç (P)</span><span class="a-val text-orange-500 text-lg" id="valP">1.00 atm</span></div>
+                <div class="analysis-item"><span class="a-label">Hacim (V)</span><span class="a-val" id="valV">22.4 L</span></div>
+                <div class="analysis-item"><span class="a-label">Sıcaklık (T)</span><span class="a-val text-slate-500" id="valTLabel">300 K</span></div>
+                <div class="analysis-item"><span class="a-label">Madde Miktarı (n)</span><span class="a-val text-slate-500" id="valNLabel">1.0 mol</span></div>
+            </div>
+        </div>
+
+        <div>
+            <div class="section-title mb-3">Ortam Kontrolleri</div>
+            <div class="control-group">
+                <div class="slider-row"><span>Sıcaklık (T):</span></div>
+                <input type="range" id="slTemp" class="temp-slider" min="100" max="800" step="10" value="300">
+                
+                <div class="slider-row mt-3"><span>Gaz Miktarı (n):</span></div>
+                <input type="range" id="slN" min="0.2" max="3.0" step="0.1" value="1.0">
+            </div>
+        </div>
+
+        <div style="margin-top: auto; padding: 15px; background: #fffbeb; border-left: 4px solid var(--accent); border-radius: 8px; font-size: 11px; color: #92400e; font-weight: 600;">
+            * Boyle Yasası: Sıcaklık sabitken hacmi yarıya indirirseniz, basınç iki katına çıkar (Ters orantı).
+        </div>
+    </aside>
+
+    <main id="mainContainer">
+        <div class="dots"></div>
+        <div class="overlay-instruction">Basıncı Değiştirmek İçin PİSTONU SÜRÜKLE</div>
+        <canvas id="simCanvas"></canvas>
+    </main>
+</div>
+
+<script>
+    const app = {
+        canvas: document.getElementById('simCanvas'),
+        ctx: null,
+        main: document.getElementById('mainContainer'),
+        width: 0, height: 0,
+        
+        state: {
+            tempK: 300,
+            n: 1.0, // mol
+            volumeBase: 22.4, // Başlangıç hacmi (L) referansı
+            
+            pistonY: 0, 
+            pistonMinY: 0, 
+            pistonMaxY: 0,
+            
+            pressureAtm: 1.0,
+            
+            particles: [],
+            isDragging: false,
+            dragOffset: 0,
+
+            cylW: 240,
+            cylH: 400
+        },
+
+        init: function() {
+            this.ctx = this.canvas.getContext('2d');
+            
+            this.resize();
+            window.addEventListener('resize', () => this.resize());
+
+            // Piston başlangıç konumu
+            this.state.pistonMaxY = this.height/2 + this.state.cylH/2 - 20;
+            this.state.pistonMinY = this.height/2 - this.state.cylH/2 + 20;
+            this.state.pistonY = this.height/2 - 50; 
+
+            this.setupControls();
+            this.setupEvents();
+            this.createParticles();
+            
+            this.loop();
+        },
+
+        resize: function() {
+            if (window.innerWidth <= 768) return;
+            const dpr = window.devicePixelRatio || 1;
+            this.width = this.main.clientWidth || 800;
+            this.height = this.main.clientHeight || 600;
+            
+            this.canvas.width = this.width * dpr;
+            this.canvas.height = this.height * dpr;
+            this.ctx.scale(dpr, dpr);
+
+            this.state.pistonMaxY = this.height/2 + this.state.cylH/2 - 40; // En alt sınır
+            this.state.pistonMinY = this.height/2 - this.state.cylH/2 + 40; // En üst sınır
+            
+            if(!this.state.isDragging && this.state.pistonY === 0) {
+                this.state.pistonY = this.height/2 - 50; 
+            }
+        },
+
+        setupControls: function() {
+            document.getElementById('slTemp').addEventListener('input', (e) => {
+                this.state.tempK = parseInt(e.target.value);
+            });
+            document.getElementById('slN').addEventListener('input', (e) => {
+                this.state.n = parseFloat(e.target.value);
+                this.updateParticleCount();
+            });
+        },
+
+        createParticles: function() {
+            this.state.particles = [];
+            this.updateParticleCount();
+        },
+
+        updateParticleCount: function() {
+            // Mol sayısına göre görsel parçacık sayısını ayarla
+            const targetCount = Math.floor(this.state.n * 100);
+            
+            if (this.state.particles.length < targetCount) {
+                let toAdd = targetCount - this.state.particles.length;
+                let bottomY = this.height/2 + this.state.cylH/2;
+                let leftX = this.width/2 - this.state.cylW/2;
+                
+                for(let i=0; i<toAdd; i++) {
+                    this.state.particles.push({
+                        x: leftX + 20 + Math.random() * (this.state.cylW - 40),
+                        y: this.state.pistonY + 20 + Math.random() * (bottomY - this.state.pistonY - 40),
+                        vx: (Math.random() - 0.5) * 4,
+                        vy: (Math.random() - 0.5) * 4
+                    });
+                }
+            } else if (this.state.particles.length > targetCount) {
+                this.state.particles.splice(targetCount);
+            }
+        },
+
+        updatePhysics: function() {
+            if (window.innerWidth <= 768) return;
+            
+            const s = this.state;
+            const bottomY = this.height/2 + s.cylH/2;
+            const currentH = bottomY - s.pistonY; // Piksel cinsinden hacim
+            
+            // Gerçekçi referans hesaplaması: 
+            // 300K, 1 mol, referans piksel yüksekliğinde (örn: 250px) -> 22.4 L ve 1.0 atm
+            const refHeight = 250; 
+            const calcV = (currentH / refHeight) * 22.4; 
+            
+            // P = (n * R * T) / V
+            // P_oran = (n * (T/300)) / (V_oran)
+            const calcP = (s.n * (s.tempK / 300)) / (currentH / refHeight);
+            
+            s.pressureAtm = calcP;
+
+            // UI Güncelleme
+            document.getElementById('valP').innerText = calcP.toFixed(2) + " atm";
+            document.getElementById('valV').innerText = calcV.toFixed(1) + " L";
+            document.getElementById('valTLabel').innerText = s.tempK + " K";
+            document.getElementById('valNLabel').innerText = s.n.toFixed(1) + " mol";
+
+            // Parçacık Hareketleri
+            let speedMult = Math.sqrt(s.tempK / 300) * 2;
+            let leftX = this.width/2 - s.cylW/2;
+            let rightX = this.width/2 + s.cylW/2;
+
+            s.particles.forEach(p => {
+                p.x += p.vx * speedMult;
+                p.y += p.vy * speedMult;
+
+                // Duvarlara Çarpma
+                if (p.x < leftX + 6) { p.x = leftX + 6; p.vx *= -1; }
+                if (p.x > rightX - 6) { p.x = rightX - 6; p.vx *= -1; }
+                if (p.y > bottomY - 6) { p.y = bottomY - 6; p.vy *= -1; }
+                
+                // Pistona Çarpma
+                if (p.y < s.pistonY + 6) { 
+                    p.y = s.pistonY + 6; 
+                    p.vy = Math.abs(p.vy); // Aşağı doğru sektir
+                }
+            });
+        },
+
+        draw: function() {
+            if (window.innerWidth <= 768) return;
+            const ctx = this.ctx;
+            const s = this.state;
+            const w = this.width; const h = this.height;
+
+            ctx.clearRect(0, 0, w, h);
+
+            const cx = w/2;
+            const cy = h/2;
+            const leftX = cx - s.cylW/2;
+            const topY = cy - s.cylH/2;
+            const bottomY = cy + s.cylH/2;
+
+            // 1. Silindir Arka Plan (Gaz bölgesi)
+            let gasAlpha = Math.min(0.8, s.pressureAtm * 0.2); // Basınç arttıkça gaz koyulaşır
+            
+            // Sıcaklık Rengi
+            let tempColor = "14, 165, 233"; // Soğuk mavi
+            if(s.tempK > 350) tempColor = "249, 115, 22"; // Turuncu
+            if(s.tempK > 550) tempColor = "239, 68, 68"; // Kırmızı
+
+            ctx.fillStyle = `rgba(${tempColor}, ${gasAlpha})`;
+            ctx.fillRect(leftX, s.pistonY, s.cylW, bottomY - s.pistonY);
+
+            // 2. Parçacıklar
+            ctx.fillStyle = `rgba(${tempColor}, 0.8)`;
+            s.particles.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 4, 0, Math.PI*2);
+                ctx.fill();
+            });
+
+            // 3. Silindir Cam Sınırları
+            ctx.strokeStyle = "#94a3b8"; ctx.lineWidth = 6;
+            ctx.beginPath();
+            ctx.moveTo(leftX, topY - 20); // Sol üst açık
+            ctx.lineTo(leftX, bottomY);
+            ctx.arcTo(leftX, bottomY + 10, leftX + 10, bottomY + 10, 10);
+            ctx.lineTo(cx + s.cylW/2 - 10, bottomY + 10);
+            ctx.arcTo(cx + s.cylW/2, bottomY + 10, cx + s.cylW/2, bottomY, 10);
+            ctx.lineTo(cx + s.cylW/2, topY - 20);
+            ctx.stroke();
+
+            // 4. Piston
+            const pistonH = 24;
+            ctx.fillStyle = "#cbd5e1";
+            ctx.beginPath();
+            if(ctx.roundRect) ctx.roundRect(leftX + 3, s.pistonY - pistonH, s.cylW - 6, pistonH, 4);
+            else ctx.fillRect(leftX + 3, s.pistonY - pistonH, s.cylW - 6, pistonH);
+            ctx.fill();
+            
+            ctx.strokeStyle = "#475569"; ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Piston Kolu
+            ctx.fillStyle = "#94a3b8";
+            ctx.fillRect(cx - 8, topY - 50, 16, s.pistonY - (topY - 50) - pistonH);
+            
+            // Piston Tutamağı
+            ctx.fillStyle = "#f97316";
+            ctx.beginPath();
+            if(ctx.roundRect) ctx.roundRect(cx - 40, topY - 60, 80, 16, 8);
+            else ctx.fillRect(cx - 40, topY - 60, 80, 16);
+            ctx.fill();
+
+            // 5. Basınç Göstergesi (Manometre)
+            this.drawGauge(ctx, leftX - 60, bottomY - 60, s.pressureAtm);
+        },
+
+        drawGauge: function(ctx, x, y, pressure) {
+            // Gövde
+            ctx.fillStyle = "white";
+            ctx.beginPath(); ctx.arc(x, y, 40, 0, Math.PI*2); ctx.fill();
+            ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 4; ctx.stroke();
+            
+            // İç skala
+            ctx.beginPath(); ctx.arc(x, y, 32, Math.PI*0.8, Math.PI*2.2); 
+            ctx.strokeStyle = "#f1f5f9"; ctx.lineWidth = 8; ctx.stroke();
+            
+            // Kırmızı bölge
+            ctx.beginPath(); ctx.arc(x, y, 32, Math.PI*1.8, Math.PI*2.2); 
+            ctx.strokeStyle = "#fecaca"; ctx.lineWidth = 8; ctx.stroke();
+
+            // İbre
+            let maxP = 6.0;
+            let mappedP = Math.min(pressure, maxP);
+            let angle = Math.PI*0.8 + (mappedP / maxP) * (Math.PI*1.4);
+
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(angle);
+            ctx.fillStyle = "#ef4444";
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-3, -28); ctx.lineTo(3, -28); ctx.fill();
+            ctx.fillStyle = "#0f172a";
+            ctx.beginPath(); ctx.arc(0, 0, 4, 0, Math.PI*2); ctx.fill();
+            ctx.restore();
+
+            // Bağlantı borusu
+            ctx.strokeStyle = "#94a3b8"; ctx.lineWidth = 6;
+            ctx.beginPath(); ctx.moveTo(x + 40, y); ctx.lineTo(x + 60, y); ctx.stroke();
+            
+            // Metin
+            ctx.fillStyle = "#64748b"; ctx.font = "bold 10px Inter"; ctx.textAlign = "center";
+            ctx.fillText("ATM", x, y + 20);
+        },
+
+        setupEvents: function() {
+            const getCoords = (e) => {
+                const rect = this.canvas.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                return { x: clientX - rect.left, y: clientY - rect.top };
+            };
+
+            const startDrag = (e) => {
+                if (window.innerWidth <= 768) return;
+                const pos = getCoords(e);
+                
+                // Tutamaç veya piston üzerinden sürüklenebilir
+                const cx = this.width/2;
+                if (pos.x > cx - 60 && pos.x < cx + 60 && 
+                    pos.y > this.state.pistonY - 80 && pos.y < this.state.pistonY) {
+                    this.state.isDragging = true;
+                    this.state.dragOffset = pos.y - this.state.pistonY;
+                }
+            };
+
+            const moveDrag = (e) => {
+                if (!this.state.isDragging) return;
+                const pos = getCoords(e);
+                
+                let newY = pos.y - this.state.dragOffset;
+                // Piston sınırları
+                newY = Math.max(this.state.pistonMinY, Math.min(this.state.pistonMaxY, newY));
+                
+                this.state.pistonY = newY;
+            };
+
+            const endDrag = () => { this.state.isDragging = false; };
+
+            this.canvas.addEventListener('mousedown', startDrag);
+            window.addEventListener('mousemove', moveDrag);
+            window.addEventListener('mouseup', endDrag);
+            this.canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDrag(e); }, {passive: false});
+            window.addEventListener('touchmove', (e) => { e.preventDefault(); moveDrag(e); }, {passive: false});
+            window.addEventListener('touchend', endDrag);
+        },
+
+        loop: function() {
+            this.updatePhysics();
+            this.draw();
+            requestAnimationFrame(() => this.loop());
+        }
+    };
+
+    app.init();
+</script>
+</body>
+</html>
