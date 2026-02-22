@@ -112,6 +112,28 @@
             transform-origin: left;
             animation: dnaTwist 0.5s infinite linear; /* Fast wiggle */
         }
+
+        /* YAKINDA ETİKETİ VE PASİF KART */
+        .badge-soon {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: #f1f5f9;
+            color: #64748b;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border: 1px solid #e2e8f0;
+            z-index: 10;
+        }
+        .disabled-card {
+            pointer-events: none;
+            opacity: 0.8;
+        }
+        
     </style>
 </head>  
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col overflow-y-scroll">
@@ -193,39 +215,42 @@
                 </div>
             </a>
 
-            <a href="../simulasyonlar/biyoloji/dolasim.html" class="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-emerald-200 transition-all duration-300 overflow-hidden">
-                <div class="h-40 bg-slate-50 relative overflow-hidden border-b border-slate-100 flex items-center justify-center">
-                    <div class="heart"></div>
-                </div>
-                <div class="p-5">
-                    <h3 class="font-bold text-slate-800 group-hover:text-emerald-600 transition-colors">Dolaşım Sistemi</h3>
-                    <p class="text-xs text-slate-500 mt-2 leading-relaxed">Kalbin yapısı ve kan dolaşımı. Büyük ve küçük kan dolaşımını interaktif model üzerinde izleyin.</p>
-                </div>
-            </a>
+            <div class="disabled-card group bg-white rounded-2xl border border-slate-200 shadow-sm transition-all overflow-hidden relative">
+            <span class="badge-soon">Yakında</span>
+            <div class="h-40 bg-slate-50 relative overflow-hidden border-b border-slate-100 flex items-center justify-center">
+                <div class="heart"></div>
+            </div>
+            <div class="p-5">
+                <h3 class="font-bold text-slate-400">Dolaşım Sistemi</h3>
+                <p class="text-xs text-slate-400 mt-2 leading-relaxed">Kalbin yapısı ve kan dolaşımı. Büyük ve küçük kan dolaşımını interaktif model üzerinde izleyin.</p>
+            </div>
+            </div>
 
-            <a href="../simulasyonlar/biyoloji/sinir.html" class="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-emerald-200 transition-all duration-300 overflow-hidden">
+            <div class="disabled-card group bg-white rounded-2xl border border-slate-200 shadow-sm transition-all overflow-hidden relative">
+                <span class="badge-soon">Yakında</span>
                 <div class="h-40 bg-slate-50 relative overflow-hidden border-b border-slate-100 flex items-center justify-center">
                     <div class="neuron-path">
                         <div class="signal-dot"></div>
                     </div>
                 </div>
                 <div class="p-5">
-                    <h3 class="font-bold text-slate-800 group-hover:text-emerald-600 transition-colors">Sinir İletimi</h3>
-                    <p class="text-xs text-slate-500 mt-2 leading-relaxed">Nöronlar arası sinyal iletimi ve sinapslar. Refleks yayı ve elektriksel impulsun yolculuğu.</p>
+                    <h3 class="font-bold text-slate-400">Sinir İletimi</h3>
+                    <p class="text-xs text-slate-400 mt-2 leading-relaxed">Nöronlar arası sinyal iletimi ve sinapslar. Refleks yayı ve elektriksel impulsun yolculuğu.</p>
                 </div>
-            </a>
+            </div>
 
-            <a href="../simulasyonlar/biyoloji/mikrop.html" class="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-emerald-200 transition-all duration-300 overflow-hidden">
+            <div class="disabled-card group bg-white rounded-2xl border border-slate-200 shadow-sm transition-all overflow-hidden relative">
+                <span class="badge-soon">Yakında</span>
                 <div class="h-40 bg-slate-50 relative overflow-hidden border-b border-slate-100 flex items-center justify-center">
                     <div class="bacterium">
                         <div class="flagella"></div>
                     </div>
                 </div>
                 <div class="p-5">
-                    <h3 class="font-bold text-slate-800 group-hover:text-emerald-600 transition-colors">Mikrobiyoloji</h3>
-                    <p class="text-xs text-slate-500 mt-2 leading-relaxed">Bakteriler, virüsler ve bağışıklık. Mikroskobik canlıların dünyasını ve hareketlerini gözlemleyin.</p>
+                    <h3 class="font-bold text-slate-400">Mikrobiyoloji</h3>
+                    <p class="text-xs text-slate-400 mt-2 leading-relaxed">Bakteriler, virüsler ve bağışıklık. Mikroskobik canlıların dünyasını ve hareketlerini gözlemleyin.</p>
                 </div>
-            </a>
+            </div>
 
         </div>
     </main>
