@@ -122,7 +122,7 @@
 
     </style>
 </head>  
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col overflow-y-scroll">
 
     <header class="bg-white/90 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
         <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
@@ -147,9 +147,20 @@
     <main class="max-w-6xl mx-auto px-6 py-12 w-full flex-grow">
         
         <div class="mb-10">
-            <h2 class="text-3xl font-bold text-slate-900">Simülasyonlar</h2>
-            <p class="text-slate-500 mt-2">Maddenin yapısını ve değişimini inceleyin.</p>
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <h2 class="text-3xl font-bold text-slate-900">Simülasyonlar</h2>
+        
+        <div class="relative w-full sm:w-64 group">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg class="h-4 w-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+            </div>
+            <input type="text" id="searchInput" class="block w-full pl-10 pr-3 py-2 border border-slate-200 rounded-xl leading-5 bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm transition-all duration-300 shadow-sm" placeholder="Simülasyon ara...">
         </div>
+    </div>
+    <p class="text-slate-500 mt-2">Maddenin yapısını ve değişimini inceleyin.</p>
+    </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
 
@@ -274,5 +285,22 @@
         &copy; 2026 Teorim Kimya
     </footer>
 
+    <script>
+    // Arama Motoru İşlevi
+    document.getElementById('searchInput').addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        const cards = document.querySelectorAll('main .grid a'); // Tüm kartları seç
+        
+        cards.forEach(card => {
+            const text = card.textContent.toLowerCase(); // Kartın içindeki yazılar (başlık + açıklama)
+            if (text.includes(searchTerm)) {
+                card.style.display = ''; // Eşleşiyorsa göster
+            } else {
+                card.style.display = 'none'; // Eşleşmiyorsa gizle
+            }
+        });
+    });
+    </script>
+    
 </body>
 </html>
