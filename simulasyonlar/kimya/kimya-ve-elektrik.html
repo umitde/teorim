@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elektrokimya | Teorim</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-app: #f8fafc;
+            --accent: #fb923c; 
+            --accent-soft: #fff7ed;
+            --border: #e2e8f0;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+        }
+
+        body { margin: 0; padding: 0; background: var(--bg-app); color: var(--text-dark); font-family: 'Inter', sans-serif; height: 100vh; display: flex; overflow: hidden; }
+
+        #mobile-warning { display: none; position: fixed; inset: 0; background: #0f172a; color: white; z-index: 10000; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; }
+        @media (max-width: 768px) or (orientation: portrait) { #mobile-warning { display: flex; } }
+        @keyframes phoneBounce { 0%, 100% { transform: translateY(0) rotate(-5deg); } 50% { transform: translateY(-20px) rotate(5deg); } }
+        .phone-icon { animation: phoneBounce 1.5s infinite ease-in-out; }
+
+        aside { width: 360px; flex-shrink: 0; background: white; border-right: 1px solid var(--border); padding: 24px; display: flex; flex-direction: column; gap: 20px; z-index: 20; overflow-y: auto; box-shadow: 4px 0 20px rgba(0,0,0,0.02); }
+
+        .header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+        .back-btn { padding: 8px; border-radius: 9999px; transition: 0.2s; color: var(--accent); cursor: pointer; display: flex; align-items: center; justify-content: center; background: transparent; }
+        .back-btn:hover { background: var(--accent-soft); transform: translateX(-2px); }
+        .header-title { font-weight: 700; font-size: 1.1rem; color: var(--text-dark); }
+
+        .math-card { background: #1e293b; color: white; padding: 20px; border-radius: 20px; text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.1); position: relative; overflow: hidden; border: 1px solid #334155; }
+        .math-card::after { content: ''; position: absolute; top: -50%; right: -50%; width: 100%; height: 100%; background: var(--accent); opacity: 0.15; filter: blur(60px); transform: rotate(-45deg); }
+        .card-label { font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; position: relative; z-index: 2; }
+        .card-display { font-family: 'JetBrains Mono'; font-size: 1.8rem; font-weight: 800; color: #f1f5f9; position: relative; z-index: 2; }
+        .hierarchy { font-size: 10px; color: var(--accent); margin-top: 8px; font-weight: 800; letter-spacing: 1px; }
+
+        .section-title { font-size: 11px; font-weight: 800; color: #cbd5e1; text-transform: uppercase; letter-spacing: 1.5px; border-bottom: 2px solid var(--border); padding-bottom: 4px; }
+
+        .control-group { background: #f8fafc; padding: 14px; border-radius: 16px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; }
+        .select-row { display: flex; gap: 12px; }
+        .select-box { flex: 1; background: white; border: 2px solid var(--border); border-radius: 10px; padding: 8px; font-family: 'Inter'; font-weight: 700; color: var(--text-dark); outline: none; cursor: pointer; transition: 0.2s; font-size: 12px; text-align: center; appearance: none; }
+        .select-box:hover, .select-box:focus { border-color: var(--accent); }
+
+        input[type="range"] { -webkit-appearance: none; background: #cbd5e1; height: 6px; border-radius: 4px; outline: none; width: 100%; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: var(--accent); border: 3px solid white; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+
+        .analysis-group { background: #f8fafc; padding: 14px; border-radius: 16px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; }
+        .analysis-item { display: flex; flex-direction: column; gap: 2px; border-bottom: 1px dashed var(--border); padding-bottom: 6px; }
+        .analysis-item:last-child { border-bottom: none; padding-bottom: 0; }
+        .a-row { display: flex; justify-content: space-between; align-items: center; }
+        .a-label { font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; }
+        .a-val { font-size: 13px; font-weight: 800; color: var(--text-dark); font-family: 'JetBrains Mono'; }
+        .rxn-text { font-size: 11px; font-family: 'JetBrains Mono'; color: var(--text-muted); font-weight: 600; margin-top: 2px; }
+
+        main { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; background: white; overflow: hidden; }
+        .dots { position: absolute; inset: 0; background-image: radial-gradient(var(--border) 1.5px, transparent 1.5px); background-size: 40px 40px; pointer-events: none; opacity: 0.7; }
+        canvas { position: absolute; z-index: 10; width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+
+<div id="mobile-warning">
+    <div class="phone-icon mb-6">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+        </svg>
+    </div>
+    <h2 class="text-2xl font-bold mb-2">Yatay Konuma Geçin</h2>
+    <p class="text-slate-400 text-sm max-w-xs">Görsel laboratuvar için cihazınızı yan çevirin.</p>
+</div>
+
+<aside>
+    <div class="header">
+        <div class="back-btn" onclick="window.history.back()">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+        </div>
+        <h1 class="header-title">Kimya ve Elektrik</h1>
+    </div>
+
+    <div class="math-card">
+        <div class="card-label">Anlık Pil Potansiyeli</div>
+        <div class="card-display" id="voltDisp">1.10 V</div>
+        <div class="hierarchy">E = E° - (0.0592/n) · log(Q)</div>
+    </div>
+
+    <div>
+        <div class="section-title mb-3">Elektrot & Derişim (M)</div>
+        <div class="control-group">
+            <div class="select-row">
+                <select id="metal1" class="select-box" onchange="sim.update()">
+                    <option value="Zn" selected>Çinko (Zn)</option>
+                    <option value="Cu">Bakır (Cu)</option>
+                    <option value="Ag">Gümüş (Ag)</option>
+                </select>
+                <select id="metal2" class="select-box" onchange="sim.update()">
+                    <option value="Zn">Çinko (Zn)</option>
+                    <option value="Cu" selected>Bakır (Cu)</option>
+                    <option value="Ag">Gümüş (Ag)</option>
+                </select>
+            </div>
+            
+            <div class="mt-2">
+                <div class="flex justify-between items-center mb-1">
+                    <span class="a-label" id="cLabel1">Zn²⁺ (1. Kap)</span>
+                    <span class="a-val text-[11px]" id="cVal1">1.0 M</span>
+                </div>
+                <input type="range" id="conc1" min="0.1" max="2.0" step="0.1" value="1.0" oninput="sim.update()">
+            </div>
+            
+            <div>
+                <div class="flex justify-between items-center mb-1">
+                    <span class="a-label" id="cLabel2">Cu²⁺ (2. Kap)</span>
+                    <span class="a-val text-[11px]" id="cVal2">1.0 M</span>
+                </div>
+                <input type="range" id="conc2" min="0.1" max="2.0" step="0.1" value="1.0" oninput="sim.update()">
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <div class="section-title mb-3">Hücre Analizi</div>
+        <div class="analysis-group">
+            <div class="analysis-item">
+                <div class="a-row"><span class="a-label">Anot (Yükseltgenme)</span><span class="a-val text-orange-500" id="anodeLabel">Zn</span></div>
+                <div class="rxn-text" id="anodeRxn">Zn → Zn²⁺ + 2e⁻</div>
+            </div>
+            <div class="analysis-item">
+                <div class="a-row"><span class="a-label">Katot (İndirgenme)</span><span class="a-val text-slate-700" id="cathodeLabel">Cu</span></div>
+                <div class="rxn-text" id="cathodeRxn">Cu²⁺ + 2e⁻ → Cu</div>
+            </div>
+            <div class="analysis-item">
+                <div class="a-row"><span class="a-label">Elektron Akışı</span><span class="a-val text-orange-500" id="flowLabel">Zn → Cu</span></div>
+            </div>
+        </div>
+    </div>
+</aside>
+
+<main id="main">
+    <div class="dots"></div>
+    <canvas id="canvas"></canvas>
+</main>
+
+<script>
+const metals = {
+    Zn: { name: "Çinko", e0: -0.76, color: "#94a3b8", ion: "Zn²⁺", eCount: 2 },
+    Cu: { name: "Bakır", e0: 0.34, color: "#d97706", ion: "Cu²⁺", eCount: 2 },
+    Ag: { name: "Gümüş", e0: 0.80, color: "#cbd5e1", ion: "Ag⁺", eCount: 1 }
+};
+
+const gcd = (a, b) => b === 0 ? a : gcd(b, a % b);
+const lcm = (a, b) => (a * b) / gcd(a, b);
+
+const sim = {
+    canvas: document.getElementById('canvas'),
+    ctx: document.getElementById('canvas').getContext('2d'),
+    time: 0,
+    
+    init() {
+        window.onresize = () => this.resize();
+        this.resize();
+        this.update();
+        this.loop();
+    },
+
+    resize() {
+        const dpr = window.devicePixelRatio || 1;
+        const main = document.getElementById('main');
+        this.w = main.clientWidth; this.h = main.clientHeight;
+        this.canvas.width = this.w * dpr; this.canvas.height = this.h * dpr;
+        this.ctx.scale(dpr, dpr);
+    },
+
+    update() {
+        let m1 = document.getElementById('metal1').value;
+        let m2 = document.getElementById('metal2').value;
+        let c1 = parseFloat(document.getElementById('conc1').value);
+        let c2 = parseFloat(document.getElementById('conc2').value);
+
+        document.getElementById('cLabel1').innerText = metals[m1].ion + " (Sol Kap)";
+        document.getElementById('cLabel2').innerText = metals[m2].ion + " (Sağ Kap)";
+        document.getElementById('cVal1').innerText = c1.toFixed(1) + " M";
+        document.getElementById('cVal2').innerText = c2.toFixed(1) + " M";
+
+        if(m1 === m2 && c1 === c2) {
+            document.getElementById('voltDisp').innerText = "0.00 V";
+            document.getElementById('anodeLabel').innerText = "-";
+            document.getElementById('cathodeLabel').innerText = "-";
+            document.getElementById('anodeRxn').innerText = "Denge durumu";
+            document.getElementById('cathodeRxn').innerText = "Denge durumu";
+            document.getElementById('flowLabel').innerText = "Akım Yok";
+            this.anode = null; this.cathode = null;
+            return;
+        }
+
+        let e0_1 = metals[m1].e0;
+        let e0_2 = metals[m2].e0;
+        
+        // Eğer aynı metalse (Derişim Pili), seyreltik olan Anottur.
+        let isLeftAnode = true;
+        if(m1 === m2) {
+            isLeftAnode = c1 < c2;
+        } else {
+            isLeftAnode = e0_1 < e0_2;
+        }
+
+        this.anode = isLeftAnode ? {id: m1, side: 'left', conc: c1, ...metals[m1]} : {id: m2, side: 'right', conc: c2, ...metals[m2]};
+        this.cathode = isLeftAnode ? {id: m2, side: 'right', conc: c2, ...metals[m2]} : {id: m1, side: 'left', conc: c1, ...metals[m1]};
+
+        let e0_cell = this.cathode.e0 - this.anode.e0;
+        
+        // Nernst Hesaplaması
+        let n = lcm(this.anode.eCount, this.cathode.eCount);
+        let aCoef = n / this.anode.eCount;
+        let cCoef = n / this.cathode.eCount;
+        let Q = Math.pow(this.anode.conc, aCoef) / Math.pow(this.cathode.conc, cCoef);
+        
+        let E_cell = e0_cell - (0.0592 / n) * Math.log10(Q);
+        if(E_cell < 0) E_cell = 0; // Pil bitti
+
+        document.getElementById('voltDisp').innerText = E_cell.toFixed(3) + " V";
+        document.getElementById('anodeLabel').innerText = this.anode.id;
+        document.getElementById('anodeRxn').innerText = `${this.anode.id} → ${this.anode.ion} + ${this.anode.eCount}e⁻`;
+        document.getElementById('cathodeLabel').innerText = this.cathode.id;
+        document.getElementById('cathodeRxn').innerText = `${this.cathode.ion} + ${this.cathode.eCount}e⁻ → ${this.cathode.id}`;
+        document.getElementById('flowLabel').innerText = E_cell > 0 ? `${this.anode.id} → ${this.cathode.id}` : "Pil Tükendi";
+    },
+
+    loop() {
+        this.ctx.clearRect(0, 0, this.w, this.h);
+        this.time += 1;
+        this.drawCell();
+        requestAnimationFrame(() => this.loop());
+    },
+
+    drawCell() {
+        const c = this.ctx;
+        const cx = this.w / 2, cy = this.h / 2 + 50;
+        
+        let m1 = document.getElementById('metal1').value;
+        let m2 = document.getElementById('metal2').value;
+        let c1 = parseFloat(document.getElementById('conc1').value);
+        let c2 = parseFloat(document.getElementById('conc2').value);
+        
+        this.drawBeaker(cx - 150, cy, metals[m1].color, c1);
+        this.drawBeaker(cx + 150, cy, metals[m2].color, c2);
+
+        c.beginPath();
+        c.moveTo(cx - 100, cy - 60);
+        c.lineTo(cx - 100, cy - 140);
+        c.quadraticCurveTo(cx - 100, cy - 180, cx, cy - 180);
+        c.quadraticCurveTo(cx + 100, cy - 180, cx + 100, cy - 140);
+        c.lineTo(cx + 100, cy - 60);
+        c.strokeStyle = '#cbd5e1'; c.lineWidth = 26; c.stroke();
+        c.strokeStyle = '#f8fafc'; c.lineWidth = 18; c.stroke();
+
+        if (this.anode && parseFloat(document.getElementById('voltDisp').innerText) > 0) {
+            c.fillStyle = '#fb923c'; c.font = "bold 13px Inter"; c.textAlign = "center";
+            c.fillText("K⁺", cx + 70, cy - 150 + Math.sin(this.time*0.05)*10);
+            c.fillStyle = '#64748b';
+            c.fillText("NO₃⁻", cx - 70, cy - 150 + Math.cos(this.time*0.05)*10);
+        }
+
+        this.drawElectrode(cx - 150, cy - 80, metals[m1].color, m1);
+        this.drawElectrode(cx + 150, cy - 80, metals[m2].color, m2);
+
+        c.beginPath(); c.moveTo(cx - 150, cy - 160); c.lineTo(cx - 150, cy - 240); c.lineTo(cx + 150, cy - 240); c.lineTo(cx + 150, cy - 160);
+        c.strokeStyle = '#94a3b8'; c.lineWidth = 3; c.stroke();
+
+        c.beginPath(); c.arc(cx, cy - 240, 35, 0, 7); c.fillStyle = 'white'; c.fill(); c.lineWidth=4; c.strokeStyle = '#e2e8f0'; c.stroke();
+        c.fillStyle = '#0f172a'; c.font = "bold 16px JetBrains Mono"; c.textAlign = "center"; c.textBaseline="middle";
+        let voltTxt = document.getElementById('voltDisp').innerText;
+        c.fillText(voltTxt, cx, cy - 240);
+
+        if(this.anode && parseFloat(voltTxt) > 0) {
+            const isLeftToRight = this.anode.side === 'left';
+            let progress = (this.time % 100) / 100;
+            let ex, ey;
+            
+            if(progress < 0.2) { 
+                ex = isLeftToRight ? cx - 150 : cx + 150;
+                ey = cy - 160 - (progress * 5 * 80);
+            } else if (progress < 0.8) { 
+                ey = cy - 240;
+                let hProg = (progress - 0.2) / 0.6;
+                ex = isLeftToRight ? (cx - 150) + (hProg * 300) : (cx + 150) - (hProg * 300);
+            } else { 
+                ex = isLeftToRight ? cx + 150 : cx - 150;
+                let vProg = (progress - 0.8) / 0.2;
+                ey = cy - 240 + (vProg * 80);
+            }
+            
+            c.beginPath(); c.arc(ex, ey, 7, 0, 7); c.fillStyle = '#fb923c'; c.fill(); c.strokeStyle='white'; c.lineWidth=2; c.stroke();
+            c.fillStyle = 'white'; c.font = "bold 9px Inter"; c.fillText("e⁻", ex, ey);
+        }
+    },
+
+    drawBeaker(x, y, color, conc) {
+        const c = this.ctx;
+        // Derişime göre renk opaklığı artar
+        c.globalAlpha = 0.1 + (conc / 2) * 0.4;
+        c.fillStyle = color; 
+        c.fillRect(x - 70, y - 60, 140, 120);
+        c.globalAlpha = 1.0;
+
+        c.beginPath(); c.moveTo(x - 70, y - 80); c.lineTo(x - 70, y + 60); c.lineTo(x + 70, y + 60); c.lineTo(x + 70, y - 80);
+        c.strokeStyle = '#cbd5e1'; c.lineWidth = 4; c.stroke();
+    },
+
+    drawElectrode(x, y, color, label) {
+        const c = this.ctx;
+        c.fillStyle = color; c.fillRect(x - 20, y - 80, 40, 140);
+        c.strokeStyle = 'rgba(0,0,0,0.1)'; c.lineWidth = 2; c.strokeRect(x - 20, y - 80, 40, 140);
+        c.fillStyle = 'white'; c.font = "800 16px Inter"; c.textAlign = "center"; c.fillText(label, x, y - 100);
+    }
+};
+
+sim.init();
+</script>
+</body>
+</html>
