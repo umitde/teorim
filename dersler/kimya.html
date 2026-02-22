@@ -120,6 +120,35 @@
             transform-origin: center;
         }
 
+        /* 8. ELEKTROKİMYA (Akan Elektronlar) */
+        @keyframes eFlow {
+            0% { transform: translateX(0); opacity: 0; }
+            15% { opacity: 1; }
+            85% { opacity: 1; }
+            100% { transform: translateX(38px); opacity: 0; }
+        }
+        .electro-beaker-box { 
+            width: 30px; height: 35px; border: 2px solid #CBD5E1; 
+            border-top: none; border-radius: 0 0 4px 4px; 
+            position: absolute; top: 40px; background: rgba(147, 51, 234, 0.05); 
+        }
+        .electro-electrode { width: 8px; height: 40px; position: absolute; top: 25px; border-radius: 2px; }
+        .electro-anode { background: #9333EA; left: 21px; }
+        .electro-cathode { background: #D8B4FE; left: 71px; }
+        .electro-wire { width: 50px; height: 2px; background: #94A3B8; position: absolute; top: 25px; left: 25px; }
+        .electro-meter { 
+            width: 14px; height: 14px; background: white; 
+            border: 2px solid #9333EA; border-radius: 50%; 
+            position: absolute; top: 19px; left: 43px; z-index: 5; 
+        }
+        .electro-e { 
+            width: 4px; height: 4px; background: #A855F7; border-radius: 50%; 
+            position: absolute; top: 24px; left: 28px; 
+            animation: eFlow 2s infinite linear; z-index: 6; 
+        }
+        .electro-e.delay-1 { animation-delay: 0.66s; }
+        .electro-e.delay-2 { animation-delay: 1.33s; }
+
     </style>
 </head>  
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col overflow-y-scroll">
@@ -275,6 +304,33 @@
                 <div class="p-5">
                     <h3 class="font-bold text-slate-800 group-hover:text-purple-600 transition-colors">Organik Kimya</h3>
                     <p class="text-xs text-slate-500 mt-2 leading-relaxed">Karbon iskeletleri ve fonksiyonel gruplar. Kendi organik molekülünüzü inşa edin ve kimyasal profillerini inceleyin.</p>
+                </div>
+            </a>
+
+            <a href="../simulasyonlar/kimya/kimya-ve-elektrik.html" class="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-purple-200 transition-all duration-300 overflow-hidden">
+                <div class="h-40 bg-slate-50 relative overflow-hidden border-b border-slate-100 flex items-center justify-center">
+                    
+                    <div class="relative w-[100px] h-[80px]">
+                        <div class="electro-beaker-box" style="left: 10px;"></div>
+                        <div class="electro-beaker-box" style="left: 60px;"></div>
+                        
+                        <div class="electro-electrode electro-anode"></div>
+                        <div class="electro-electrode electro-cathode"></div>
+                        
+                        <div class="electro-wire"></div>
+                        <div class="electro-meter flex items-center justify-center">
+                            <span class="text-[8px] font-bold text-purple-600 leading-none">V</span>
+                        </div>
+                        
+                        <div class="electro-e"></div>
+                        <div class="electro-e delay-1"></div>
+                        <div class="electro-e delay-2"></div>
+                    </div>
+
+                </div>
+                <div class="p-5">
+                    <h3 class="font-bold text-slate-800 group-hover:text-purple-600 transition-colors">Kimya ve Elektrik</h3>
+                    <p class="text-xs text-slate-500 mt-2 leading-relaxed">Galvanik hücreler ve piller. Elektrotları ve derişimleri değiştirerek pil potansiyelini (V) anlık olarak ölçün.</p>
                 </div>
             </a>
 
