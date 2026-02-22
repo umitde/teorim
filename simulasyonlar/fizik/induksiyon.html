@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faraday Yasası | Teorim</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-app: #f8fafc;
+            --accent: #f97316; /* Teorim Fizik Turuncusu */
+            --accent-soft: #fff7ed;
+            --border: #e2e8f0;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+        }
+
+        body { margin: 0; padding: 0; background: var(--bg-app); color: var(--text-dark); font-family: 'Inter', sans-serif; height: 100vh; display: flex; overflow: hidden; }
+
+        /* Mobil Uyarı Sistemi */
+        #mobile-warning { display: none; position: fixed; inset: 0; background: #0f172a; color: white; z-index: 10000; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; }
+        @media (max-width: 768px) or (orientation: portrait) { 
+            #mobile-warning { display: flex; } 
+            #app-container { display: none; } /* Dar ekranlarda arayüzü gizle */
+        }
+
+        @keyframes phoneBounce { 0%, 100% { transform: translateY(0) rotate(-5deg); } 50% { transform: translateY(-20px) rotate(5deg); } }
+        .phone-icon { animation: phoneBounce 1.5s infinite ease-in-out; }
+        
+        aside { width: 360px; flex-shrink: 0; background: white; border-right: 1px solid var(--border); padding: 24px; display: flex; flex-direction: column; gap: 20px; z-index: 20; overflow-y: auto; box-shadow: 4px 0 20px rgba(0,0,0,0.02); }
+
+        .header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+        .back-btn { padding: 8px; border-radius: 9999px; transition: 0.2s; color: var(--accent); cursor: pointer; display: flex; align-items: center; justify-content: center; background: transparent; }
+        .back-btn:hover { background: var(--accent-soft); transform: translateX(-2px); }
+        .header-title { font-weight: 700; font-size: 1.1rem; color: var(--text-dark); }
+
+        .math-card { background: #1e293b; color: white; padding: 20px; border-radius: 20px; text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.1); position: relative; overflow: hidden; border: 1px solid #334155; flex-shrink: 0; height: 130px; display: flex; flex-direction: column; justify-content: flex-end; }
+        .math-card::after { content: ''; position: absolute; top: -50%; right: -50%; width: 100%; height: 100%; background: var(--accent); opacity: 0.15; filter: blur(60px); transform: rotate(-45deg); pointer-events: none;}
+        
+        .meter-scale { position: absolute; top: 15px; left: 15px; right: 15px; bottom: 35px; border-bottom: 2px solid #64748b; }
+        .needle { position: absolute; bottom: 35px; left: 50%; width: 4px; height: 75px; background: #f97316; transform-origin: bottom center; transition: transform 0.05s linear; border-radius: 2px; z-index: 10; box-shadow: 0 0 8px rgba(249, 115, 22, 0.6); }
+        .card-display { font-family: 'JetBrains Mono'; font-size: 1.6rem; font-weight: 800; color: #f1f5f9; position: relative; z-index: 2; }
+
+        .section-title { font-size: 11px; font-weight: 800; color: #cbd5e1; text-transform: uppercase; letter-spacing: 1.5px; border-bottom: 2px solid var(--border); padding-bottom: 4px; }
+
+        .control-group { background: #f8fafc; padding: 14px; border-radius: 16px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; }
+        .slider-row { display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: 12px; color: var(--text-dark); }
+        
+        input[type="range"] { -webkit-appearance: none; background: #cbd5e1; height: 6px; border-radius: 4px; outline: none; width: 100%; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: var(--accent); border: 3px solid white; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+
+        .bulb-indicator { width: 50px; height: 50px; margin: 0 auto; background: #e2e8f0; border-radius: 50%; border: 3px solid #cbd5e1; transition: 0.05s; }
+
+        .btn-modern { padding: 10px; font-size: 12px; font-family: 'Inter'; font-weight: 700; border: 2px solid var(--border); background: white; border-radius: 10px; color: var(--text-dark); cursor: pointer; transition: 0.2s; text-align: center; }
+        .btn-modern:hover { border-color: var(--accent); color: var(--accent); }
+
+        .chart-container { height: 80px; min-height: 80px; width: 100%; background: white; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+        #graphCanvas { width: 100%; height: 100%; display: block; }
+
+        main { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; background: white; overflow: hidden; }
+        .dots { position: absolute; inset: 0; background-image: radial-gradient(var(--border) 1.5px, transparent 1.5px); background-size: 40px 40px; pointer-events: none; opacity: 0.7; }
+        canvas#simCanvas { position: absolute; z-index: 10; width: 100%; height: 100%; cursor: grab; }
+        canvas#simCanvas:active { cursor: grabbing; }
+        
+        .overlay-instruction { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); background: #1e293b; color: white; padding: 10px 24px; border-radius: 30px; font-weight: 700; font-size: 13px; pointer-events: none; box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 20; letter-spacing: 0.5px; }
+    </style>
+</head>
+<body>
+
+<div id="mobile-warning">
+    <div class="phone-icon mb-6">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+        </svg>
+    </div>
+    <h2 class="text-2xl font-bold mb-2">Yatay Konuma Geçin</h2>
+    <p class="text-slate-400 text-sm max-w-xs">Görsel laboratuvar için cihazınızı yan veya geniş ekrana çevirin.</p>
+</div>
+
+<div id="app-container" class="w-full h-full flex">
+    <aside>
+        <div class="header">
+            <div class="back-btn" onclick="window.history.back()">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7h18" /></svg>
+            </div>
+            <h1 class="header-title">İndüksiyon</h1>
+        </div>
+
+        <div class="math-card">
+            <div class="meter-scale">
+                <div style="position:absolute; left:0; bottom:-20px; font-size:10px; font-weight:800; color:#94a3b8;">-V</div>
+                <div style="position:absolute; left:50%; bottom:-20px; font-size:10px; font-weight:800; color:#94a3b8; transform:translateX(-50%);">0</div>
+                <div style="position:absolute; right:0; bottom:-20px; font-size:10px; font-weight:800; color:#94a3b8;">+V</div>
+            </div>
+            <div class="needle" id="needle"></div>
+            <div class="card-display"><span id="valVolt">0.00</span> V</div>
+        </div>
+
+        <div>
+            <div class="section-title mb-3">Bobin Ayarları</div>
+            <div class="control-group">
+                <div class="slider-row"><span>Sarım (N):</span> <span id="valLoops" class="text-orange-500 font-mono">4</span></div>
+                <input type="range" id="slLoops" min="2" max="10" step="1" value="4">
+                
+                <div class="slider-row mt-2"><span>Alan (A):</span> <span id="valArea" class="text-orange-500 font-mono">100%</span></div>
+                <input type="range" id="slArea" min="50" max="150" step="10" value="100">
+            </div>
+        </div>
+
+        <div>
+            <div class="section-title mb-3">Mıknatıs Ayarları</div>
+            <div class="control-group">
+                <div class="slider-row"><span>Güç (B):</span> <span id="valStr" class="text-orange-500 font-mono">100%</span></div>
+                <input type="range" id="slStr" min="10" max="200" step="10" value="100">
+                <button class="btn-modern mt-2" onclick="app.flipMagnet()">Kutupları Çevir</button>
+            </div>
+        </div>
+
+        <div style="flex-shrink: 0; margin-top: auto;">
+            <div class="section-title mb-3">Voltaj - Zaman Grafiği</div>
+            <div class="chart-container">
+                <canvas id="graphCanvas"></canvas>
+            </div>
+        </div>
+    </aside>
+
+    <main id="mainContainer">
+        <div class="dots"></div>
+        <div class="overlay-instruction">Mıknatısı TUT ve HAREKET ETTİR</div>
+        
+        <div class="absolute top-6 right-6 bg-white/90 backdrop-blur-md border border-slate-200 shadow-sm p-4 rounded-2xl z-20 flex flex-col items-center">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">Lamba</span>
+            <div class="bulb-indicator" id="bulb"></div>
+        </div>
+
+        <canvas id="simCanvas"></canvas>
+    </main>
+</div>
+
+<script>
+const app = {
+    canvas: document.getElementById('simCanvas'),
+    ctx: null,
+    gCanvas: document.getElementById('graphCanvas'),
+    gCtx: null,
+    main: document.getElementById('mainContainer'),
+    
+    width: 0, height: 0,
+    gw: 0, gh: 0,
+
+    magnet: { x: 100, y: 0, vx: 0, w: 160, h: 60, flipped: false },
+    coil: { x: 0, y: 0, radius: 60, loops: 4 },
+    
+    physics: {
+        flux: 0, prevFlux: 0, voltage: 0, strength: 1.0, history: [] 
+    },
+
+    isDragging: false,
+    dragOffset: {x:0, y:0},
+
+    init() {
+        this.ctx = this.canvas.getContext('2d');
+        this.gCtx = this.gCanvas.getContext('2d');
+        
+        // İlk boyutlandırma
+        this.resize(true);
+        window.addEventListener('resize', () => this.resize(false));
+        
+        this.setupEvents();
+        this.setupUI();
+        
+        this.loop();
+    },
+
+    resize(isInitial = false) {
+        if (window.innerWidth <= 768) return;
+        
+        const dpr = window.devicePixelRatio || 1;
+        this.width = this.main.clientWidth || 800;
+        this.height = this.main.clientHeight || 600;
+        
+        this.canvas.width = this.width * dpr;
+        this.canvas.height = this.height * dpr;
+        this.ctx.scale(dpr, dpr);
+        
+        const chartBox = this.gCanvas.parentElement.getBoundingClientRect();
+        this.gw = chartBox.width;
+        this.gh = chartBox.height;
+        this.gCanvas.width = this.gw * dpr;
+        this.gCanvas.height = this.gh * dpr;
+        this.gCtx.scale(dpr, dpr);
+
+        // Resize sırasında mıknatısın bobine olan mesafesini (offset) koru
+        const oldCoilX = this.coil.x || (this.width / 2);
+        const magnetOffsetFromCoil = this.magnet.x - oldCoilX;
+
+        // Bobin her zaman ekranın ortasında
+        this.coil.x = this.width / 2;
+        this.coil.y = this.height / 2 + 20; // Lambaya yer açmak için biraz aşağıda
+        this.magnet.y = this.coil.y; // Y eksenini kilitle
+        
+        // Eğer ilk açılışsa mıknatısı sola yerleştir, değilse mesafeyi koruyarak kaydır
+        if (isInitial) {
+            this.magnet.x = this.coil.x - 220;
+        } else {
+            this.magnet.x = this.coil.x + magnetOffsetFromCoil;
+        }
+
+        // Ekran aşırı daralırsa mıknatısın dışarı çıkmasını engelle
+        if(this.magnet.x < 80) this.magnet.x = 80;
+        if(this.magnet.x > this.width - 80) this.magnet.x = this.width - 80;
+    },
+
+    setupUI() {
+        document.getElementById('slLoops').oninput = (e) => {
+            this.coil.loops = parseInt(e.target.value);
+            document.getElementById('valLoops').innerText = this.coil.loops;
+        };
+        document.getElementById('slArea').oninput = (e) => {
+            this.coil.radius = 60 * (parseInt(e.target.value)/100);
+            document.getElementById('valArea').innerText = e.target.value + "%";
+        };
+        document.getElementById('slStr').oninput = (e) => {
+            this.physics.strength = parseInt(e.target.value)/100;
+            document.getElementById('valStr').innerText = e.target.value + "%";
+        };
+    },
+
+    flipMagnet() {
+        this.magnet.flipped = !this.magnet.flipped;
+    },
+
+    updatePhysics() {
+        if (window.innerWidth <= 768) return;
+        
+        const dist = (this.magnet.x - this.coil.x);
+        const polarity = this.magnet.flipped ? -1 : 1;
+        const sigma = 150; 
+        const rawFlux = Math.exp(-(dist*dist)/(2*sigma*sigma));
+        const areaFactor = (this.coil.radius / 60) * (this.coil.radius / 60);
+        
+        this.physics.flux = rawFlux * this.physics.strength * areaFactor * polarity;
+        const dFlux = this.physics.flux - this.physics.prevFlux;
+        this.physics.voltage = -this.coil.loops * dFlux * 50; 
+        this.physics.prevFlux = this.physics.flux;
+
+        this.physics.history.push(this.physics.voltage);
+        if(this.physics.history.length > 300) this.physics.history.shift();
+
+        this.updateUIComponents();
+    },
+
+    updateUIComponents() {
+        const v = this.physics.voltage;
+        let angle = v * 5; 
+        if(angle > 60) angle = 60; if(angle < -60) angle = -60;
+        document.getElementById('needle').style.transform = `translateX(-50%) rotate(${angle}deg)`;
+        document.getElementById('valVolt').innerText = v.toFixed(2);
+        
+        const brightness = Math.min(Math.abs(v) * 20, 100); 
+        const bulb = document.getElementById('bulb');
+        
+        if(brightness > 5) {
+            bulb.style.background = `rgb(255, 255, ${255 - brightness*2})`; 
+            bulb.style.boxShadow = `0 0 ${brightness}px ${brightness/2}px rgba(245, 158, 11, ${brightness/100})`;
+            bulb.style.borderColor = "#f59e0b";
+        } else {
+            bulb.style.background = "#e2e8f0";
+            bulb.style.boxShadow = "none";
+            bulb.style.borderColor = "#cbd5e1";
+        }
+    },
+
+    draw() {
+        if (window.innerWidth <= 768) return;
+        
+        const ctx = this.ctx;
+        ctx.clearRect(0, 0, this.width, this.height);
+
+        // Arka Bobin
+        this.drawCoil(ctx, true);
+        
+        // Mıknatıs (Modern)
+        this.drawMagnet(ctx);
+        
+        // Manyetik Alan Çizgileri
+        this.drawFieldLines(ctx);
+        
+        // Ön Bobin
+        this.drawCoil(ctx, false);
+        
+        // Grafiği çiz
+        this.drawGraph();
+    },
+
+    drawMagnet(ctx) {
+        const m = this.magnet;
+        const r = 8;
+        ctx.save();
+        ctx.translate(m.x, m.y);
+        
+        ctx.shadowColor = 'rgba(0,0,0,0.15)'; ctx.shadowBlur = 15; ctx.shadowOffsetY = 8;
+
+        // Güney (Mavi)
+        let colLeft = m.flipped ? "#f87171" : "#60a5fa";
+        let colLeftDark = m.flipped ? "#dc2626" : "#2563eb";
+        let grdS = ctx.createLinearGradient(-m.w/2, -m.h/2, -m.w/2, m.h/2);
+        grdS.addColorStop(0, colLeft); grdS.addColorStop(1, colLeftDark);
+        ctx.fillStyle = grdS;
+        
+        ctx.beginPath();
+        if(ctx.roundRect) ctx.roundRect(-m.w/2, -m.h/2, m.w/2, m.h, {tl: r, bl: r, tr: 0, br: 0});
+        else ctx.fillRect(-m.w/2, -m.h/2, m.w/2, m.h);
+        ctx.fill();
+
+        // Kuzey (Kırmızı)
+        let colRight = m.flipped ? "#60a5fa" : "#f87171";
+        let colRightDark = m.flipped ? "#2563eb" : "#dc2626";
+        let grdN = ctx.createLinearGradient(0, -m.h/2, 0, m.h/2);
+        grdN.addColorStop(0, colRight); grdN.addColorStop(1, colRightDark);
+        ctx.fillStyle = grdN;
+        
+        ctx.beginPath();
+        if(ctx.roundRect) ctx.roundRect(0, -m.h/2, m.w/2, m.h, {tl: 0, bl: 0, tr: r, br: r});
+        else ctx.fillRect(0, -m.h/2, m.w/2, m.h);
+        ctx.fill();
+
+        ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+        
+        ctx.fillStyle = "white"; ctx.font = "bold 24px Inter"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.fillText(m.flipped ? "N" : "S", -m.w/4, 2);
+        ctx.fillText(m.flipped ? "S" : "N", m.w/4, 2);
+        
+        ctx.restore();
+    },
+
+    drawCoil(ctx, backLayer) {
+        const c = this.coil;
+        const w = 160; 
+        const loops = c.loops;
+        const step = w / loops;
+        ctx.lineWidth = 8; ctx.lineCap = "round";
+        const startX = c.x - w/2;
+
+        if(backLayer) {
+            ctx.fillStyle = "rgba(241, 245, 249, 0.4)";
+            ctx.beginPath();
+            if(ctx.roundRect) ctx.roundRect(startX, c.y - c.radius + 5, w, (c.radius*2) - 10, 8);
+            else ctx.fillRect(startX, c.y - c.radius + 5, w, (c.radius*2) - 10);
+            ctx.fill();
+        }
+
+        for(let i=0; i<loops; i++) {
+            const loopX = startX + i*step;
+            if(backLayer) {
+                ctx.beginPath(); ctx.strokeStyle = "#92400e"; 
+                ctx.ellipse(loopX + step/2, c.y, step/3, c.radius, 0, Math.PI/2, Math.PI*1.5); 
+                ctx.stroke();
+            } else {
+                ctx.beginPath();
+                const glow = Math.min(Math.abs(this.physics.voltage)*8, 100);
+                ctx.strokeStyle = `rgb(${245}, ${158 + glow}, ${11})`; 
+                ctx.shadowBlur = glow/2; ctx.shadowColor = "#f97316";
+                ctx.ellipse(loopX + step/2, c.y, step/3, c.radius, 0, Math.PI*1.5, Math.PI/2); 
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+            }
+        }
+    },
+
+    drawFieldLines(ctx) {
+        const m = this.magnet;
+        ctx.save();
+        ctx.translate(m.x, m.y);
+        ctx.globalAlpha = 0.2;
+        ctx.strokeStyle = m.flipped ? "#3b82f6" : "#ef4444";
+        ctx.lineWidth = 2;
+        for(let r=50; r<=110; r+=25) {
+            ctx.beginPath();
+            ctx.ellipse(0, 0, m.w/2 + r*1.8, m.h/2 + r, 0, 0, Math.PI*2);
+            ctx.stroke();
+        }
+        ctx.restore();
+    },
+
+    drawGraph() {
+        const ctx = this.gCtx;
+        const w = this.gw; const h = this.gh;
+        ctx.clearRect(0,0,w,h);
+
+        ctx.strokeStyle = "#f1f5f9"; ctx.lineWidth=2;
+        ctx.beginPath(); ctx.moveTo(0, h/2); ctx.lineTo(w, h/2); ctx.stroke();
+
+        ctx.beginPath();
+        ctx.strokeStyle = "#f97316"; ctx.lineWidth = 2.5;
+        const data = this.physics.history;
+        const step = w / 300;
+        for(let i=0; i<data.length; i++) {
+            const x = i * step;
+            const y = h/2 - (data[i] * 3); 
+            if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+        }
+        ctx.stroke();
+    },
+
+    setupEvents() {
+        const start = (e) => {
+            if (window.innerWidth <= 768) return;
+            const rect = this.canvas.getBoundingClientRect();
+            const cx = e.clientX || (e.touches ? e.touches[0].clientX : 0);
+            const mx = cx - rect.left;
+            const my = (e.clientY || (e.touches ? e.touches[0].clientY : 0)) - rect.top;
+
+            if(mx > this.magnet.x - this.magnet.w/2 - 30 && mx < this.magnet.x + this.magnet.w/2 + 30 &&
+               my > this.magnet.y - this.magnet.h/2 - 30 && my < this.magnet.y + this.magnet.h/2 + 30) {
+                this.isDragging = true;
+                this.dragOffset.x = mx - this.magnet.x;
+            }
+        };
+
+        const move = (e) => {
+            if(this.isDragging) {
+                const rect = this.canvas.getBoundingClientRect();
+                const cx = e.clientX || (e.touches ? e.touches[0].clientX : 0);
+                const mx = cx - rect.left;
+                this.magnet.x = mx - this.dragOffset.x;
+                
+                if(this.magnet.x < 80) this.magnet.x = 80;
+                if(this.magnet.x > this.width - 80) this.magnet.x = this.width - 80;
+            }
+        };
+
+        const end = () => { this.isDragging = false; };
+
+        this.canvas.addEventListener('mousedown', start);
+        window.addEventListener('mousemove', move);
+        window.addEventListener('mouseup', end);
+        this.canvas.addEventListener('touchstart', (e) => { e.preventDefault(); start(e); }, {passive:false});
+        window.addEventListener('touchmove', (e) => { e.preventDefault(); move(e); }, {passive:false});
+        window.addEventListener('touchend', end);
+    },
+
+    loop() {
+        this.updatePhysics();
+        this.draw();
+        requestAnimationFrame(() => this.loop());
+    }
+};
+
+app.init();
+</script>
+</body>
+</html>
