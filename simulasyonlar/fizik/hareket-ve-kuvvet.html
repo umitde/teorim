@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hareket ve Kuvvet | Teorim</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-app: #f8fafc;
+            --accent: #f97316; /* Teorim Fizik Turuncusu */
+            --accent-soft: #fff7ed;
+            --border: #e2e8f0;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+        }
+
+        body { margin: 0; padding: 0; background: var(--bg-app); color: var(--text-dark); font-family: 'Inter', sans-serif; height: 100vh; display: flex; overflow: hidden; }
+
+        #mobile-warning { display: none; position: fixed; inset: 0; background: #0f172a; color: white; z-index: 10000; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; }
+        @media (max-width: 768px) or (orientation: portrait) { #mobile-warning { display: flex; } }
+        @keyframes phoneBounce { 0%, 100% { transform: translateY(0) rotate(-5deg); } 50% { transform: translateY(-20px) rotate(5deg); } }
+        .phone-icon { animation: phoneBounce 1.5s infinite ease-in-out; }
+
+        aside { width: 360px; flex-shrink: 0; background: white; border-right: 1px solid var(--border); padding: 24px; display: flex; flex-direction: column; gap: 20px; z-index: 20; overflow-y: auto; box-shadow: 4px 0 20px rgba(0,0,0,0.02); }
+
+        .header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+        .back-btn { padding: 8px; border-radius: 9999px; transition: 0.2s; color: var(--accent); cursor: pointer; display: flex; align-items: center; justify-content: center; background: transparent; }
+        .back-btn:hover { background: var(--accent-soft); transform: translateX(-2px); }
+        .header-title { font-weight: 700; font-size: 1.1rem; color: var(--text-dark); }
+
+        .math-card { background: #1e293b; color: white; padding: 20px; border-radius: 20px; text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.1); position: relative; overflow: hidden; border: 1px solid #334155; flex-shrink: 0; }
+        .math-card::after { content: ''; position: absolute; top: -50%; right: -50%; width: 100%; height: 100%; background: var(--accent); opacity: 0.15; filter: blur(60px); transform: rotate(-45deg); }
+        .card-label { font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; position: relative; z-index: 2; }
+        .card-display { font-family: 'JetBrains Mono'; font-size: 1.8rem; font-weight: 800; color: #f1f5f9; position: relative; z-index: 2; }
+        .hierarchy { font-size: 11px; color: var(--accent); margin-top: 8px; font-weight: 800; letter-spacing: 1px; }
+
+        .section-title { font-size: 11px; font-weight: 800; color: #cbd5e1; text-transform: uppercase; letter-spacing: 1.5px; border-bottom: 2px solid var(--border); padding-bottom: 4px; }
+
+        .control-group { background: #f8fafc; padding: 14px; border-radius: 16px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; }
+        
+        .surface-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+        .surf-btn { padding: 10px; font-size: 12px; font-family: 'Inter'; font-weight: 700; border: 2px solid var(--border); background: white; border-radius: 10px; color: var(--text-muted); cursor: pointer; transition: 0.2s; }
+        .surf-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .surf-btn.active { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+
+        input[type="range"] { -webkit-appearance: none; background: #cbd5e1; height: 6px; border-radius: 4px; outline: none; width: 100%; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: var(--accent); border: 3px solid white; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+
+        .analysis-group { background: #f8fafc; padding: 14px; border-radius: 16px; border: 1px solid var(--border); display: grid; grid-template-columns: 1fr 1fr; gap: 12px; flex-shrink: 0; }
+        .analysis-item { display: flex; flex-direction: column; gap: 2px; }
+        .a-label { font-size: 9px; font-weight: 800; color: #94a3b8; text-transform: uppercase; }
+        .a-val { font-size: 14px; font-weight: 800; color: var(--text-dark); font-family: 'JetBrains Mono'; }
+        
+        .chart-container { height: 70px; min-height: 70px; width: 100%; background: white; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+        #chartCanvas { width: 100%; height: 100%; display: block; }
+
+        main { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; background: white; overflow: hidden; }
+        .dots { position: absolute; inset: 0; background-image: radial-gradient(var(--border) 1.5px, transparent 1.5px); background-size: 40px 40px; pointer-events: none; opacity: 0.7; }
+        canvas#simCanvas { position: absolute; z-index: 10; width: 100%; height: 100%; }
+        
+        .overlay-instruction { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); background: #1e293b; color: white; padding: 10px 24px; border-radius: 30px; font-weight: 700; font-size: 13px; pointer-events: none; box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 20; letter-spacing: 0.5px; }
+    </style>
+</head>
+<body>
+
+<div id="mobile-warning">
+    <div class="phone-icon mb-6">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+        </svg>
+    </div>
+    <h2 class="text-2xl font-bold mb-2">Yatay Konuma Geçin</h2>
+    <p class="text-slate-400 text-sm max-w-xs">Görsel laboratuvar için cihazınızı yan çevirin.</p>
+</div>
+
+<aside>
+    <div class="header">
+        <div class="back-btn" onclick="window.history.back()">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7h18" /></svg>
+        </div>
+        <h1 class="header-title">Hareket ve Kuvvet</h1>
+    </div>
+
+    <div class="math-card">
+        <div class="card-label">Newton'un 2. Yasası</div>
+        <div class="card-display">F<sub>net</sub> = m · a</div>
+        <div class="hierarchy">Kutuyu tut ve sağa/sola çek</div>
+    </div>
+
+    <div>
+        <div class="section-title mb-3">Zemin ve Sürtünme (<span id="lblMu">μ = 0.5</span>)</div>
+        <div class="control-group">
+            <div class="surface-grid">
+                <button class="surf-btn" onclick="app.setSurface('ice')">Buz</button>
+                <button class="surf-btn active" onclick="app.setSurface('wood')">Tahta</button>
+                <button class="surf-btn" onclick="app.setSurface('carpet')">Halı</button>
+            </div>
+            <input type="range" id="slMu" min="0" max="1.0" step="0.05" value="0.5">
+        </div>
+    </div>
+
+    <div>
+        <div class="section-title mb-3">Kütle (<span id="lblMass">50 kg</span>)</div>
+        <div class="control-group">
+            <input type="range" id="slMass" min="10" max="200" step="10" value="50">
+        </div>
+    </div>
+
+    <div>
+        <div class="section-title mb-3">Hareket Analizi</div>
+        <div class="analysis-group">
+            <div class="analysis-item"><span class="a-label">Hız (v)</span><span class="a-val" id="valVel">0.0 m/s</span></div>
+            <div class="analysis-item"><span class="a-label">İvme (a)</span><span class="a-val" id="valAcc">0.0 m/s²</span></div>
+            <div class="analysis-item"><span class="a-label text-orange-500">F Uygulanan</span><span class="a-val text-orange-500" id="valFapp">0 N</span></div>
+            <div class="analysis-item"><span class="a-label text-red-500">F Sürtünme</span><span class="a-val text-red-500" id="valFfric">0 N</span></div>
+        </div>
+    </div>
+
+    <div style="flex-shrink: 0;">
+        <div class="section-title mb-3">Hız - Zaman Grafiği</div>
+        <div class="chart-container">
+            <canvas id="chartCanvas"></canvas>
+        </div>
+    </div>
+</aside>
+
+<main id="mainContainer">
+    <div class="dots"></div>
+    <div class="overlay-instruction">Kutuyu TUT ve SÜRÜKLE</div>
+    <canvas id="simCanvas"></canvas>
+</main>
+
+<script>
+    const app = {
+        canvas: document.getElementById('simCanvas'),
+        ctx: null,
+        chartCanvas: document.getElementById('chartCanvas'),
+        chartCtx: null,
+        main: document.getElementById('mainContainer'),
+        
+        width: 800, height: 600, 
+        
+        state: {
+            pos: 400, vel: 0, acc: 0,
+            mass: 50, mu: 0.5, g: 9.8,
+            appliedForce: 0, frictionForce: 0, netForce: 0,
+            isDragging: false, dragStartX: 0, dragCurrentX: 0,
+            time: 0, historyVel: []
+        },
+
+        floorY: 400,
+        boxSize: 80,
+        
+        surfaces: {
+            ice: { color: "#f0f9ff", mu: 0.05 },
+            wood: { color: "#ffffff", mu: 0.5 },
+            carpet: { color: "#f8fafc", mu: 0.9 }
+        },
+        currentSurface: 'wood',
+
+        init: function() {
+            this.ctx = this.canvas.getContext('2d');
+            this.chartCtx = this.chartCanvas.getContext('2d');
+            
+            this.resize();
+            window.addEventListener('resize', () => this.resize());
+            this.setupEvents();
+
+            document.getElementById('slMass').addEventListener('input', (e) => {
+                this.state.mass = parseInt(e.target.value);
+                document.getElementById('lblMass').innerText = this.state.mass + " kg";
+            });
+            document.getElementById('slMu').addEventListener('input', (e) => {
+                this.state.mu = parseFloat(e.target.value);
+                this.updateSurfaceUI();
+            });
+
+            this.updateSurfaceUI();
+            setTimeout(() => { this.resize(); }, 100);
+            this.loop();
+        },
+
+        resize: function() {
+            const dpr = window.devicePixelRatio || 1;
+            this.width = this.main.clientWidth || 800;
+            this.height = this.main.clientHeight || 600;
+            
+            this.canvas.width = this.width * dpr;
+            this.canvas.height = this.height * dpr;
+            this.ctx.scale(dpr, dpr);
+            
+            const chartBox = this.chartCanvas.parentElement.getBoundingClientRect();
+            this.chartCanvas.width = chartBox.width * dpr;
+            this.chartCanvas.height = chartBox.height * dpr;
+            this.chartCtx.scale(dpr, dpr);
+            
+            this.floorY = this.height * 0.7;
+        },
+
+        setSurface: function(type) {
+            this.currentSurface = type;
+            this.state.mu = this.surfaces[type].mu;
+            document.getElementById('slMu').value = this.state.mu;
+            document.querySelectorAll('.surf-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            this.updateSurfaceUI();
+        },
+
+        updateSurfaceUI: function() {
+            document.getElementById('lblMu').innerText = "μ = " + this.state.mu.toFixed(2);
+            this.main.style.backgroundColor = this.surfaces[this.currentSurface].color;
+        },
+
+        updatePhysics: function() {
+            const s = this.state;
+            
+            if (s.pos < 0 || s.pos > this.width || s.pos === 0) {
+                s.pos = this.width / 2; s.vel = 0;
+            }
+
+            if (s.isDragging) {
+                const diff = s.dragCurrentX - s.dragStartX;
+                s.appliedForce = diff * 2;
+                if(s.appliedForce > 2000) s.appliedForce = 2000;
+                if(s.appliedForce < -2000) s.appliedForce = -2000;
+            } else {
+                s.appliedForce = 0;
+            }
+
+            const normal = s.mass * s.g;
+            const maxFric = s.mu * normal;
+            
+            if (Math.abs(s.vel) < 0.1) {
+                if (Math.abs(s.appliedForce) <= maxFric) {
+                    s.frictionForce = -s.appliedForce;
+                    s.vel = 0;
+                } else {
+                    s.frictionForce = -Math.sign(s.appliedForce) * maxFric;
+                }
+            } else {
+                s.frictionForce = -Math.sign(s.vel) * maxFric;
+            }
+
+            s.netForce = s.appliedForce + s.frictionForce;
+            
+            if (Math.abs(s.vel) < 0.1 && Math.abs(s.netForce) < 5) {
+                s.netForce = 0; s.acc = 0; s.vel = 0;
+            } else {
+                s.acc = s.netForce / s.mass;
+            }
+
+            const dt = 1/60;
+            s.vel += s.acc * dt;
+            
+            if (!s.isDragging && Math.abs(s.vel) < 0.5 && Math.abs(s.appliedForce) < 1) {
+                s.vel *= 0.9;
+                if(Math.abs(s.vel) < 0.05) s.vel = 0;
+            }
+            
+            s.pos += s.vel * 10 * dt;
+
+            const padding = 60;
+            if(s.pos < padding) { s.pos = padding; s.vel = 0; }
+            if(s.pos > this.width - padding) { s.pos = this.width - padding; s.vel = 0; }
+
+            if (this.state.time % 5 === 0) { 
+                this.state.historyVel.push(s.vel);
+                if(this.state.historyVel.length > 60) this.state.historyVel.shift();
+            }
+            this.state.time++;
+
+            document.getElementById('valVel').innerText = s.vel.toFixed(1) + " m/s";
+            document.getElementById('valAcc').innerText = s.acc.toFixed(1) + " m/s²";
+            document.getElementById('valFapp').innerText = Math.round(s.appliedForce) + " N";
+            document.getElementById('valFfric').innerText = Math.round(s.frictionForce) + " N";
+        },
+
+        draw: function() {
+            const ctx = this.ctx;
+            const s = this.state;
+            const w = this.width; const h = this.height;
+
+            ctx.clearRect(0, 0, w, h);
+
+            // Zemin
+            ctx.beginPath();
+            ctx.moveTo(0, this.floorY); 
+            ctx.lineTo(w, this.floorY);
+            ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 4; ctx.stroke();
+
+            // Kutu
+            const scale = 0.8 + (s.mass / 200) * 0.4;
+            const bSize = this.boxSize * scale;
+            const bx = s.pos; 
+            const by = this.floorY - bSize; 
+
+            ctx.fillStyle = "#1e293b"; 
+            ctx.beginPath(); ctx.roundRect(bx - bSize/2, by, bSize, bSize, 8); ctx.fill();
+            ctx.lineWidth = 2; ctx.strokeStyle = "#0f172a"; ctx.stroke();
+
+            ctx.fillStyle = "white"; ctx.font = "bold 16px JetBrains Mono"; ctx.textAlign = "center";
+            ctx.fillText(s.mass + " kg", bx, by + bSize/2 + 6);
+
+            // Vektörler
+            if (Math.abs(s.appliedForce) > 5) this.drawArrow(bx, by + bSize/2, s.appliedForce * 0.2, "#f97316", "F");
+            if (Math.abs(s.frictionForce) > 5) this.drawArrow(bx, this.floorY + 15, s.frictionForce * 0.2, "#ef4444", "Fs");
+
+            // Çekme Çizgisi
+            if (s.isDragging) {
+                ctx.beginPath();
+                ctx.moveTo(bx, by + bSize/2); ctx.lineTo(s.dragCurrentX, by + bSize/2);
+                ctx.strokeStyle = "rgba(249, 115, 22, 0.4)"; ctx.lineWidth = 3; 
+                ctx.setLineDash([6, 6]); ctx.stroke(); ctx.setLineDash([]);
+                
+                ctx.beginPath(); ctx.arc(s.dragCurrentX, by + bSize/2, 8, 0, Math.PI*2); 
+                ctx.fillStyle = "#f97316"; ctx.fill();
+            }
+
+            this.drawChart();
+        },
+
+        drawArrow: function(x, y, len, color, label) {
+            if (len > 200) len = 200; if (len < -200) len = -200;
+            const ctx = this.ctx;
+            ctx.beginPath(); ctx.strokeStyle = color; ctx.lineWidth = 4;
+            ctx.moveTo(x, y); ctx.lineTo(x + len, y); ctx.stroke();
+            
+            const dir = Math.sign(len);
+            const tipX = x + len;
+            ctx.beginPath(); ctx.moveTo(tipX, y);
+            ctx.lineTo(tipX - dir*10, y - 8); ctx.lineTo(tipX - dir*10, y + 8);
+            ctx.fillStyle = color; ctx.fill();
+
+            ctx.fillStyle = color; ctx.font = "bold 14px Inter";
+            ctx.fillText(label, x + len/2, y - 12);
+        },
+
+        drawChart: function() {
+            const ctx = this.chartCtx;
+            if (!ctx) return;
+            const w = this.chartCanvas.width / (window.devicePixelRatio || 1); 
+            const h = this.chartCanvas.height / (window.devicePixelRatio || 1);
+            const data = this.state.historyVel;
+
+            ctx.clearRect(0, 0, w, h);
+            ctx.strokeStyle = "#f1f5f9"; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(0, h/2); ctx.lineTo(w, h/2); ctx.stroke();
+
+            if(data.length < 2) return;
+            ctx.beginPath(); ctx.strokeStyle = "#f97316"; ctx.lineWidth = 2.5;
+            const maxVal = 20;
+            for(let i=0; i<data.length; i++) {
+                const x = (i / 60) * w;
+                const val = Math.max(-maxVal, Math.min(maxVal, data[i]));
+                const y = (h/2) - (val / maxVal) * (h/2);
+                if(i===0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+        },
+
+        setupEvents: function() {
+            const start = (e) => {
+                const rect = this.canvas.getBoundingClientRect();
+                const mx = (e.clientX || e.touches[0].clientX) - rect.left;
+                const my = (e.clientY || e.touches[0].clientY) - rect.top;
+                
+                const bx = this.state.pos; 
+                const bSize = this.boxSize * (0.8 + (this.state.mass/200)*0.4);
+                const by = this.floorY - bSize;
+
+                if (mx > bx - bSize - 50 && mx < bx + bSize + 50 &&
+                    my > by - 50 && my < this.floorY + 50) {
+                    this.state.isDragging = true;
+                    this.state.dragStartX = mx;
+                    this.state.dragCurrentX = mx;
+                }
+            };
+            
+            const move = (e) => {
+                if(!this.state.isDragging) return;
+                const rect = this.canvas.getBoundingClientRect();
+                this.state.dragCurrentX = (e.clientX || e.touches[0].clientX) - rect.left;
+            };
+
+            const end = () => { this.state.isDragging = false; };
+
+            this.canvas.addEventListener('mousedown', start);
+            window.addEventListener('mousemove', move);
+            window.addEventListener('mouseup', end);
+            this.canvas.addEventListener('touchstart', (e) => { e.preventDefault(); start(e); }, {passive:false});
+            window.addEventListener('touchmove', (e) => { e.preventDefault(); move(e); }, {passive:false});
+            window.addEventListener('touchend', end);
+        },
+
+        loop: function() {
+            this.updatePhysics();
+            this.draw();
+            requestAnimationFrame(() => this.loop());
+        }
+    };
+
+    app.init();
+</script>
+</body>
+</html>
