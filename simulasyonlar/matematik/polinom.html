@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polinom Analizi | Teorim</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-app: #f8fafc;
+            --accent: #fb923c;
+            --accent-soft: #fff7ed;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+        }
+
+        body { 
+            margin: 0; padding: 0; background: var(--bg-app); 
+            color: var(--text-dark); font-family: 'Inter', sans-serif; 
+            height: 100vh; display: flex; overflow: hidden; 
+        }
+
+        /* --- MOBİL UYARI (TAM STANDART) --- */
+        #mobile-warning { 
+            display: none; position: fixed; inset: 0; background: #0f172a; color: white; 
+            z-index: 10000; flex-direction: column; align-items: center; justify-content: center; 
+            text-align: center; padding: 24px; 
+        }
+        @media (max-width: 768px) or (orientation: portrait) { #mobile-warning { display: flex; } }
+
+        @keyframes phoneBounce { 0%, 100% { transform: translateY(0) rotate(-5deg); } 50% { transform: translateY(-20px) rotate(5deg); } }
+        .phone-icon { animation: phoneBounce 1.5s infinite ease-in-out; }
+
+        /* --- SOL PANEL --- */
+        aside { 
+            width: 360px; flex-shrink: 0; background: white; 
+            border-right: 1px solid var(--border); padding: 24px; 
+            display: flex; flex-direction: column; gap: 20px; 
+            z-index: 20; overflow-y: auto; box-shadow: 4px 0 20px rgba(0,0,0,0.02);
+        }
+
+        .header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+        .back-btn {
+            padding: 8px; border-radius: 9999px; transition: 0.2s; color: var(--accent);
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            background: transparent;
+        }
+        .back-btn:hover { background: var(--accent-soft); transform: translateX(-2px); }
+        .header-title { font-weight: 700; font-size: 1.1rem; color: var(--text-dark); }
+
+        .math-card {
+            background: #1e293b; color: white; padding: 20px; border-radius: 16px;
+            text-align: center; box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            position: relative; overflow: hidden; border: 1px solid #334155;
+        }
+        .math-card::after { content: ''; position: absolute; top: -50%; right: -50%; width: 100%; height: 100%; background: var(--accent); opacity: 0.15; filter: blur(60px); transform: rotate(-45deg); }
+        .formula-label { font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 8px; position: relative; z-index: 2; }
+        .formula-display { font-family: 'JetBrains Mono'; font-size: 1.1rem; font-weight: 700; color: #f1f5f9; line-height: 1.5; position: relative; z-index: 2; }
+        .accent-val { color: var(--accent); }
+
+        .section-title { font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid var(--border); padding-bottom: 4px; }
+
+        .control-group { background: #f1f5f9; padding: 16px; border-radius: 16px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 14px; }
+        .slider-row { display: flex; align-items: center; gap: 12px; }
+        .slider-label { width: 15px; font-family: 'JetBrains Mono'; font-weight: 800; color: var(--text-dark); }
+        input[type="range"] { flex: 1; -webkit-appearance: none; background: #cbd5e1; height: 6px; border-radius: 4px; outline: none; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; background: var(--accent); border: 3px solid white; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.2); transition: transform 0.1s; }
+        input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.1); }
+        .slider-val { width: 35px; font-family: 'JetBrains Mono'; font-size: 0.85rem; font-weight: 700; text-align: right; color: var(--text-muted); }
+
+        .preset-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        .preset-btn {
+            padding: 10px; border-radius: 10px; border: 2px solid var(--border); background: white;
+            font-size: 11px; font-weight: 700; color: var(--text-muted); transition: 0.2s; text-align: center;
+        }
+        .preset-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+
+        main { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; background: white; overflow: hidden; }
+        .grid-bg { position: absolute; inset: 0; background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px); background-size: 40px 40px; opacity: 0.5; pointer-events: none; }
+        canvas { position: absolute; z-index: 10; width: 100%; height: 100%; }
+
+        #mini-3d {
+            position: absolute; bottom: 20px; left: 20px; width: 150px; height: 150px;
+            background: rgba(255,255,255,0.9); backdrop-filter: blur(5px);
+            border-radius: 16px; border: 2px solid var(--border); z-index: 30;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+
+        #coord-card {
+            position: absolute; top: 20px; right: 20px; z-index: 30;
+            background: white; padding: 12px 16px; border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08); border: 2px solid var(--border);
+            display: none; flex-direction: column;
+        }
+        .coord-val { font-family: 'JetBrains Mono'; font-size: 1rem; font-weight: 800; color: var(--accent); }
+    </style>
+</head>
+<body>
+
+<div id="mobile-warning">
+    <div class="phone-icon mb-6">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+        </svg>
+    </div>
+    <h2 class="text-2xl font-bold mb-2">Lütfen Cihazı Yatay Tutun</h2>
+    <p class="text-slate-400 text-sm max-w-xs">Simülasyonu görüntülemek için geniş bir ekrana ihtiyacınız var.</p>
+</div>
+
+<aside>
+    <div class="header">
+        <div class="back-btn" onclick="window.history.back()">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+        </div>
+        <h1 class="header-title">Polinom</h1>
+    </div>
+
+    <div class="math-card">
+        <div class="formula-label">Aktif Fonksiyon</div>
+        <div class="formula-display" id="formulaDisp">P(x) = x³ - 4x</div>
+    </div>
+
+    <div>
+        <div class="section-title mb-3">Katsayı Kontrolü</div>
+        <div class="control-group">
+            <div class="slider-row">
+                <span class="slider-label">a</span>
+                <input type="range" id="slA" min="-3" max="3" step="0.1" value="1">
+                <span class="slider-val" id="valA">1.0</span>
+            </div>
+            <div class="slider-row">
+                <span class="slider-label">b</span>
+                <input type="range" id="slB" min="-5" max="5" step="0.5" value="0">
+                <span class="slider-val" id="valB">0.0</span>
+            </div>
+            <div class="slider-row">
+                <span class="slider-label">c</span>
+                <input type="range" id="slC" min="-10" max="10" step="1" value="-4">
+                <span class="slider-val" id="valC">-4.0</span>
+            </div>
+            <div class="slider-row">
+                <span class="slider-label">d</span>
+                <input type="range" id="slD" min="-5" max="5" step="0.5" value="0">
+                <span class="slider-val" id="valD">0.0</span>
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <div class="section-title mb-3">Hızlı Şablonlar</div>
+        <div class="preset-grid">
+            <button class="preset-btn" onclick="sim.set(0,1,0,0)">Parabol (x²)</button>
+            <button class="preset-btn" onclick="sim.set(1,0,-4,0)">Kübik (x³-4x)</button>
+            <button class="preset-btn" onclick="sim.set(0,0,2,1)">Doğru (2x+1)</button>
+            <button class="preset-btn" onclick="sim.set(1,0,-2,1)">"S" Kıvrımı</button>
+        </div>
+    </div>
+
+    <div class="mt-auto p-4 bg-orange-50 rounded-xl border border-orange-100 text-xs text-orange-800 leading-relaxed">
+        <strong class="block uppercase text-[10px] mb-1 text-orange-600">İpucu:</strong>
+        Grafikteki <span class="font-bold text-red-500">kırmızı noktalar</span> kökleri, turuncu nokta ise mouse konumunu gösterir.
+    </div>
+</aside>
+
+<main id="main">
+    <div class="grid-bg"></div>
+    <div id="coord-card">
+        <span class="text-[10px] font-bold text-slate-400 uppercase">Koordinat</span>
+        <div class="coord-val" id="coordVal">(0.0, 0.0)</div>
+    </div>
+    <canvas id="canvas"></canvas>
+    <canvas id="mini-3d"></canvas>
+</main>
+
+<script>
+const sim = {
+    canvas: document.getElementById('canvas'),
+    ctx: document.getElementById('canvas').getContext('2d'),
+    m3dCtx: document.getElementById('mini-3d').getContext('2d'),
+    
+    a: 1, b: 0, c: -4, d: 0, scale: 45, mouseX: -1, time: 0,
+
+    init() {
+        window.onresize = () => this.resize();
+        this.resize();
+        
+        ['A','B','C','D'].forEach(k => {
+            const sl = document.getElementById('sl'+k);
+            sl.oninput = (e) => {
+                this[k.toLowerCase()] = parseFloat(e.target.value);
+                this.updateUI();
+            };
+        });
+
+        this.canvas.onmousemove = (e) => {
+            const r = this.canvas.getBoundingClientRect();
+            this.mouseX = e.clientX - r.left;
+        };
+        this.canvas.onmouseleave = () => this.mouseX = -1;
+
+        this.updateUI();
+        this.loop();
+    },
+
+    resize() {
+        const dpr = window.devicePixelRatio || 1;
+        const main = document.getElementById('main');
+        this.w = main.clientWidth; this.h = main.clientHeight;
+        this.canvas.width = this.w * dpr; this.canvas.height = this.h * dpr;
+        this.ctx.scale(dpr, dpr);
+        
+        const m3d = document.getElementById('mini-3d');
+        m3d.width = 150 * dpr; m3d.height = 150 * dpr;
+        this.m3dCtx.scale(dpr, dpr);
+    },
+
+    set(a,b,c,d) { this.a=a; this.b=b; this.c=c; this.d=d; this.updateUI(); },
+
+    updateUI() {
+        ['a','b','c','d'].forEach(k => {
+            document.getElementById('sl'+k.toUpperCase()).value = this[k];
+            document.getElementById('val'+k.toUpperCase()).innerText = this[k].toFixed(1);
+        });
+
+        let eq = "";
+        const terms = [{c:this.a, p:"x³"}, {c:this.b, p:"x²"}, {c:this.c, p:"x"}];
+        let first = true;
+
+        terms.forEach(t => {
+            if (t.c === 0) return;
+            if (first) {
+                eq += (t.c < 0 ? "-" : "") + (Math.abs(t.c) === 1 ? "" : Math.abs(t.c)) + t.p;
+                first = false;
+            } else {
+                eq += (t.c > 0 ? " + " : " - ") + (Math.abs(t.c) === 1 ? "" : Math.abs(t.c)) + t.p;
+            }
+        });
+
+        if (this.d !== 0 || first) {
+            if (first) eq += this.d;
+            else eq += (this.d > 0 ? " + " : " - ") + Math.abs(this.d);
+        }
+        
+        document.getElementById('formulaDisp').innerHTML = `P(x) = <span class="accent-val">${eq}</span>`;
+    },
+
+    f(x) { return (this.a * x**3) + (this.b * x**2) + (this.c * x) + this.d; },
+
+    loop() {
+        this.ctx.clearRect(0, 0, this.w, this.h);
+        this.time += 0.015;
+        this.drawGrid();
+        this.drawCurve();
+        this.drawTracer();
+        this.draw3D();
+        requestAnimationFrame(() => this.loop());
+    },
+
+    drawGrid() {
+        const c = this.ctx; const ox = this.w/2, oy = this.h/2;
+        c.strokeStyle = '#94a3b8'; c.lineWidth = 2;
+        c.beginPath(); c.moveTo(0, oy); c.lineTo(this.w, oy); c.moveTo(ox, 0); c.lineTo(ox, this.h); c.stroke();
+        c.fillStyle = "#64748b"; c.font = "bold 11px Inter"; c.textAlign = "center"; c.textBaseline = "middle";
+        for(let i = -15; i <= 15; i++) {
+            if(i === 0) continue;
+            c.fillText(i, ox + i*this.scale, oy + 15);
+            c.fillText(i, ox - 15, oy - i*this.scale);
+        }
+    },
+
+    drawCurve() {
+        const c = this.ctx; const ox = this.w/2, oy = this.h/2;
+        c.strokeStyle = '#fb923c'; c.lineWidth = 3; c.lineJoin = 'round';
+        c.beginPath();
+        let first = true;
+        for(let px=0; px<this.w; px+=2) {
+            let mx = (px - ox) / this.scale;
+            let my = this.f(mx);
+            let py = oy - (my * this.scale);
+            if(py < -200 || py > this.h+200) { first = true; continue; }
+            if(first) { c.moveTo(px, py); first = false; } else c.lineTo(px, py);
+        }
+        c.stroke();
+        const step = 0.05;
+        c.fillStyle = '#ef4444';
+        for(let mx=-10; mx<=10; mx+=step) {
+            if(Math.sign(this.f(mx)) !== Math.sign(this.f(mx+step))) {
+                c.beginPath(); c.arc(ox + mx*this.scale, oy, 5, 0, Math.PI*2); c.fill();
+            }
+        }
+    },
+
+    drawTracer() {
+        const card = document.getElementById('coord-card');
+        if(this.mouseX < 0) { card.style.display = 'none'; return; }
+        const ox = this.w/2, oy = this.h/2;
+        const mx = (this.mouseX - ox) / this.scale;
+        const my = this.f(mx);
+        const py = oy - (my * this.scale);
+        if(py < 0 || py > this.h) { card.style.display = 'none'; return; }
+        card.style.display = 'flex';
+        document.getElementById('coordVal').innerText = `(${mx.toFixed(1)}, ${my.toFixed(1)})`;
+        const c = this.ctx;
+        c.fillStyle = '#fb923c'; c.beginPath(); c.arc(this.mouseX, py, 6, 0, Math.PI*2); c.fill();
+        c.strokeStyle = '#fb923c'; c.setLineDash([6,6]); c.lineWidth = 1.5;
+        c.beginPath(); c.moveTo(this.mouseX, py); c.lineTo(ox, py); c.moveTo(this.mouseX, py); c.lineTo(this.mouseX, oy); c.stroke();
+        c.setLineDash([]);
+    },
+
+    draw3D() {
+        const c = this.m3dCtx; c.clearRect(0,0,150,150);
+        const cx = 75, cy = 75, scale = 4;
+        const angle = this.time * 0.4;
+        const proj = (x, y, z) => {
+            let x1 = x * Math.cos(angle) - z * Math.sin(angle);
+            let z1 = x * Math.sin(angle) + z * Math.cos(angle);
+            let y1 = y * 0.6 - z1 * 0.4;
+            return [cx + x1 * scale, cy - y1 * scale];
+        };
+        c.strokeStyle = '#cbd5e1'; c.lineWidth = 1;
+        c.beginPath();
+        let [x0, y0] = proj(-15, 0, 0); c.moveTo(x0, y0); let [x1, y1] = proj(15, 0, 0); c.lineTo(x1, y1);
+        let [x2, y2] = proj(0, -15, 0); c.moveTo(x2, y2); let [x3, y3] = proj(0, 15, 0); c.lineTo(x3, y3);
+        c.stroke();
+        c.strokeStyle = '#fb923c'; c.lineWidth = 2;
+        c.beginPath();
+        let first = true;
+        for(let x=-8; x<=8; x+=0.2) {
+            let [px, py] = proj(x, this.f(x), 0);
+            if(px<5 || px>145 || py<5 || py>145) { first=true; continue; }
+            if(first) { c.moveTo(px, py); first=false; } else c.lineTo(px, py);
+        }
+        c.stroke();
+    }
+};
+sim.init();
+</script>
+</body>
+</html>
