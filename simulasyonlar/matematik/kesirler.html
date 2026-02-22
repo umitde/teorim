@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kesirler | Teorim</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-app: #f8fafc;
+            --bg-panel: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --col-accent: #f97316; /* Teorim Turuncu */
+            --col-indigo: #4f46e5;
+            --col-empty: #e2e8f0;
+            --border: #e2e8f0;
+            --radius: 16px;
+        }
+
+        body { 
+            margin: 0; padding: 0; background: var(--bg-app); 
+            color: var(--text-main); font-family: 'Inter', sans-serif; 
+            height: 100vh; display: flex; overflow: hidden; 
+            -webkit-font-smoothing: antialiased;
+        }
+
+        #mobile-warning { 
+            display: none; position: fixed; inset: 0; background: #0f172a; color: white; 
+            z-index: 9999; flex-direction: column; align-items: center; justify-content: center; 
+            text-align: center; padding: 24px; 
+        }
+        @media (max-width: 768px) or (orientation: portrait) { #mobile-warning { display: flex; } }
+
+        @keyframes phoneBounce { 0%, 100% { transform: translateY(0) rotate(-5deg); } 50% { transform: translateY(-20px) rotate(5deg); } }
+        .phone-icon { animation: phoneBounce 1.5s infinite ease-in-out; }
+
+        aside { 
+            width: 360px; flex-shrink: 0; background: var(--bg-panel); 
+            border-right: 1px solid var(--border); padding: 24px; 
+            display: flex; flex-direction: column; gap: 20px; 
+            z-index: 20; box-shadow: 4px 0 24px rgba(0,0,0,0.04);
+            overflow-y: auto;
+        }
+
+        .header { display: flex; align-items: center; gap: 14px; margin-bottom: 4px; }
+        .back-btn {
+            width: 44px; height: 44px; border-radius: 50%; background: #fff7ed; color: var(--col-accent);
+            display: flex; align-items: center; justify-content: center; transition: 0.2s; cursor: pointer; border: 1px solid #ffedd5;
+        }
+        .back-btn:hover { background: #ffedd5; transform: translateX(-2px); }
+
+        .section-title { font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+
+        .control-group { background: #f8fafc; padding: 16px; border-radius: var(--radius); border: 1px solid var(--border); }
+        .prop-row { display: flex; flex-direction: column; gap: 4px; margin-bottom: 15px; font-size: 0.8rem; font-weight: 700; }
+        .prop-row:last-child { margin-bottom: 0; }
+        .label-val { display: flex; justify-content: space-between; align-items: center; }
+        
+        .val-badge { font-family: 'JetBrains Mono'; font-weight: 800; color: white; font-size: 0.85rem; padding: 4px 10px; border-radius: 8px; background: var(--col-accent); box-shadow: 0 2px 5px rgba(249, 115, 22, 0.3); transition: 0.3s; }
+        .val-badge.indigo { background: var(--col-indigo); box-shadow: 0 2px 5px rgba(79, 70, 229, 0.3); }
+        
+        input[type="range"] { width: 100%; height: 6px; background: #e2e8f0; border-radius: 4px; appearance: none; cursor: pointer; margin-top: 6px; }
+        input[type=range]::-webkit-slider-thumb { appearance: none; width: 22px; height: 22px; background: white; border: 4px solid var(--col-accent); border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: 0.1s; }
+        input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+        #slDen::-webkit-slider-thumb { border-color: var(--col-indigo); }
+
+        main { flex: 1; position: relative; background: #ffffff; overflow: hidden; }
+        .dot-bg { position: absolute; inset: 0; background-image: radial-gradient(#cbd5e1 1.5px, transparent 1.5px); background-size: 30px 30px; opacity: 0.3; z-index: 1; pointer-events: none; }
+        canvas { display: block; width: 100%; height: 100%; position: absolute; z-index: 10; }
+    </style>
+</head>
+<body>
+
+<div id="mobile-warning">
+    <div class="phone-icon mb-6">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+        </svg>
+    </div>
+    <h2 class="text-2xl font-bold mb-2">Yatay Konuma Geçin</h2>
+    <p class="text-slate-400 text-sm max-w-xs">Matematik simülasyonunu tam görebilmek için cihazınızı yan çevirin.</p>
+</div>
+
+<aside>
+    <div class="flex items-center gap-3 mb-2">
+        <a href="../../dersler/matematik.html" class="p-2 hover:bg-orange-100 rounded-full text-orange-600 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+        </a>
+        <h1 class="font-bold text-xl text-slate-800">Kesirler</h1>
+    </div>
+
+    <div class="bg-slate-800 text-white p-6 rounded-2xl text-center shadow-lg relative overflow-hidden flex flex-col items-center">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-500 opacity-10 blur-3xl rounded-full"></div>
+        <div class="text-slate-400 font-bold text-xs uppercase tracking-widest mb-4">Matematiksel Gösterim</div>
+        
+        <div class="flex flex-col items-center justify-center font-mono text-5xl font-extrabold tracking-tight relative z-10">
+            <span class="text-orange-400 px-4" id="uiNum">3</span>
+            <div class="w-16 h-1.5 bg-slate-500 rounded-full my-2"></div>
+            <span class="text-indigo-400 px-4" id="uiDen">8</span>
+        </div>
+        
+        <div class="text-emerald-400 font-medium text-xs mt-5 flex items-center justify-center gap-1 bg-emerald-400/10 py-1.5 px-3 rounded-full w-max mx-auto" id="uiPercent">
+            Ondalık: 0.375 (%37.5)
+        </div>
+    </div>
+
+    <div class="section-title mt-4">Kesir Ayarları</div>
+    <div class="control-group">
+        <div class="prop-row">
+            <div class="label-val"><span class="text-orange-600">Pay (Seçilen)</span><span id="lblNum" class="val-badge">3</span></div>
+            <input type="range" id="slNum" min="0" max="8" step="1" value="3" oninput="sim.updateParams()">
+        </div>
+        <div class="prop-row mt-4">
+            <div class="label-val"><span class="text-indigo-600">Payda (Bütün)</span><span id="lblDen" class="val-badge indigo">8</span></div>
+            <input type="range" id="slDen" min="1" max="24" step="1" value="8" oninput="sim.updateParams()">
+        </div>
+    </div>
+
+    <div class="mt-auto p-4 bg-indigo-50 border border-indigo-100 rounded-xl" id="infoBox">
+        <p class="text-[10px] font-extrabold text-indigo-500 uppercase mb-1">Durum Raporu</p>
+        <p class="text-[11px] text-slate-700 leading-relaxed">Bir bütünü <b>8</b> eş parçaya böldük ve bu parçalardan <b>3</b> tanesini seçtik.</p>
+    </div>
+</aside>
+
+<main id="container">
+    <div class="dot-bg"></div>
+    <canvas id="simCanvas"></canvas>
+</main>
+
+<script>
+const sim = {
+    canvas: document.getElementById('simCanvas'),
+    ctx: null, w: 0, h: 0,
+    
+    num: 3, den: 8, time: 0,
+
+    init() {
+        this.ctx = this.canvas.getContext('2d');
+        window.addEventListener('resize', () => this.resize());
+        this.resize();
+        this.updateParams();
+        requestAnimationFrame(() => this.loop());
+    },
+
+    resize() {
+        const el = document.getElementById('container');
+        const dpr = window.devicePixelRatio || 1;
+        this.w = el.clientWidth; this.h = el.clientHeight;
+        this.canvas.width = this.w * dpr; this.canvas.height = this.h * dpr;
+        this.ctx.scale(dpr, dpr);
+    },
+
+    updateParams() {
+        let valDen = parseInt(document.getElementById('slDen').value);
+        let valNum = parseInt(document.getElementById('slNum').value);
+        
+        const slNum = document.getElementById('slNum');
+        slNum.max = valDen; // Pay, paydayı geçemez
+        
+        if(valNum > valDen) {
+            valNum = valDen;
+            slNum.value = valNum;
+        }
+
+        this.num = valNum; this.den = valDen;
+        
+        // UI Güncelle
+        document.getElementById('lblNum').innerText = this.num;
+        document.getElementById('lblDen').innerText = this.den;
+        document.getElementById('uiNum').innerText = this.num;
+        document.getElementById('uiDen').innerText = this.den;
+
+        const decimal = this.num / this.den;
+        const percent = (decimal * 100).toFixed(1);
+        document.getElementById('uiPercent').innerText = `Ondalık: ${decimal.toFixed(3)} (%${percent})`;
+
+        // Rapor Kutusu
+        const info = document.getElementById('infoBox');
+        let statusText = `Bir bütünü <b>${this.den}</b> eş parçaya böldük ve bu parçalardan <b>${this.num}</b> tanesini seçtik.`;
+        
+        if (this.num === this.den) {
+            statusText += `<br><span class="text-emerald-600 font-bold mt-1 block">TAM BÜTÜN!</span>`;
+        } else if (this.num === 0) {
+            statusText += `<br><span class="text-rose-600 font-bold mt-1 block">HİÇ SEÇİM YAPILMADI!</span>`;
+        }
+
+        info.innerHTML = `<p class="text-[10px] font-extrabold text-indigo-500 uppercase mb-1">Durum Raporu</p><p class="text-[11px] text-slate-700 leading-relaxed">${statusText}</p>`;
+    },
+
+    loop() {
+        this.ctx.clearRect(0, 0, this.w, this.h);
+        this.time += 0.05;
+
+        // Üstte Pasta Grafiği (Biraz daha yukarı alındı: -120px)
+        this.drawPieChart(this.w / 2, this.h / 2 - 120, Math.min(this.w, this.h) * 0.25);
+        
+        // Altta Çubuk Grafiği (Biraz daha aşağı alındı: +160px)
+        this.drawBarChart(this.w / 2, this.h / 2 + 160, Math.min(this.w * 0.8, 500), 40);
+
+        requestAnimationFrame(() => this.loop());
+    },
+
+    drawPieChart(cx, cy, radius) {
+        const ctx = this.ctx;
+        const sliceAngle = (Math.PI * 2) / this.den;
+        
+        // Gölge ve Arkaplan (Boşluklar)
+        ctx.shadowColor = "rgba(0,0,0,0.05)"; ctx.shadowBlur = 20; ctx.shadowOffsetY = 10;
+        ctx.beginPath(); ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+        ctx.fillStyle = "#f1f5f9"; ctx.fill();
+        ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+
+        // Seçili Dilimler
+        for(let i = 0; i < this.num; i++) {
+            const startAngle = (i * sliceAngle) - (Math.PI / 2);
+            const endAngle = startAngle + sliceAngle;
+            
+            ctx.beginPath();
+            ctx.moveTo(cx, cy); ctx.arc(cx, cy, radius, startAngle, endAngle); ctx.closePath();
+            
+            ctx.fillStyle = "#4f46e5"; // Indigo
+            if(i === this.num - 1 && this.num > 0) ctx.globalAlpha = 0.9 + Math.sin(this.time) * 0.1; // Hafif Parlama
+            ctx.fill(); ctx.globalAlpha = 1.0;
+        }
+
+        // Dilim Çizgileri
+        ctx.beginPath();
+        for(let i = 0; i < this.den; i++) {
+            const angle = (i * sliceAngle) - (Math.PI / 2);
+            ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(angle) * radius, cy + Math.sin(angle) * radius);
+        }
+        ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 3; ctx.stroke();
+        
+        // Çerçeve
+        ctx.beginPath(); ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+        ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 1; ctx.stroke();
+    },
+
+    drawBarChart(cx, cy, w, h) {
+        const ctx = this.ctx;
+        const startX = cx - (w / 2);
+        
+        // Boş Bar
+        ctx.fillStyle = "#f1f5f9";
+        ctx.beginPath(); ctx.roundRect(startX, cy, w, h, 8); ctx.fill();
+        
+        // Dolu Bar
+        if (this.num > 0) {
+            const step = w / this.den;
+            const fillW = step * this.num;
+            
+            ctx.fillStyle = "#f97316"; // Orange
+            ctx.beginPath();
+            const radii = (this.num === this.den) ? 8 : [8, 0, 0, 8]; 
+            ctx.roundRect(startX, cy, fillW, h, radii); ctx.fill();
+            
+            // Ayırıcı Çizgiler
+            ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 2; ctx.beginPath();
+            for(let i = 1; i < this.num; i++) {
+                ctx.moveTo(startX + (i * step), cy); ctx.lineTo(startX + (i * step), cy + h);
+            }
+            ctx.stroke();
+        }
+
+        // Çerçeve
+        ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.roundRect(startX, cy, w, h, 8); ctx.stroke();
+        
+        // Etiket
+        ctx.fillStyle = "#64748b"; ctx.font = "bold 11px Inter"; ctx.textAlign = "center";
+        ctx.fillText("DOĞRUSAL MODEL", cx, cy + h + 20);
+    }
+};
+
+window.addEventListener('load', () => sim.init());
+</script>
+</body>
+</html>
