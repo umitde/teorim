@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kaldırma Kuvveti | Teorim</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-app: #f8fafc;
+            --accent: #f97316;
+            --accent-soft: #fff7ed;
+            --border: #e2e8f0;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+        }
+
+        body { margin: 0; padding: 0; background: var(--bg-app); color: var(--text-dark); font-family: 'Inter', sans-serif; height: 100vh; display: flex; overflow: hidden; }
+
+        #mobile-warning { display: none; position: fixed; inset: 0; background: #0f172a; color: white; z-index: 10000; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; }
+        @media (max-width: 768px) or (orientation: portrait) { 
+            #mobile-warning { display: flex; } 
+            #app-container { display: none; }
+        }
+
+        @keyframes phoneBounce { 0%, 100% { transform: translateY(0) rotate(-5deg); } 50% { transform: translateY(-20px) rotate(5deg); } }
+        .phone-icon { animation: phoneBounce 1.5s infinite ease-in-out; }
+        
+        aside { width: 360px; flex-shrink: 0; background: white; border-right: 1px solid var(--border); padding: 24px; display: flex; flex-direction: column; gap: 20px; z-index: 20; overflow-y: auto; box-shadow: 4px 0 20px rgba(0,0,0,0.02); }
+
+        .header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+        .back-btn { padding: 8px; border-radius: 9999px; transition: 0.2s; color: var(--accent); cursor: pointer; display: flex; align-items: center; justify-content: center; background: transparent; }
+        .back-btn:hover { background: var(--accent-soft); transform: translateX(-2px); }
+        .header-title { font-weight: 700; font-size: 1.1rem; color: var(--text-dark); }
+
+        .math-card { background: #1e293b; color: white; padding: 20px; border-radius: 20px; text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.1); position: relative; overflow: hidden; border: 1px solid #334155; flex-shrink: 0; }
+        .math-card::after { content: ''; position: absolute; top: -50%; right: -50%; width: 100%; height: 100%; background: var(--accent); opacity: 0.15; filter: blur(60px); transform: rotate(-45deg); pointer-events: none;}
+        .card-label { font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; position: relative; z-index: 2; }
+        .card-display { font-family: 'JetBrains Mono'; font-size: 1.3rem; font-weight: 800; color: #f1f5f9; position: relative; z-index: 2; letter-spacing: -1px; }
+        .hierarchy { font-size: 11px; color: var(--accent); margin-top: 8px; font-weight: 800; letter-spacing: 1px; }
+
+        .section-title { font-size: 11px; font-weight: 800; color: #cbd5e1; text-transform: uppercase; letter-spacing: 1.5px; border-bottom: 2px solid var(--border); padding-bottom: 4px; }
+
+        .control-group { background: #f8fafc; padding: 14px; border-radius: 16px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; }
+        .slider-row { display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: 12px; color: var(--text-dark); }
+        
+        .surface-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+        .surf-btn { padding: 10px; font-size: 12px; font-family: 'Inter'; font-weight: 700; border: 2px solid var(--border); background: white; border-radius: 10px; color: var(--text-muted); cursor: pointer; transition: 0.2s; }
+        .surf-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .surf-btn.active { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+
+        input[type="range"] { -webkit-appearance: none; background: #cbd5e1; height: 6px; border-radius: 4px; outline: none; width: 100%; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: var(--accent); border: 3px solid white; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+
+        .analysis-group { background: #f8fafc; padding: 14px; border-radius: 16px; border: 1px solid var(--border); display: grid; grid-template-columns: 1fr 1fr; gap: 12px; flex-shrink: 0; }
+        .analysis-item { display: flex; flex-direction: column; gap: 2px; }
+        .a-label { font-size: 9px; font-weight: 800; color: #94a3b8; text-transform: uppercase; }
+        .a-val { font-size: 14px; font-weight: 800; color: var(--text-dark); font-family: 'JetBrains Mono'; }
+
+        main { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; background: white; overflow: hidden; }
+        .dots { position: absolute; inset: 0; background-image: radial-gradient(var(--border) 1.5px, transparent 1.5px); background-size: 40px 40px; pointer-events: none; opacity: 0.7; }
+        canvas#simCanvas { position: absolute; z-index: 10; width: 100%; height: 100%; cursor: grab; }
+        canvas#simCanvas:active { cursor: grabbing; }
+        
+        .overlay-instruction { position: absolute; top: 40px; left: 50%; transform: translateX(-50%); background: #1e293b; color: white; padding: 10px 24px; border-radius: 30px; font-weight: 700; font-size: 13px; pointer-events: none; box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 20; letter-spacing: 0.5px; }
+    </style>
+</head>
+<body>
+
+<div id="mobile-warning">
+    <div class="phone-icon mb-6">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+        </svg>
+    </div>
+    <h2 class="text-2xl font-bold mb-2">Yatay Konuma Geçin</h2>
+    <p class="text-slate-400 text-sm max-w-xs">Görsel laboratuvar için cihazınızı yan veya geniş ekrana çevirin.</p>
+</div>
+
+<div id="app-container" class="w-full h-full flex">
+    <aside>
+        <div class="header">
+            <div class="back-btn" onclick="window.history.back()">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7h18" /></svg>
+            </div>
+            <h1 class="header-title">Kaldırma Kuvveti</h1>
+        </div>
+
+        <div class="math-card">
+            <div class="card-label">Arşimet Prensibi</div>
+            <div class="card-display">F<sub>k</sub> = V<sub>batan</sub> · d<sub>sıvı</sub> · g</div>
+            <div class="hierarchy">Cismin batan hacmi kadar sıvı yer değiştirir</div>
+        </div>
+
+        <div>
+            <div class="section-title mb-3">Kuvvet Analizi</div>
+            <div class="analysis-group">
+                <div class="analysis-item"><span class="a-label text-orange-500">Kaldırma (Fk)</span><span class="a-val text-orange-500" id="valFk">0 N</span></div>
+                <div class="analysis-item"><span class="a-label text-slate-500">Ağırlık (G)</span><span class="a-val text-slate-500" id="valG">0 N</span></div>
+                <div class="analysis-item"><span class="a-label">Batan Hacim</span><span class="a-val" id="valVbatan">0 %</span></div>
+                <div class="analysis-item"><span class="a-label text-slate-800">Net Kuvvet</span><span class="a-val text-slate-800" id="valNet">0 N</span></div>
+            </div>
+        </div>
+
+        <div id="objControls">
+            <div class="section-title mb-3">Cisim Özellikleri (<span id="lblObjDensity">0.6 g/cm³</span>)</div>
+            <div class="control-group">
+                <div class="surface-grid">
+                    <button class="surf-btn" data-val="0.15" onclick="app.setMaterial(0.15)">Köpük</button>
+                    <button class="surf-btn active" data-val="0.6" onclick="app.setMaterial(0.6)">Tahta</button>
+                    <button class="surf-btn" data-val="2.2" onclick="app.setMaterial(2.2)">Tuğla</button>
+                </div>
+                <div class="slider-row mt-1"><span>Özkütle:</span> <input type="range" id="slObjD" min="0.1" max="3.0" step="0.05" value="0.6" style="width: 140px;"></div>
+                <div class="slider-row mt-1"><span>Hacim:</span> <input type="range" id="slObjV" min="50" max="180" step="10" value="120" style="width: 140px;"></div>
+            </div>
+        </div>
+
+        <div id="liqControls">
+            <div class="section-title mb-3">Sıvı Özellikleri (<span id="lblLiqDensity">1.0 g/cm³</span>)</div>
+            <div class="control-group">
+                <div class="surface-grid">
+                    <button class="surf-btn" data-val="0.8" onclick="app.setLiquid(0.8)">Yağ</button>
+                    <button class="surf-btn active" data-val="1.0" onclick="app.setLiquid(1.0)">Su</button>
+                    <button class="surf-btn" data-val="1.4" onclick="app.setLiquid(1.4)">Bal</button>
+                </div>
+                <div class="slider-row mt-1"><span>Özkütle:</span> <input type="range" id="slLiqD" min="0.5" max="2.0" step="0.1" value="1.0" style="width: 140px;"></div>
+            </div>
+        </div>
+    </aside>
+
+    <main id="mainContainer">
+        <div class="dots"></div>
+        <div class="overlay-instruction">Cismi TUT ve SIVIYA BATIR</div>
+        <canvas id="simCanvas"></canvas>
+    </main>
+</div>
+
+<script>
+    const app = {
+        canvas: document.getElementById('simCanvas'),
+        ctx: null,
+        main: document.getElementById('mainContainer'),
+        width: 0, height: 0,
+        g: 9.8,
+        
+        state: {
+            liqDensity: 1.0,
+            waterLevelY: 0,
+            baseWaterLevel: 0.5, 
+            visualRise: 0,
+
+            objDensity: 0.6,
+            objMass: 0, 
+            objSize: 120, 
+            
+            x: 0, y: 0, vy: 0, isDragging: false,
+            
+            vSubmerged: 0, buoyancyForce: 0, weightForce: 0
+        },
+
+        liqColors: {
+            water: { top: "rgba(56, 189, 248, 0.5)", bottom: "rgba(2, 132, 199, 0.7)" }, 
+            oil:   { top: "rgba(250, 204, 21, 0.6)", bottom: "rgba(161, 98, 7, 0.8)" }, 
+            honey: { top: "rgba(249, 115, 22, 0.6)", bottom: "rgba(154, 52, 18, 0.8)" } 
+        },
+        currentLiqColor: null, 
+
+        init: function() {
+            this.ctx = this.canvas.getContext('2d');
+            this.currentLiqColor = this.liqColors.water; 
+
+            this.resize();
+            window.addEventListener('resize', () => this.resize());
+
+            this.state.x = this.width / 2;
+            this.state.y = this.height * 0.15; 
+            
+            this.setupMouseEvents();
+            this.setupControls();
+
+            this.updateObjProps(0.6, 120); 
+            this.loop();
+        },
+
+        resize: function() {
+            if (window.innerWidth <= 768) return;
+            
+            const dpr = window.devicePixelRatio || 1;
+            this.width = this.main.clientWidth || 800;
+            this.height = this.main.clientHeight || 600;
+            
+            this.canvas.width = this.width * dpr;
+            this.canvas.height = this.height * dpr;
+            this.ctx.scale(dpr, dpr);
+
+            this.state.waterLevelY = this.height * (1 - this.state.baseWaterLevel);
+            if (!this.state.isDragging) this.state.x = this.width / 2;
+        },
+
+        setupControls: function() {
+            document.getElementById('slObjD').addEventListener('input', (e) => {
+                const val = parseFloat(e.target.value);
+                this.updateObjProps(val, null);
+                this.syncButtons('objControls', val);
+            });
+            document.getElementById('slObjV').addEventListener('input', (e) => this.updateObjProps(null, parseInt(e.target.value)));
+            
+            document.getElementById('slLiqD').addEventListener('input', (e) => {
+                const val = parseFloat(e.target.value);
+                this.updateLiqProps(val);
+                this.syncButtons('liqControls', val);
+            });
+        },
+
+        setMaterial: function(val) {
+            document.getElementById('slObjD').value = val;
+            this.updateObjProps(val, null);
+            this.syncButtons('objControls', val);
+        },
+
+        setLiquid: function(val) {
+            document.getElementById('slLiqD').value = val;
+            this.updateLiqProps(val);
+            this.syncButtons('liqControls', val);
+        },
+
+        syncButtons: function(groupId, val) {
+            const btns = document.querySelectorAll(`#${groupId} .surf-btn`);
+            btns.forEach(b => b.classList.remove('active'));
+            const match = Array.from(btns).find(b => Math.abs(parseFloat(b.dataset.val) - val) < 0.01);
+            if(match) match.classList.add('active');
+        },
+
+        updateObjProps: function(d, s) {
+            if(d !== null) this.state.objDensity = d;
+            if(s !== null) this.state.objSize = s;
+            this.state.objMass = this.state.objSize * this.state.objDensity;
+            document.getElementById('lblObjDensity').innerText = this.state.objDensity.toFixed(2) + " g/cm³";
+        },
+
+        updateLiqProps: function(d) {
+            this.state.liqDensity = d;
+            document.getElementById('lblLiqDensity').innerText = d.toFixed(1) + " g/cm³";
+            
+            if(d < 0.9) this.currentLiqColor = this.liqColors.oil;
+            else if(d > 1.2) this.currentLiqColor = this.liqColors.honey;
+            else this.currentLiqColor = this.liqColors.water;
+        },
+
+        updatePhysics: function() {
+            if (window.innerWidth <= 768) return;
+
+            const s = this.state;
+            const halfSize = s.objSize / 2;
+            const bottomY = s.y + halfSize;
+            
+            const visualWaterY = s.waterLevelY - s.visualRise;
+
+            let submergedH = 0;
+            if (bottomY > visualWaterY) {
+                submergedH = Math.min(s.objSize, bottomY - visualWaterY);
+            }
+            s.vSubmerged = Math.max(0, submergedH / s.objSize);
+
+            s.weightForce = s.objMass * this.g * 0.1;
+            s.buoyancyForce = (s.objSize * s.vSubmerged) * s.liqDensity * this.g * 0.1;
+
+            if (!s.isDragging) {
+                const netForce = s.buoyancyForce - s.weightForce;
+                
+                let dragCoeff = s.vSubmerged > 0 ? 0.15 : 0.02;
+                if(s.vSubmerged > 0) dragCoeff *= (s.liqDensity * s.liqDensity); 
+                const dragForce = -s.vy * dragCoeff * s.objMass;
+                
+                const accel = (netForce + dragForce) / s.objMass;
+                s.vy += accel;
+                s.y -= s.vy; 
+
+                if (s.y + halfSize > this.height) {
+                    s.y = this.height - halfSize;
+                    s.vy *= -0.2;
+                }
+            } else {
+                s.vy = 0;
+            }
+
+            s.visualRise = (s.vSubmerged * s.objSize * s.objSize) / this.width;
+
+            this.updateUI(s);
+        },
+
+        updateUI: function(s) {
+            document.getElementById('valFk').innerText = Math.round(s.buoyancyForce) + " N";
+            document.getElementById('valG').innerText = Math.round(s.weightForce) + " N";
+            document.getElementById('valVbatan').innerText = "%" + Math.round(s.vSubmerged * 100);
+            document.getElementById('valNet').innerText = Math.round(s.buoyancyForce - s.weightForce) + " N";
+        },
+
+        draw: function() {
+            if (window.innerWidth <= 768) return;
+
+            const ctx = this.ctx;
+            const s = this.state;
+            const w = this.width; const h = this.height;
+
+            ctx.clearRect(0, 0, w, h);
+
+            const visualWaterY = s.waterLevelY - s.visualRise;
+
+            // Sıvı Çizimi
+            const liqGrad = ctx.createLinearGradient(0, visualWaterY, 0, h);
+            liqGrad.addColorStop(0, this.currentLiqColor.top);
+            liqGrad.addColorStop(1, this.currentLiqColor.bottom);
+            ctx.fillStyle = liqGrad;
+            ctx.fillRect(0, visualWaterY, w, h - visualWaterY);
+            
+            ctx.strokeStyle = "rgba(255,255,255,0.6)"; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(0, visualWaterY); ctx.lineTo(w, visualWaterY); ctx.stroke();
+            
+            ctx.strokeStyle = "rgba(255,255,255,0.2)"; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(0, visualWaterY+10); ctx.lineTo(w, visualWaterY+10); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(0, visualWaterY+25); ctx.lineTo(w, visualWaterY+25); ctx.stroke();
+
+            // Cisim Çizimi
+            this.drawObject(ctx, s);
+
+            ctx.save(); ctx.translate(s.x, s.y);
+            this.drawArrow(ctx, 35, 0, 0, s.weightForce, "#64748b", "G"); 
+            this.drawArrow(ctx, -35, 0, 0, -s.buoyancyForce, "#f97316", "Fk"); 
+            ctx.restore();
+        },
+
+        drawObject: function(ctx, s) {
+            const half = s.objSize / 2;
+            ctx.save();
+            ctx.translate(s.x, s.y);
+            
+            const lightness = Math.max(20, 85 - (s.objDensity * 25)); 
+            ctx.fillStyle = `hsl(35, ${s.objDensity < 0.3 ? 0 : 60}%, ${lightness}%)`;
+            if (s.objDensity > 2.0) ctx.fillStyle = `hsl(0, 60%, ${lightness}%)`; 
+
+            ctx.beginPath();
+            if(ctx.roundRect) ctx.roundRect(-half, -half, s.objSize, s.objSize, 8);
+            else ctx.fillRect(-half, -half, s.objSize, s.objSize);
+            ctx.fill();
+            
+            ctx.strokeStyle = "rgba(15, 23, 42, 0.4)"; ctx.lineWidth = 2; ctx.stroke();
+            
+            ctx.fillStyle = "rgba(255,255,255,0.8)"; 
+            ctx.beginPath(); ctx.arc(0,0,4,0,Math.PI*2); ctx.fill();
+            
+            ctx.fillStyle = "white"; ctx.font = "bold 13px Inter"; ctx.textAlign = "center";
+            ctx.fillText(s.objDensity.toFixed(1) + " g/cm³", 0, -half + 20);
+            
+            ctx.restore();
+        },
+
+        drawArrow: function(ctx, x, y, dx, dy, color, label) {
+            const scale = 0.8; const vecLen = dy * scale;
+            if (Math.abs(vecLen) < 3) return;
+
+            ctx.beginPath(); ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 4;
+            ctx.moveTo(x, y); ctx.lineTo(x + dx, y + vecLen); ctx.stroke();
+
+            const headLen = 10; const angle = Math.atan2(vecLen, dx);
+            ctx.beginPath();
+            ctx.moveTo(x + dx, y + vecLen);
+            ctx.lineTo(x + dx - headLen * Math.cos(angle - Math.PI/6), y + vecLen - headLen * Math.sin(angle - Math.PI/6));
+            ctx.lineTo(x + dx - headLen * Math.cos(angle + Math.PI/6), y + vecLen - headLen * Math.sin(angle + Math.PI/6));
+            ctx.fill();
+
+            ctx.font = "bold 13px Inter";
+            
+            // Oku hizalama mantığı
+            if (x < 0) {
+                // Fk (sol ok) için yazıyı okun soluna al
+                ctx.textAlign = "right";
+                ctx.fillText(label, x - 8, y + vecLen/2 + 4);
+            } else {
+                // G (sağ ok) için yazıyı okun sağına al
+                ctx.textAlign = "left";
+                ctx.fillText(label, x + 8, y + vecLen/2 + 4);
+            }
+        },
+
+        setupMouseEvents: function() {
+            const getCoords = (e) => {
+                const rect = this.canvas.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                return { x: clientX - rect.left, y: clientY - rect.top };
+            };
+
+            const startDrag = (e) => {
+                if (window.innerWidth <= 768) return;
+                const pos = getCoords(e);
+                const half = this.state.objSize / 2;
+                
+                if (pos.x > this.state.x - half && pos.x < this.state.x + half &&
+                    pos.y > this.state.y - half && pos.y < this.state.y + half) {
+                    this.state.isDragging = true;
+                }
+            };
+
+            const moveDrag = (e) => {
+                if (!this.state.isDragging) return;
+                const pos = getCoords(e);
+                this.state.y = Math.max(this.state.objSize/2, Math.min(this.height - this.state.objSize/2, pos.y));
+                this.state.vy = 0;
+            };
+
+            const endDrag = () => { this.state.isDragging = false; };
+
+            this.canvas.addEventListener('mousedown', startDrag);
+            window.addEventListener('mousemove', moveDrag);
+            window.addEventListener('mouseup', endDrag);
+            this.canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDrag(e); }, {passive: false});
+            window.addEventListener('touchmove', (e) => { e.preventDefault(); moveDrag(e); }, {passive: false});
+            window.addEventListener('touchend', endDrag);
+        },
+
+        loop: function() {
+            this.updatePhysics();
+            this.draw();
+            requestAnimationFrame(() => this.loop());
+        }
+    };
+
+    app.init();
+</script>
+</body>
+</html>
