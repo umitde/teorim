@@ -93,6 +93,87 @@
             animation: beam 2s infinite linear;
         }
 
+        /* 7. Hareket ve Kuvvet: Vektörel İtme */
+        @keyframes force-push {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(30px); }
+        }
+        @keyframes arrow-stretch {
+            0%, 100% { width: 20px; opacity: 0.2; }
+            50% { width: 50px; opacity: 1; }
+        }
+        .anim-force-arrow { animation: arrow-stretch 2s infinite ease-in-out; }
+        .anim-force-box { animation: force-push 2s infinite ease-in-out; }
+
+        /* 8. İndüksiyon: Manyetik Alan Çizgileri */
+        @keyframes flux-line {
+            0% { stroke-dashoffset: 20; opacity: 0; }
+            50% { opacity: 1; }
+            100% { stroke-dashoffset: -20; opacity: 0; }
+        }
+        .anim-flux { stroke-dasharray: 10; animation: flux-line 2s infinite linear; }
+
+        /* 9. Isı ve Genleşme: Moleküler Genleşme */
+        @keyframes expand-atoms {
+            0%, 100% { gap: 4px; transform: scale(1); }
+            50% { gap: 12px; transform: scale(1.1); }
+        }
+        .anim-atom-grid { animation: expand-atoms 3s infinite ease-in-out; }
+
+        /* 10. Kaldırma Kuvveti: Arşimet Dengesi */
+        @keyframes buoyancy {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(2deg); }
+        }
+        .anim-buoyancy { animation: buoyancy 3s infinite ease-in-out; }
+
+        /* 11. Maddenin Halleri: Faz Değişimi */
+        @keyframes phase-change {
+            0% { transform: translate(0,0); }
+            33% { transform: translate(15px, -10px); }
+            66% { transform: translate(-10px, -15px); }
+            100% { transform: translate(0,0); }
+        }
+        .anim-gas-particle { animation: phase-change 4s infinite linear; }
+
+        /* 12. Özkütle: Terazi Sallanma Efekti */
+        @keyframes scale-swing {
+            0%, 100% { transform: rotate(-5deg); }
+            50% { transform: rotate(5deg); }
+        }
+
+        .anim-scale { 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transform-origin: bottom center; /* Terazinin alt noktadan sallanması için */
+            animation: scale-swing 3s infinite ease-in-out; 
+        }
+
+        /* Terazinin kefelerindeki nesnelerin sallanırken dik durması için ters animasyon */
+        .anim-scale .absolute > div {
+            animation: counter-swing 3s infinite ease-in-out;
+        }
+
+        @keyframes counter-swing {
+            0%, 100% { transform: rotate(5deg); }
+            50% { transform: rotate(-5deg); }
+        }
+
+        /* 13. Piston ve Basınç: Gaz Sıkışması */
+        @keyframes piston-seal {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(40px); }
+        }
+        .anim-piston-head { animation: piston-seal 2s infinite ease-in-out; }
+
+        /* 14. Vektörler: Paralelkenar Metodu */
+        @keyframes vector-sum {
+            0% { stroke-dashoffset: 100; }
+            100% { stroke-dashoffset: 0; }
+        }
+        .anim-vector-dash { stroke-dasharray: 5; animation: vector-sum 3s infinite linear; }
+
     </style>
 </head>  
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col overflow-y-scroll">
@@ -217,6 +298,139 @@
                 <div class="p-5">
                     <h3 class="font-bold text-slate-800 group-hover:text-orange-600 transition-colors">Yörünge ve Kütle Çekim</h3>
                     <p class="text-xs text-slate-500 mt-2 leading-relaxed">Kepler yasaları ve gezegenlerin hareketi. Kütle çekim kuvvetinin yörüngeye etkisini görün.</p>
+                </div>
+            </a>
+
+            <a href="../simulasyonlar/fizik/hareket-ve-kuvvet.html" class="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-orange-200 transition-all duration-300 overflow-hidden">
+                <div class="h-40 bg-slate-50 relative overflow-hidden border-b border-slate-100 flex items-center justify-center">
+                    <div class="w-48 h-0.5 bg-slate-200 absolute bottom-10"></div>
+                    <div class="anim-force-box relative">
+                        <div class="w-12 h-12 bg-orange-500 rounded-lg shadow-md flex items-center justify-center">
+                            <span class="text-white font-bold text-xs">m</span>
+                        </div>
+                        <div class="anim-force-arrow absolute -left-14 top-1/2 -translate-y-1/2 h-1 bg-orange-400 rounded-full">
+                            <div class="absolute right-0 -top-1 border-4 border-transparent border-l-orange-400"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-5">
+                    <h3 class="font-bold text-slate-800 group-hover:text-orange-600 transition-colors text-sm">7. Hareket ve Kuvvet</h3>
+                    <p class="text-[11px] text-slate-500 mt-2 leading-relaxed">Newton yasaları, sürtünme ve ivme arasındaki dinamik ilişkiyi simüle edin.</p>
+                </div>
+            </a>
+
+            <a href="../simulasyonlar/fizik/induksiyon.html" class="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-orange-200 transition-all duration-300 overflow-hidden">
+                <div class="h-40 bg-slate-50 relative overflow-hidden border-b border-slate-100 flex items-center justify-center">
+                    <svg class="w-32 h-20" viewBox="0 0 120 60">
+                        <rect x="10" y="20" width="40" height="20" fill="#f97316" rx="2" class="anim-magnet"/>
+                        <circle cx="90" cy="30" r="20" fill="none" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="4"/>
+                        <path d="M60,10 Q80,30 60,50" fill="none" stroke="#fb923c" stroke-width="1.5" class="anim-flux"/>
+                    </svg>
+                </div>
+                <div class="p-5">
+                    <h3 class="font-bold text-slate-800 group-hover:text-orange-600 transition-colors text-sm">8. Manyetik İndüksiyon</h3>
+                    <p class="text-[11px] text-slate-500 mt-2 leading-relaxed">Manyetik akı değişimiyle elektrik akımı üretimini ve Faraday yasasını inceleyin.</p>
+                </div>
+            </a>
+
+            <a href="../simulasyonlar/fizik/isi-ve-genlesme.html" class="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-orange-200 transition-all duration-300 overflow-hidden">
+                <div class="h-40 bg-slate-50 relative overflow-hidden border-b border-slate-100 flex items-center justify-center">
+                    <div class="anim-atom-grid grid grid-cols-3 gap-2">
+                        <div class="w-3 h-3 bg-orange-400 rounded-full"></div>
+                        <div class="w-3 h-3 bg-orange-500 rounded-full"></div>
+                        <div class="w-3 h-3 bg-orange-600 rounded-full"></div>
+                        <div class="w-3 h-3 bg-orange-500 rounded-full"></div>
+                        <div class="w-3 h-3 bg-orange-600 rounded-full"></div>
+                        <div class="w-3 h-3 bg-orange-400 rounded-full"></div>
+                    </div>
+                </div>
+                <div class="p-5">
+                    <h3 class="font-bold text-slate-800 group-hover:text-orange-600 transition-colors text-sm">9. Isı ve Genleşme</h3>
+                    <p class="text-[11px] text-slate-500 mt-2 leading-relaxed">Moleküler titreşimin sıcaklıkla artışını ve boyca uzama etkilerini görün.</p>
+                </div>
+            </a>
+
+            <a href="../simulasyonlar/fizik/kaldirma-kuvveti.html" class="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-orange-200 transition-all duration-300 overflow-hidden">
+                <div class="h-40 bg-slate-50 relative overflow-hidden border-b border-slate-100 flex flex-col items-center justify-end">
+                    <div class="w-full h-16 bg-blue-100/60 border-t border-blue-200"></div>
+                    <div class="absolute bottom-10 w-12 h-12 bg-orange-500/90 rounded border-2 border-orange-600 anim-buoyancy flex items-center justify-center">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
+                    </div>
+                </div>
+                <div class="p-5">
+                    <h3 class="font-bold text-slate-800 group-hover:text-orange-600 transition-colors text-sm">10. Kaldırma Kuvveti</h3>
+                    <p class="text-[11px] text-slate-500 mt-2 leading-relaxed">Sıvıların özkütlesi ve batan hacim arasındaki dengeyi Arşimet ile keşfedin.</p>
+                </div>
+            </a>
+
+            <a href="../simulasyonlar/fizik/maddenin-halleri.html" class="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-orange-200 transition-all duration-300 overflow-hidden">
+                <div class="h-40 bg-slate-50 relative overflow-hidden border-b border-slate-100 flex items-center justify-center">
+                    <div class="w-20 h-20 border-2 border-slate-200 rounded-lg relative">
+                        <div class="absolute top-2 left-2 w-3 h-3 bg-orange-500 rounded-full anim-gas-particle"></div>
+                        <div class="absolute bottom-4 right-4 w-3 h-3 bg-orange-400 rounded-full anim-gas-particle" style="animation-delay: -1s"></div>
+                        <div class="absolute top-1/2 left-1/2 w-3 h-3 bg-orange-600 rounded-full anim-gas-particle" style="animation-delay: -2s"></div>
+                    </div>
+                </div>
+                <div class="p-5">
+                    <h3 class="font-bold text-slate-800 group-hover:text-orange-600 transition-colors text-sm">11. Maddenin Halleri</h3>
+                    <p class="text-[11px] text-slate-500 mt-2 leading-relaxed">Plazma, gaz, sıvı ve katı fazları arasındaki kinetik geçişleri gözlemleyin.</p>
+                </div>
+            </a>
+
+            <a href="../simulasyonlar/fizik/ozkutle.html" class="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-orange-200 transition-all duration-300 overflow-hidden">
+                <div class="h-40 bg-slate-50 relative overflow-hidden border-b border-slate-100 flex items-center justify-center">
+                    <div class="anim-scale flex flex-col items-center justify-center">
+                        <div class="w-32 h-1 bg-slate-300 rounded-full relative mb-1">
+                            <div class="absolute -left-2 -top-1">
+                                <div class="w-8 h-8 bg-slate-200 border-2 border-slate-300 rounded-lg flex items-center justify-center">
+                                    <span class="text-[8px] text-slate-400">V</span>
+                                </div>
+                                <div class="w-[1px] h-4 bg-slate-300 mx-auto"></div>
+                            </div>
+                            <div class="absolute -right-2 -top-1">
+                                <div class="w-6 h-6 bg-orange-500 shadow-md rounded flex items-center justify-center translate-y-2">
+                                    <span class="text-[8px] text-white font-bold">m</span>
+                                </div>
+                                <div class="w-[1px] h-4 bg-slate-300 mx-auto"></div>
+                            </div>
+                        </div>
+                        <div class="w-4 h-6 bg-slate-200 clip-path-triangle">
+                             <svg viewBox="0 0 20 20" class="w-4 h-4 text-slate-300 fill-current">
+                                <path d="M10 0 L20 20 L0 20 Z" />
+                             </svg>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-5">
+                    <h3 class="font-bold text-slate-800 group-hover:text-orange-600 transition-colors text-sm">12. Özkütle</h3>
+                    <p class="text-[11px] text-slate-500 mt-2 leading-relaxed">Kütle/Hacim oranının madde karakteristiği üzerindeki etkisini deneyimleyin.</p>
+                </div>
+            </a>
+
+            <a href="../simulasyonlar/fizik/piston-ve-basinc.html" class="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-orange-200 transition-all duration-300 overflow-hidden">
+                <div class="h-40 bg-slate-50 relative overflow-hidden border-b border-slate-100 flex flex-col items-center justify-start pt-6">
+                    <div class="w-16 h-24 border-x-2 border-b-2 border-slate-300 rounded-b-lg relative overflow-hidden">
+                        <div class="w-full h-full bg-orange-100/40"></div>
+                        <div class="absolute top-0 left-0 w-full h-4 bg-slate-500 anim-piston-head z-10 shadow-sm"></div>
+                    </div>
+                </div>
+                <div class="p-5">
+                    <h3 class="font-bold text-slate-800 group-hover:text-orange-600 transition-colors text-sm">13. Piston ve Basınç</h3>
+                    <p class="text-[11px] text-slate-500 mt-2 leading-relaxed">Gaz yasaları: Hacim küçüldükçe artan basınç ve sıcaklık ilişkisi.</p>
+                </div>
+            </a>
+
+            <a href="../simulasyonlar/fizik/vektorler.html" class="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-orange-200 transition-all duration-300 overflow-hidden">
+                <div class="h-40 bg-slate-50 relative overflow-hidden border-b border-slate-100 flex items-center justify-center">
+                    <svg class="w-24 h-24" viewBox="0 0 100 100">
+                        <line x1="10" y1="90" x2="60" y2="40" stroke="#f97316" stroke-width="3" />
+                        <line x1="60" y1="40" x2="90" y2="40" stroke="#f97316" stroke-width="3" />
+                        <line x1="10" y1="90" x2="90" y2="40" stroke="#cbd5e1" stroke-width="2" class="anim-vector-dash" />
+                    </svg>
+                </div>
+                <div class="p-5">
+                    <h3 class="font-bold text-slate-800 group-hover:text-orange-600 transition-colors text-sm">14. Vektörler</h3>
+                    <p class="text-[11px] text-slate-500 mt-2 leading-relaxed">Bileşke kuvvet ve paralelkenar metoduyla vektörel toplama işlemleri.</p>
                 </div>
             </a>
 
