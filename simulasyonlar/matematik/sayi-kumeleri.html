@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sayı Laboratuvarı | Teorim</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-app: #f8fafc;
+            --accent: #fb923c;
+            --border: #e2e8f0;
+            --text-dark: #0f172a;
+        }
+
+        body { 
+            margin: 0; padding: 0; background: var(--bg-app); 
+            color: var(--text-dark); font-family: 'Inter', sans-serif; 
+            height: 100vh; display: flex; overflow: hidden; 
+        }
+
+        /* --- MOBİL UYARI --- */
+        #mobile-warning { 
+            display: none; position: fixed; inset: 0; background: #0f172a; color: white; 
+            z-index: 10000; flex-direction: column; align-items: center; justify-content: center; 
+            text-align: center; padding: 24px; 
+        }
+        @media (max-width: 768px) or (orientation: portrait) { #mobile-warning { display: flex; } }
+
+        @keyframes phoneBounce { 0%, 100% { transform: translateY(0) rotate(-5deg); } 50% { transform: translateY(-20px) rotate(5deg); } }
+        .phone-icon { animation: phoneBounce 1.5s infinite ease-in-out; }
+
+        /* --- SOL PANEL --- */
+        aside { 
+            width: 360px; flex-shrink: 0; background: white; 
+            border-right: 1px solid var(--border); padding: 24px; 
+            display: flex; flex-direction: column; gap: 20px; 
+            z-index: 20; overflow-y: auto; box-shadow: 4px 0 20px rgba(0,0,0,0.02);
+        }
+
+        .header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+        .back-btn {
+            padding: 8px; border-radius: 9999px; transition: 0.2s; color: var(--accent);
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
+        .back-btn:hover { background: #fff7ed; transform: translateX(-2px); }
+        .header-title { font-weight: 700; font-size: 1.1rem; color: var(--text-dark); }
+
+        .math-card {
+            background: #1e293b; color: white; padding: 24px; border-radius: 20px;
+            text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            position: relative; overflow: hidden; border: 1px solid #334155;
+        }
+        .math-card::after { content: ''; position: absolute; top: -50%; right: -50%; width: 100%; height: 100%; background: var(--accent); opacity: 0.15; filter: blur(60px); transform: rotate(-45deg); }
+        .card-label { font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; position: relative; z-index: 2; }
+        .card-display { font-family: 'JetBrains Mono'; font-size: 1.6rem; font-weight: 800; color: #f1f5f9; position: relative; z-index: 2; }
+        .hierarchy { font-size: 12px; color: var(--accent); margin-top: 8px; font-weight: 800; letter-spacing: 1px; }
+
+        .section-title { font-size: 11px; font-weight: 800; color: #cbd5e1; text-transform: uppercase; letter-spacing: 1.5px; border-bottom: 2px solid var(--border); padding-bottom: 4px; }
+
+        .control-group { background: #f8fafc; padding: 16px; border-radius: 16px; border: 1px solid var(--border); }
+        input[type="range"] { width: 100%; -webkit-appearance: none; background: #e2e8f0; height: 6px; border-radius: 4px; outline: none; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; background: var(--accent); border: 3px solid white; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+
+        .special-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+        .spec-btn {
+            padding: 10px; border-radius: 12px; border: 2px solid var(--border);
+            font-size: 13px; font-weight: 800; color: #64748b; transition: 0.2s;
+            background: white; font-family: 'JetBrains Mono';
+        }
+        .spec-btn:hover { border-color: var(--accent); color: var(--accent); background: #fff7ed; }
+
+        .analysis-group { background: #f8fafc; padding: 16px; border-radius: 16px; border: 1px solid var(--border); display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .analysis-item { display: flex; flex-direction: column; }
+        .a-label { font-size: 9px; font-weight: 800; color: #94a3b8; text-transform: uppercase; }
+        .a-val { font-size: 12px; font-weight: 700; color: var(--text-dark); }
+
+        .set-status { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .s-pill { padding: 10px; border-radius: 12px; font-size: 11px; font-weight: 800; border: 2px solid var(--border); color: #cbd5e1; text-align: center; transition: 0.3s; }
+
+        main { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; background: white; overflow: hidden; }
+        .dots { position: absolute; inset: 0; background-image: radial-gradient(#f1f5f9 2px, transparent 2px); background-size: 45px 45px; pointer-events: none; }
+        canvas { position: absolute; z-index: 10; width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+
+<div id="mobile-warning">
+    <div class="phone-icon mb-6">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+        </svg>
+    </div>
+    <h2 class="text-2xl font-bold mb-2">Yatay Konuma Geçin</h2>
+    <p class="text-slate-400 text-sm max-w-xs">Görsel laboratuvar için cihazınızı yan çevirin.</p>
+</div>
+
+<aside>
+    <div class="header">
+        <div class="back-btn" onclick="window.history.back()">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+        </div>
+        <h1 class="header-title">Sayı Kümeleri</h1>
+    </div>
+
+    <div class="math-card">
+        <div class="card-label">Matematiksel Kimlik</div>
+        <div class="card-display" id="mainVal">n = 5</div>
+        <div class="hierarchy" id="hierDisp">ℕ ⊂ ℤ ⊂ ℚ ⊂ ℝ</div>
+    </div>
+
+    <div>
+        <div class="section-title mb-3">Sayı Havuzu</div>
+        <div class="control-group mb-3">
+            <input type="range" id="slider" min="-20" max="20" step="1" value="5">
+        </div>
+        <div class="special-grid">
+            <button class="spec-btn" onclick="sim.set(Math.PI, 'π')">π</button>
+            <button class="spec-btn" onclick="sim.set(Math.E, 'e')">e</button>
+            <button class="spec-btn" onclick="sim.set(Math.sqrt(2), '√2')">√2</button>
+            <button class="spec-btn" onclick="sim.set(0, '0')">0</button>
+            <button class="spec-btn" onclick="sim.set(-10, '-10')">-10</button>
+            <button class="spec-btn" onclick="sim.set(0.5, '1/2')">1/2</button>
+        </div>
+    </div>
+
+    <div>
+        <div class="section-title mb-3">Sayı Analizi</div>
+        <div class="analysis-group">
+            <div class="analysis-item"><span class="a-label">Sınıf</span><span class="a-val" id="aType">Doğal Sayı</span></div>
+            <div class="analysis-item"><span class="a-label">Parite</span><span class="a-val" id="aParity">Tek</span></div>
+            <div class="analysis-item"><span class="a-label">Asallık</span><span class="a-val" id="aPrime">Asal</span></div>
+            <div class="analysis-item"><span class="a-label">İşaret</span><span class="a-val" id="aSign">+ Pozitif</span></div>
+        </div>
+    </div>
+
+    <div>
+        <div class="section-title mb-3">Küme Kapsamı</div>
+        <div class="set-status">
+            <div class="s-pill" id="sN" style="--c: #fb923c">Doğal (ℕ)</div>
+            <div class="s-pill" id="sZ" style="--c: #6366f1">Tam (ℤ)</div>
+            <div class="s-pill" id="sQ" style="--c: #0ea5e9">Rasyonel (ℚ)</div>
+            <div class="s-pill" id="sI" style="--c: #ec4899">İrrasyonel (I)</div>
+        </div>
+    </div>
+</aside>
+
+<main id="main">
+    <div class="dots"></div>
+    <canvas id="canvas"></canvas>
+</main>
+
+<script>
+const sim = {
+    canvas: document.getElementById('canvas'),
+    ctx: document.getElementById('canvas').getContext('2d'),
+    n: 5, label: '5',
+    colors: {
+        R: '#475569', // Daha koyu gri
+        Q: '#0284c7', // Daha koyu mavi
+        Z: '#4f46e5', // Daha koyu indigo
+        N: '#ea580c', // Daha koyu turuncu
+        I: '#db2777'  // Daha koyu pembe
+    },
+
+    init() {
+        window.onresize = () => this.resize();
+        this.resize();
+        document.getElementById('slider').oninput = (e) => this.set(parseFloat(e.target.value), e.target.value);
+        this.update();
+        this.loop();
+    },
+
+    resize() {
+        const dpr = window.devicePixelRatio || 1;
+        const main = document.getElementById('main');
+        this.w = main.clientWidth; this.h = main.clientHeight;
+        this.canvas.width = this.w * dpr; this.canvas.height = this.h * dpr;
+        this.ctx.scale(dpr, dpr);
+    },
+
+    set(val, lbl) { this.n = val; this.label = lbl; this.update(); },
+
+    update() {
+        const n = this.n;
+        const isInt = n % 1 === 0;
+        const isNat = isInt && n >= 0;
+        const isIrr = [Math.PI, Math.E, Math.sqrt(2)].includes(n);
+        
+        document.getElementById('mainVal').innerText = `n = ${this.label}`;
+        document.getElementById('aParity').innerText = isInt ? (Math.abs(n) % 2 === 0 ? "Çift" : "Tek") : "Ondalık";
+        document.getElementById('aSign').innerText = n === 0 ? "Nötr" : (n > 0 ? "+ Pozitif" : "- Negatif");
+        
+        const isPrime = (num) => {
+            if (num < 2 || !isInt) return false;
+            for (let i = 2; i <= Math.sqrt(num); i++) if (num % i === 0) return false;
+            return true;
+        };
+        document.getElementById('aPrime').innerText = isPrime(n) ? "Asal" : "Asal Değil";
+        document.getElementById('aType').innerText = isIrr ? "İrrasyonel" : (isNat ? "Doğal" : (isInt ? "Tam Sayı" : "Rasyonel"));
+
+        const map = { sN: isNat, sZ: isInt, sQ: !isIrr, sI: isIrr };
+        Object.entries(map).forEach(([id, act]) => {
+            const el = document.getElementById(id);
+            el.classList.toggle('active', act);
+            el.style.borderColor = act ? el.style.getPropertyValue('--c') : '#e2e8f0';
+            el.style.color = act ? el.style.getPropertyValue('--c') : '#cbd5e1';
+            el.style.background = act ? `${el.style.getPropertyValue('--c')}10` : 'transparent';
+        });
+
+        let h = isIrr ? "I ⊂ ℝ" : "ℚ ⊂ ℝ";
+        if (isInt && !isIrr) h = "ℤ ⊂ " + h;
+        if (isNat) h = "ℕ ⊂ " + h;
+        document.getElementById('hierDisp').innerText = h;
+    },
+
+    loop() {
+        this.ctx.clearRect(0, 0, this.w, this.h);
+        this.drawVenn();
+        requestAnimationFrame(() => this.loop());
+    },
+
+    drawVenn() {
+        const c = this.ctx;
+        const cx = this.w / 2, cy = this.h / 2;
+        const isInt = this.n % 1 === 0;
+        const isNat = isInt && this.n >= 0;
+        const isIrr = [Math.PI, Math.E, Math.sqrt(2)].includes(this.n);
+
+        // Küme Çizimleri
+        this.circle(cx, cy, 280, "ℝ (REEL SAYILAR)", this.colors.R, true, 'top');
+
+        if (isIrr) {
+            this.circle(cx + 140, cy, 120, "İRRASYONEL (I)", this.colors.I, true, 'bottom');
+            this.circle(cx - 100, cy, 150, "RASYONEL (ℚ)", this.colors.Q, false, 'bottom');
+            this.drawNum(cx + 140, cy, this.colors.I);
+        } else {
+            this.circle(cx + 180, cy, 80, "İRRASYONEL (I)", this.colors.I, false, 'right');
+            this.circle(cx - 60, cy, 210, "RASYONEL (ℚ)", this.colors.Q, true, 'bottom');
+            this.circle(cx - 60, cy, 145, "TAM SAYILAR (ℤ)", this.colors.Z, isInt, 'top');
+            this.circle(cx - 60, cy, 85, "DOĞAL SAYILAR (ℕ)", this.colors.N, isNat, 'right');
+            
+            let tx = cx - 60;
+            if (isNat) tx = cx - 60;
+            else if (isInt) tx = cx + 25;
+            else tx = cx + 85;
+            this.drawNum(tx, cy, isNat ? this.colors.N : (isInt ? this.colors.Z : this.colors.Q));
+        }
+    },
+
+    circle(x, y, r, label, col, active, pos) {
+        const c = this.ctx;
+        
+        // Daire Çizimi
+        c.beginPath();
+        c.arc(x, y, r, 0, 7);
+        c.strokeStyle = active ? col : '#f1f5f9';
+        c.lineWidth = active ? 5 : 2;
+        c.stroke();
+        
+        if (active) {
+            c.fillStyle = col + '05';
+            c.fill();
+        }
+
+        // --- OKUNABİLİR YAZI SİSTEMİ (BADGE) ---
+        let lx = x, ly = y;
+        if(pos === 'top') { ly = y - r; }
+        else if(pos === 'bottom') { ly = y + r; }
+        else if(pos === 'left') { lx = x - r; }
+        else if(pos === 'right') { lx = x + r; }
+
+        c.font = "800 14px Inter";
+        const textWidth = c.measureText(label).width;
+        
+        // Yazı Arkası Kalkan (Badge)
+        c.fillStyle = "white";
+        c.beginPath();
+        c.roundRect(lx - (textWidth/2) - 10, ly - 12, textWidth + 20, 24, 6);
+        c.fill();
+        c.strokeStyle = active ? col : '#e2e8f0';
+        c.lineWidth = 1.5;
+        c.stroke();
+
+        // Yazı
+        c.fillStyle = active ? col : '#cbd5e1';
+        c.textAlign = "center";
+        c.textBaseline = "middle";
+        c.fillText(label, lx, ly);
+    },
+
+    drawNum(x, y, col) {
+        const c = this.ctx;
+        c.shadowBlur = 40; c.shadowColor = col + '66';
+        c.fillStyle = col;
+        c.beginPath(); c.arc(x, y, 28, 0, 7); c.fill();
+        c.shadowBlur = 0;
+        
+        c.fillStyle = 'white';
+        c.font = "800 16px JetBrains Mono";
+        c.textAlign = "center";
+        c.textBaseline = "middle";
+        c.fillText(this.label, x, y);
+    }
+};
+
+sim.init();
+</script>
+</body>
+</html>
