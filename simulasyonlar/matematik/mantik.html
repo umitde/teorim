@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mantık Devreleri | Teorim</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-app: #f8fafc;
+            --bg-panel: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --col-accent: #f97316;
+            --col-accent-soft: #fff7ed;
+            --col-indigo: #4f46e5;
+            --border: #e2e8f0;
+            --radius: 16px;
+        }
+
+        body { 
+            margin: 0; padding: 0; background: var(--bg-app); 
+            color: var(--text-main); font-family: 'Inter', sans-serif; 
+            height: 100vh; display: flex; overflow: hidden; 
+        }
+
+        /* MOBİL UYARI */
+        #mobile-warning { 
+            display: none; position: fixed; inset: 0; background: #0f172a; color: white; 
+            z-index: 9999; flex-direction: column; align-items: center; justify-content: center; 
+            text-align: center; padding: 24px; 
+        }
+        @media (max-width: 768px) or (orientation: portrait) { #mobile-warning { display: flex; } }
+
+        /* SOL PANEL */
+        aside { 
+            width: 360px; flex-shrink: 0; background: var(--bg-panel); 
+            border-right: 1px solid var(--border); padding: 24px; 
+            display: flex; flex-direction: column; gap: 24px; 
+            z-index: 20; box-shadow: 4px 0 24px rgba(0,0,0,0.04);
+            overflow-y: auto;
+        }
+
+        .header { display: flex; align-items: center; gap: 4px; margin-bottom: 4px; }
+        .back-btn {
+            padding: 8px; border-radius: 50%; color: var(--col-accent);
+            display: flex; align-items: center; justify-content: center; transition: 0.2s; cursor: pointer;
+        }
+        .back-btn:hover { background: var(--col-accent-soft); transform: translateX(-2px); }
+
+        .section-title { font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+
+        /* SİMÜLASYON ALANI */
+        main { flex: 1; position: relative; background: #ffffff; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        .dot-bg { position: absolute; inset: 0; background-image: radial-gradient(#cbd5e1 1.5px, transparent 1.5px); background-size: 35px 35px; opacity: 0.3; z-index: 1; pointer-events: none; }
+        canvas { display: block; width: 100%; height: 100%; position: absolute; z-index: 10; }
+
+        /* SAĞ ÜST SONUÇ KARTI (YENİ) */
+        #result-card {
+            position: absolute; top: 24px; right: 24px; z-index: 30;
+            background: white; padding: 20px; border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08); border: 1px solid var(--border);
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .card-label { font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+        .card-expr { font-family: 'JetBrains Mono'; font-size: 1.8rem; font-weight: 800; display: flex; align-items: center; gap: 8px; color: var(--text-main); }
+        .card-res { color: var(--col-accent); transition: color 0.3s; }
+        .card-status { margin-top: 8px; font-size: 0.75rem; font-weight: 700; padding: 4px 12px; border-radius: 20px; background: var(--col-accent-soft); color: var(--col-accent); }
+
+        /* KONTROLLER */
+        .control-group { background: #f8fafc; padding: 16px; border-radius: var(--radius); border: 1px solid var(--border); }
+        .gate-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .gate-btn {
+            background: white; border: 1px solid var(--border); padding: 12px; border-radius: 12px;
+            font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: 0.2s; text-align: center; color: var(--text-muted);
+        }
+        .gate-btn:hover { border-color: var(--col-accent); color: var(--col-accent); }
+        .gate-btn.active { background: var(--col-accent); color: white; border-color: var(--col-accent); box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3); }
+
+        .sw-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+        .sw-row:last-child { margin-bottom: 0; }
+        .toggle { width: 48px; height: 26px; background: #e2e8f0; border-radius: 20px; position: relative; cursor: pointer; transition: 0.3s; }
+        .toggle.on { background: var(--col-accent); }
+        .toggle::after { content: ""; position: absolute; width: 20px; height: 20px; background: white; border-radius: 50%; top: 3px; left: 3px; transition: 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .toggle.on::after { left: 25px; }
+
+        /* DOĞRULUK TABLOSU */
+        .t-table { width: 100%; border-collapse: collapse; font-family: 'JetBrains Mono'; font-size: 0.8rem; margin-top: 10px; }
+        .t-table th { padding: 10px; color: var(--text-muted); border-bottom: 1px solid var(--border); }
+        .t-table td { padding: 10px; text-align: center; border-bottom: 1px solid var(--border); color: #94a3b8; transition: 0.2s; }
+        .active-row { background: var(--col-accent-soft); color: var(--col-accent) !important; font-weight: 800; }
+        .active-row td { color: var(--col-accent); }
+    </style>
+</head>
+<body>
+
+<div id="mobile-warning">
+    <div class="phone-icon mb-6">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+        </svg>
+    </div>
+    <h2 class="text-2xl font-bold mb-2">Yatay Konuma Geçin</h2>
+    <p class="text-slate-400 text-sm max-w-xs">Matematik simülasyonunu tam görebilmek için cihazınızı yan çevirin.</p>
+</div>
+
+<aside>
+    <div class="header">
+        <a href="../../dersler/matematik.html" class="back-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+        </a>
+        <h1 class="font-bold text-xl text-slate-800">Mantık</h1>
+    </div>
+
+    <div>
+        <div class="section-title">Bağlaç Seçimi</div>
+        <div class="gate-grid" id="gateGrid"></div>
+    </div>
+
+    <div>
+        <div class="section-title">Giriş Önermeleri</div>
+        <div class="control-group">
+            <div class="sw-row">
+                <span class="font-bold text-sm">Önerme p</span>
+                <div class="toggle" id="pSw" onclick="sim.toggle('p')"></div>
+            </div>
+            <div class="sw-row">
+                <span class="font-bold text-sm">Önerme q</span>
+                <div class="toggle" id="qSw" onclick="sim.toggle('q')"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-4">
+        <div class="section-title">Doğruluk Tablosu</div>
+        <table class="t-table" id="table"></table>
+    </div>
+</aside>
+
+<main id="container">
+    <div class="dot-bg"></div>
+    
+    <div id="result-card">
+        <div class="card-label">Mantıksal İfade</div>
+        <div class="card-expr">
+            <span id="uiP">0</span>
+            <span class="text-indigo-500 mx-2" id="uiSym">∧</span>
+            <span id="uiQ">0</span>
+            <span class="text-slate-400 mx-2">≡</span>
+            <span class="card-res" id="uiRes">0</span>
+        </div>
+        <div class="card-status" id="uiStatus">Akım Yok</div>
+    </div>
+
+    <canvas id="simCanvas"></canvas>
+</main>
+
+<script>
+const sim = {
+    canvas: document.getElementById('simCanvas'),
+    ctx: null, w: 0, h: 0,
+    gate: 'AND', p: 0, q: 0, res: 0, time: 0,
+    data: {
+        'AND': { n: 'VE', s: '∧', f: (a,b)=>a&&b },
+        'OR':  { n: 'VEYA', s: '∨', f: (a,b)=>a||b },
+        'IMP': { n: 'İSE', s: '⇒', f: (a,b)=>(!a)||b },
+        'IFF': { n: 'ANCAK', s: '⇔', f: (a,b)=>a===b },
+        'XOR': { n: 'YA DA', s: '⊻', f: (a,b)=>a!==b }
+    },
+
+    init() {
+        this.ctx = this.canvas.getContext('2d');
+        window.onresize = () => this.resize();
+        this.resize();
+        this.renderMenu();
+        this.update();
+        this.loop();
+    },
+
+    resize() {
+        const cont = document.getElementById('container');
+        const dpr = window.devicePixelRatio || 1;
+        this.w = cont.clientWidth; this.h = cont.clientHeight;
+        this.canvas.width = this.w * dpr; this.canvas.height = this.h * dpr;
+        this.ctx.scale(dpr, dpr);
+    },
+
+    renderMenu() {
+        const grid = document.getElementById('gateGrid');
+        grid.innerHTML = Object.entries(this.data).map(([k, v]) => `
+            <div class="gate-btn ${this.gate === k ? 'active' : ''}" onclick="sim.setGate('${k}')">${v.n}</div>
+        `).join('');
+    },
+
+    setGate(g) { this.gate = g; this.renderMenu(); this.update(); },
+    toggle(id) { 
+        this[id] = this[id] ? 0 : 1; 
+        document.getElementById(id+'Sw').classList.toggle('on');
+        this.update(); 
+    },
+
+    update() {
+        this.res = this.data[this.gate].f(this.p, this.q) ? 1 : 0;
+        
+        // Sağ Üst Kartı Güncelle
+        document.getElementById('uiP').innerText = this.p;
+        document.getElementById('uiQ').innerText = this.q;
+        document.getElementById('uiSym').innerText = this.data[this.gate].s;
+        const uiRes = document.getElementById('uiRes');
+        uiRes.innerText = this.res;
+        uiRes.style.color = this.res ? 'var(--col-accent)' : 'var(--text-muted)';
+        
+        const uiStatus = document.getElementById('uiStatus');
+        uiStatus.innerText = this.res ? 'Akım Geçiyor' : 'Akım Yok';
+        uiStatus.style.background = this.res ? 'var(--col-accent)' : 'var(--border)';
+        uiStatus.style.color = this.res ? 'white' : 'var(--text-muted)';
+
+        // Tabloyu Güncelle
+        let h = `<tr><th>p</th><th>q</th><th>Sonuç</th></tr>`;
+        [[1,1],[1,0],[0,1],[0,0]].forEach(c => {
+            const isNow = (this.p === c[0] && this.q === c[1]);
+            h += `<tr class="${isNow ? 'active-row' : ''}"><td>${c[0]}</td><td>${c[1]}</td><td>${this.data[this.gate].f(c[0],c[1])?1:0}</td></tr>`;
+        });
+        document.getElementById('table').innerHTML = h;
+    },
+
+    loop() {
+        this.ctx.clearRect(0, 0, this.w, this.h);
+        this.time -= 0.8; // Hızı artırdım
+        const x = this.w/2, y = this.h/2;
+        
+        // Çizim elemanlarını büyüttüm ve yaydım
+        this.wire(x-280, y-100, x-80, y-35, this.p);
+        this.wire(x-280, y+100, x-80, y+35, this.q);
+        this.wire(x+80, y, x+280, y, this.res);
+
+        // Gate Box (Büyütüldü)
+        this.ctx.shadowBlur = 40; this.ctx.shadowColor = 'rgba(0,0,0,0.08)';
+        this.ctx.fillStyle = '#fff'; this.ctx.strokeStyle = '#e2e8f0'; this.ctx.lineWidth = 3;
+        this.ctx.beginPath(); this.ctx.roundRect(x-80, y-80, 160, 160, 32); this.ctx.fill(); this.ctx.stroke();
+        this.ctx.shadowBlur = 0;
+        
+        this.ctx.fillStyle = '#1e293b'; this.ctx.font = 'bold 56px Inter'; this.ctx.textAlign='center';
+        this.ctx.fillText(this.data[this.gate].s, x, y+20);
+
+        // Giriş Noktaları (Büyütüldü)
+        this.drawNode(x-280, y-100, 'p', this.p);
+        this.drawNode(x-280, y+100, 'q', this.q);
+
+        // Lamba (Büyütüldü)
+        this.drawLamp(x+280, y, this.res);
+
+        requestAnimationFrame(() => this.loop());
+    },
+
+    wire(x1, y1, x2, y2, active) {
+        const c = this.ctx;
+        c.beginPath(); c.moveTo(x1, y1);
+        c.bezierCurveTo(x1+120, y1, x2-120, y2, x2, y2);
+        c.strokeStyle = active ? '#fff7ed' : '#f8fafc';
+        c.lineWidth = 18; c.stroke(); // Kalınlık arttı
+        c.strokeStyle = active ? '#fb923c' : '#e2e8f0';
+        c.lineWidth = 4; // Kalınlık arttı
+        if(active) { c.setLineDash([10, 10]); c.lineDashOffset = this.time; } else c.setLineDash([]);
+        c.stroke();
+        c.setLineDash([]);
+    },
+
+    drawNode(x, y, txt, active) {
+        const c = this.ctx;
+        c.fillStyle = active ? '#fb923c' : '#fff';
+        c.strokeStyle = active ? '#fb923c' : '#e2e8f0';
+        c.lineWidth = 3;
+        c.beginPath(); c.arc(x, y, 28, 0, Math.PI*2); c.fill(); c.stroke(); // Yarıçap arttı
+        c.fillStyle = active ? '#fff' : '#94a3b8';
+        c.font = 'bold 13px Inter'; c.textAlign='center';
+        c.fillText(txt.toUpperCase(), x, y+5);
+    },
+
+    drawLamp(x, y, active) {
+        const c = this.ctx;
+        const scale = 1.3; // Lamba ölçeği
+        if(active) {
+            c.shadowBlur = 50; c.shadowColor = '#fb923c';
+            c.fillStyle = '#fb923c';
+        } else {
+            c.fillStyle = '#e2e8f0';
+        }
+        
+        c.beginPath();
+        c.arc(x, y-6*scale, 22*scale, 0.7*Math.PI, 0.3*Math.PI, false);
+        c.lineTo(x+9*scale, y+16*scale); c.lineTo(x-9*scale, y+16*scale);
+        c.closePath(); c.fill();
+        
+        c.fillStyle = '#94a3b8';
+        c.fillRect(x-7*scale, y+17*scale, 14*scale, 5*scale);
+        c.shadowBlur = 0;
+    }
+};
+
+sim.init();
+</script>
+</body>
+</html>
