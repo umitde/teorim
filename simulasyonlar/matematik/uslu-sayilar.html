@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Üslü Sayılar | Teorim</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-app: #f8fafc;
+            --bg-panel: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --col-accent: #f97316; /* Teorim Turuncu */
+            --col-indigo: #4f46e5;
+            --border: #e2e8f0;
+            --radius: 16px;
+        }
+
+        body { 
+            margin: 0; padding: 0; background: var(--bg-app); 
+            color: var(--text-main); font-family: 'Inter', sans-serif; 
+            height: 100vh; display: flex; overflow: hidden; 
+            -webkit-font-smoothing: antialiased;
+        }
+
+        #mobile-warning { 
+            display: none; position: fixed; inset: 0; background: #0f172a; color: white; 
+            z-index: 9999; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; 
+        }
+        @media (max-width: 768px) or (orientation: portrait) { #mobile-warning { display: flex; } }
+
+        @keyframes phoneBounce { 0%, 100% { transform: translateY(0) rotate(-5deg); } 50% { transform: translateY(-20px) rotate(5deg); } }
+        .phone-icon { animation: phoneBounce 1.5s infinite ease-in-out; }
+
+        aside { 
+            width: 360px; flex-shrink: 0; background: var(--bg-panel); 
+            border-right: 1px solid var(--border); padding: 24px; 
+            display: flex; flex-direction: column; gap: 20px; 
+            z-index: 20; box-shadow: 4px 0 24px rgba(0,0,0,0.04); overflow-y: auto;
+        }
+
+        .header { display: flex; align-items: center; gap: 14px; margin-bottom: 4px; }
+        .back-btn {
+            width: 44px; height: 44px; border-radius: 50%; background: #fff7ed; color: var(--col-accent);
+            display: flex; align-items: center; justify-content: center; transition: 0.2s; cursor: pointer; border: 1px solid #ffedd5;
+        }
+        .back-btn:hover { background: #ffedd5; transform: translateX(-2px); }
+
+        .section-title { font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+
+        .control-group { background: #f8fafc; padding: 16px; border-radius: var(--radius); border: 1px solid var(--border); }
+        .prop-row { display: flex; flex-direction: column; gap: 4px; margin-bottom: 16px; font-size: 0.8rem; font-weight: 700; }
+        .prop-row:last-child { margin-bottom: 0; }
+        .label-val { display: flex; justify-content: space-between; align-items: center; }
+        
+        .val-badge { font-family: 'JetBrains Mono'; font-weight: 800; color: white; font-size: 0.85rem; padding: 4px 10px; border-radius: 8px; background: var(--col-indigo); box-shadow: 0 2px 5px rgba(79, 70, 229, 0.3); transition: 0.3s; }
+        .val-badge.orange { background: var(--col-accent); box-shadow: 0 2px 5px rgba(249, 115, 22, 0.3); }
+        
+        input[type="range"] { width: 100%; height: 6px; background: #e2e8f0; border-radius: 4px; appearance: none; cursor: pointer; margin-top: 6px; }
+        input[type=range]::-webkit-slider-thumb { appearance: none; width: 22px; height: 22px; background: white; border: 4px solid var(--col-indigo); border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: 0.1s; }
+        input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+        #slExp::-webkit-slider-thumb { border-color: var(--col-accent); }
+
+        .func-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 10px; }
+        .func-btn {
+            background: #ffffff; border: 1px solid var(--border); color: var(--text-muted);
+            padding: 10px; border-radius: 10px; cursor: pointer; font-family: 'JetBrains Mono'; font-size: 0.85rem; font-weight: 700;
+            transition: all 0.2s; display: flex; align-items: center; justify-content: center;
+        }
+        .func-btn:hover { border-color: var(--col-indigo); color: var(--col-indigo); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+
+        main { flex: 1; position: relative; background: #ffffff; overflow: hidden; }
+        .dot-bg { position: absolute; inset: 0; background-image: radial-gradient(#cbd5e1 1px, transparent 1px); background-size: 40px 40px; opacity: 0.4; z-index: 1; pointer-events: none; }
+        canvas { display: block; width: 100%; height: 100%; position: absolute; z-index: 10; }
+    </style>
+</head>
+<body>
+
+<div id="mobile-warning">
+    <div class="phone-icon mb-6">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+        </svg>
+    </div>
+    <h2 class="text-2xl font-bold mb-2">Yatay Konuma Geçin</h2>
+    <p class="text-slate-400 text-sm max-w-xs">Matematik simülasyonunu tam görebilmek için cihazınızı yan çevirin.</p>
+</div>
+
+<aside>
+    <div class="flex items-center gap-3 mb-2">
+        <a href="../../dersler/matematik.html" class="p-2 hover:bg-orange-100 rounded-full text-orange-600 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+        </a>
+        <h1 class="font-bold text-xl text-slate-800">Üslü Sayılar</h1>
+    </div>
+
+    <div class="bg-slate-800 text-white p-6 rounded-2xl text-center shadow-lg relative overflow-hidden flex flex-col items-center">
+        <div class="absolute top-[-50%] right-[-50%] w-[200%] h-[200%] bg-[radial-gradient(circle_at_center,rgba(79,70,229,0.15)_0%,transparent_60%)] pointer-events-none"></div>
+        
+
+        <div class="text-slate-400 font-bold text-xs uppercase tracking-widest mb-3">Toplam Parça Sayısı</div>
+        
+        <div class="flex items-baseline justify-center font-mono tracking-tight relative z-10 w-full mb-1">
+            <span class="text-indigo-400 text-6xl font-extrabold" id="uiBase">2</span>
+            <span class="text-orange-400 text-3xl font-bold self-start mt-1 ml-0.5" id="uiExp">4</span>
+            <span class="text-slate-500 text-3xl mx-4 font-light">=</span>
+            <span class="text-white text-6xl font-extrabold" id="uiResult">16</span>
+        </div>
+        
+        <div class="text-slate-300 font-medium text-[12px] mt-4 flex items-center justify-center gap-1 bg-slate-900/50 border border-slate-700 py-2 px-4 rounded-full w-full max-w-[280px] mx-auto" id="uiExpanded">
+            2 × 2 × 2 × 2
+        </div>
+    </div>
+
+    <div class="section-title mt-2">Parametreler</div>
+    <div class="control-group">
+        <div class="prop-row">
+            <div class="label-val"><span class="text-indigo-600">Taban (Bölünme Katı)</span><span id="lblBase" class="val-badge">2</span></div>
+            <input type="range" id="slBase" min="1" max="5" step="1" value="2" oninput="sim.updateParams()">
+        </div>
+        
+        <div class="prop-row mt-3">
+            <div class="label-val"><span class="text-orange-600">Üs (Adım Sayısı)</span><span id="lblExp" class="val-badge orange">4</span></div>
+            <input type="range" id="slExp" min="0" max="10" step="1" value="4" oninput="sim.updateParams()">
+        </div>
+        
+        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-5 mb-1 pl-1">Örnek Modeller</div>
+        <div class="func-grid">
+            <button class="func-btn" onclick="sim.setExact(2, 6)">2⁶ = 64</button>
+            <button class="func-btn" onclick="sim.setExact(3, 4)">3⁴ = 81</button>
+            <button class="func-btn" onclick="sim.setExact(4, 3)">4³ = 64</button>
+            <button class="func-btn" onclick="sim.setExact(5, 3)">5³ = 125</button>
+        </div>
+    </div>
+
+    <div class="mt-auto p-4 bg-slate-50 border border-slate-200 rounded-xl">
+        <p class="text-[10px] font-extrabold text-slate-500 uppercase mb-1">Kusursuz Dağılım</p>
+        <p class="text-[11px] text-slate-600 leading-relaxed">Ekrandaki bütün kare, her adımda <b>taban sayısı kadar</b> eş parçaya bölünür. Toplam blok sayısı bize sonucu verir.</p>
+    </div>
+</aside>
+
+<main id="container">
+    <div class="dot-bg"></div>
+    <canvas id="simCanvas"></canvas>
+</main>
+
+<script>
+const sim = {
+    canvas: document.getElementById('simCanvas'),
+    ctx: null, w: 0, h: 0,
+    
+    base: 2, exp: 4, result: 16, time: 0,
+
+    init() {
+        this.ctx = this.canvas.getContext('2d');
+        window.addEventListener('resize', () => this.resize());
+        this.resize();
+        this.updateParams();
+        requestAnimationFrame(() => this.loop());
+    },
+
+    resize() {
+        const el = document.getElementById('container');
+        const dpr = window.devicePixelRatio || 1;
+        this.w = el.clientWidth; this.h = el.clientHeight;
+        this.canvas.width = this.w * dpr; this.canvas.height = this.h * dpr;
+        this.ctx.scale(dpr, dpr);
+    },
+
+    setExact(b, e) {
+        document.getElementById('slBase').value = b;
+        this.updateParams(); // Update max bounds first
+        document.getElementById('slExp').value = e;
+        this.updateParams();
+    },
+
+    updateParams() {
+        let b = parseInt(document.getElementById('slBase').value);
+        let e = parseInt(document.getElementById('slExp').value);
+        
+        // Ekranda kasmaması (canvas limiti) ve çok küçük parçalara ayrılmaması için maksimum üs sınırları
+        const slExp = document.getElementById('slExp');
+        if (b === 1) slExp.max = 10;
+        if (b === 2) slExp.max = 10; // 1024 parça max
+        if (b === 3) slExp.max = 6;  // 729 parça max
+        if (b === 4) slExp.max = 5;  // 1024 parça max
+        if (b === 5) slExp.max = 4;  // 625 parça max
+
+        if (e > parseInt(slExp.max)) {
+            e = parseInt(slExp.max);
+            slExp.value = e;
+        }
+
+        this.base = b; this.exp = e;
+        this.result = Math.pow(b, e);
+
+        // UI Verilerini Güncelle
+        document.getElementById('lblBase').innerText = b;
+        document.getElementById('lblExp').innerText = e;
+        document.getElementById('uiBase').innerText = b;
+        document.getElementById('uiExp').innerText = e;
+        document.getElementById('uiResult').innerText = this.result.toLocaleString('tr-TR');
+
+        // Açılım Metni
+        let expanded = "";
+        if (e === 0) expanded = "1 (Herhangi bir sayının 0. kuvveti)";
+        else if (e === 1) expanded = `${b}`;
+        else if (e > 6) expanded = `${b} × ${b} × ... (${e} tane) ... × ${b}`;
+        else {
+            let parts = [];
+            for(let i=0; i<e; i++) parts.push(b);
+            expanded = parts.join(" × ");
+        }
+        document.getElementById('uiExpanded').innerText = expanded;
+    },
+
+    loop() {
+        this.ctx.clearRect(0, 0, this.w, this.h);
+        this.time += 0.05;
+        
+        this.drawVisualization();
+
+        requestAnimationFrame(() => this.loop());
+    },
+
+    drawVisualization() {
+        const ctx = this.ctx;
+        
+        // Kareyi ortala ve sınırla
+        const padding = 80;
+        const boxSize = Math.min(this.w, this.h) - (padding * 2);
+        const startX = (this.w - boxSize) / 2;
+        const startY = (this.h - boxSize) / 2;
+
+        // Arka Plan Gölgesi
+        ctx.shadowColor = "rgba(79, 70, 229, 0.15)";
+        ctx.shadowBlur = 40;
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(startX, startY, boxSize, boxSize);
+        ctx.shadowBlur = 0;
+
+        // Geometrik Bölünme Fonksiyonunu Çağır
+        this.divideAndDraw(startX, startY, boxSize, boxSize, 0);
+
+        // Çerçeve
+        ctx.strokeStyle = "#e2e8f0";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(startX, startY, boxSize, boxSize);
+    },
+
+    divideAndDraw(x, y, w, h, currentLevel) {
+        const ctx = this.ctx;
+
+        // Eğer hedeflenen üs değerine ulaştıysak blokları çiz ve bırak
+        if (currentLevel === this.exp) {
+            
+            // Dinamik iç boşluk (çok parça varsa boşluğu kapat ki görüntü çamurlaşmasın)
+            let gap = 2;
+            if (this.result > 200) gap = 1;
+            if (this.result > 500) gap = 0;
+
+            const blockW = w - (gap * 2);
+            const blockH = h - (gap * 2);
+
+            // Dolgu Rengi (Hafif animasyonlu İndigo)
+            // Renk tonunu ekrandaki X, Y koordinatına ve zamana göre dalgalandırıyoruz
+            const wave = Math.sin((x + y) * 0.01 + this.time) * 0.5 + 0.5;
+            
+            ctx.fillStyle = `rgba(79, 70, 229, ${0.1 + wave * 0.2})`; // Indigo Alpha
+            ctx.fillRect(x + gap, y + gap, blockW, blockH);
+            
+            // Eğer bloklar yeterince büyükse zarif bir dış çizgi ekle
+            if (blockW > 10 && blockH > 10) {
+                ctx.strokeStyle = `rgba(79, 70, 229, 0.4)`;
+                ctx.lineWidth = 1;
+                ctx.strokeRect(x + gap, y + gap, blockW, blockH);
+            }
+            return;
+        }
+
+        // --- Geometrik Parçalama Algoritması ---
+        // Daha estetik görünmesi için, eğer genişlik yükseklikten büyük veya eşitse dikey böl, yoksa yatay böl.
+        // Bu sayede uzun ince çubuklar yerine kareye yakın temiz bloklar elde ederiz.
+        
+        if (w >= h) {
+            const stepW = w / this.base;
+            for (let i = 0; i < this.base; i++) {
+                this.divideAndDraw(x + (i * stepW), y, stepW, h, currentLevel + 1);
+            }
+        } else {
+            const stepH = h / this.base;
+            for (let i = 0; i < this.base; i++) {
+                this.divideAndDraw(x, y + (i * stepH), w, stepH, currentLevel + 1);
+            }
+        }
+    }
+};
+
+window.addEventListener('load', () => sim.init());
+</script>
+</body>
+</html>
