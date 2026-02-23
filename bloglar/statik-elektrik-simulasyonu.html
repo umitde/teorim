@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statik Elektrik Simülasyonu | Teorim Blog</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
+        .article-content p { margin-bottom: 1.5rem; line-height: 1.8; color: #475569; }
+        .article-content h2 { font-weight: 700; font-size: 1.5rem; margin-top: 2rem; margin-bottom: 1rem; color: #1e293b; }
+    </style>
+</head>
+<body class="bg-white text-slate-800 antialiased">
+
+    <header class="bg-white/90 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="flex-1">
+                <a href="../blog.html" class="inline-flex items-center gap-2 text-slate-500 hover:text-slate-900 transition-all py-2.5 px-4 rounded-full text-sm font-medium border border-transparent hover:bg-slate-100/50">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                    <span class="hidden sm:block">Blog</span>
+                </a>
+            </div>
+
+            <div class="flex-none">
+                <img src="../logo.png" alt="Teorim Logo" class="h-8 md:h-10 object-contain">
+            </div>
+
+            <div class="flex-1 flex justify-end">
+                <div class="w-10 sm:w-20"></div> 
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-3xl mx-auto px-6 py-16">
+        <div class="mb-12">
+            <nav class="flex gap-2 text-sm text-slate-400 mb-6 font-light">
+                <a href="../index.html" class="hover:text-blue-600 transition-colors">Ana Sayfa</a>
+                <span>/</span>
+                <a href="../blog.html" class="hover:text-blue-600 transition-colors">Blog</a>
+            </nav>
+            <span class="text-blue-600 text-xs font-bold tracking-widest uppercase mb-4 block">Fizik</span>
+            <h1 class="text-3xl md:text-5xl font-bold text-slate-900 leading-tight mb-6">Statik Elektrik Simülasyonu: Fiziği Görerek Öğrenin</h1>
+        </div>
+
+        <article class="article-content">
+            <p class="text-lg font-light italic border-l-4 border-blue-500 pl-6 mb-10">
+                Fizik dersinin en soyut konularından biri olan statik elektrik, formüllerin ötesine geçip gözlemlenebilir bir deneyime dönüştüğünde kalıcı öğrenme başlar.
+            </p>
+
+            <p>Eğitim hayatımız boyunca hepimiz kazağımızı çıkarırken duyduğumuz o çıtırtı seslerini veya saçımıza sürttüğümüz bir balonun kağıt parçalarını nasıl çektiğini deneyimlemişizdir. Ancak bu gündelik olayların arkasında yatan Coulomb yasasını, elektron transferini ve kutuplanma (polarizasyon) mantığını sadece ders kitaplarındaki iki boyutlu çizimlerle anlamak çoğu zaman zorlayıcı olabilir. Öğrenciler formülleri ezberleseler bile, mikro boyutta ne olup bittiğini zihinlerinde canlandırmakta güçlük çekerler.</p>
+
+            <h2>Soyut Kavramların Somutlaşması</h2>
+            <p>Atom altı parçacıkların hareketini çıplak gözle göremeyiz. Bir cismin nasıl pozitif veya negatif yüklendiğini, yalıtkan bir malzemenin içinde elektronların nasıl yer değiştirdiğini anlatmak ciddi bir pedagojik efor gerektirir. İşte Teorim'in sunduğu interaktif simülasyonlar tam da bu duvarı yıkmak için tasarlandı. 
+
+[Image of static electricity balloon experiment]
+ Ekranda yer alan bir balonu yünlü bir kazağa sürttüğünüzde, elektronların nasıl balona transfer olduğunu ve kazağın pozitif yüklü hale geldiğini anlık olarak görebilirsiniz. Bu görselleştirme, öğrencinin zihnindeki "ezber" tablosunu yıkarak yerine mantıksal bir temel inşa eder.</p>
+
+            <h2>Etki ile Elektriklenme ve Duvar Deneyi</h2>
+            <p>Öğrencilerin sınavlarda, özellikle YKS ve LGS gibi yoruma dayalı sorularda en çok hata yaptığı noktalardan biri etki ile elektriklenmedir. Nötr bir cismin yüklü bir cisim tarafından nasıl çekilebildiği her zaman kafa karıştırır. Simülasyonumuzda negatif yüklü balonu nötr bir duvara yaklaştırdığınızda, duvarın içindeki elektronların nasıl itildiğini ve yüzeyin anında nasıl pozitif kutuplandığını gözlemlersiniz. Balonu serbest bıraktığınızda ise duvarın onu çekmesi, sayfalarca sürecek bir teorik anlatımı saniyeler içinde zihinlere kazır.</p>
+
+            <div class="my-16 bg-slate-50 border border-slate-100 rounded-[32px] p-8 md:p-12 text-center shadow-sm">
+                <h3 class="text-2xl font-semibold mb-4 text-slate-800">Fiziği Hissetmeye Hazır Mısınız?</h3>
+                <p class="mb-8 text-slate-600">Sürtünme, kutuplanma ve Coulomb çekimini kendi ellerinizle test edin. Elektronların hareketini şimdi keşfedin.</p>
+                <a href="../kutuphane/statik-elektrik.html" class="inline-block bg-blue-600 text-white px-10 py-4 rounded-full font-medium hover:bg-blue-700 transition-all shadow-lg shadow-blue-200">
+                    Simülasyonu Başlat
+                </a>
+            </div>
+
+            <h2>Sınav Başarısında Görsel Öğrenmenin Gücü</h2>
+            <p>Yeni nesil sınav sistemleri artık formül sormak yerine, öğrencinin konunun mantığını kavrayıp kavramadığını ölçen analitik senaryolar üretiyor. "Balon kazağa sürtülüp duvara yaklaştırılırsa ne olur?" tarzındaki sorulara doğru yanıt verebilmek için olayın filmini zihinde oynatabilmek gerekir. Görsel ve etkileşimli öğrenme, beynin farklı merkezlerini aynı anda uyararak bilginin kısa süreli bellekten uzun süreli belleğe aktarılmasını sağlar. Teorim kütüphanesindeki bu tür deneyler, öğrencilerin konuları sadece sınava kadar değil, ömür boyu hatırlamalarına yardımcı olur.</p>
+        </article>
+    </main>
+
+    <footer class="bg-white border-t border-slate-100 py-6 mt-10">
+        <div class="max-w-6xl mx-auto px-6 text-center">
+            <span class="text-slate-400 font-light text-sm">
+                &copy; 2026 Teorim. Tüm hakları saklıdır.
+            </span>
+        </div>
+    </footer>
+
+</body>
+</html>
