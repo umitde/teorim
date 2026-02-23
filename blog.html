@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog | Teorim</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .blog-card-hover { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .blog-card-hover:hover { transform: translateY(-5px); }
+        .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased">
+
+    <header class="bg-white/90 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+            <a href="index.html" class="flex items-center gap-2 text-slate-500 hover:text-slate-800 transition-colors py-2 pr-4 rounded-lg hover:bg-slate-50">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                <span class="font-medium text-sm hidden sm:block">Ana Sayfa</span>
+            </a>
+
+            <div class="absolute left-1/2 transform -translate-x-1/2">
+                <img src="logo.png" alt="Teorim Logo" class="h-8 object-contain">
+            </div>
+
+            <div class="w-10"></div> 
+        </div>
+    </header>
+
+    <section class="max-w-4xl mx-auto px-6 pt-20 pb-12 text-center">
+        <h1 class="text-4xl font-bold text-slate-900 mb-4 tracking-tight">Eğitim Teknolojileri & Bilim</h1>
+        <p class="text-lg text-slate-500 font-light max-w-2xl mx-auto">
+            İnteraktif öğrenme, dijital laboratuvarlar ve modern eğitim yaklaşımları üzerine güncel yazılar.
+        </p>
+    </section>
+
+    <main class="max-w-6xl mx-auto px-6 py-12">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            
+            <article class="blog-card-hover bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm flex flex-col justify-between">
+                <div>
+                    <div class="text-xs font-bold text-orange-600 uppercase tracking-widest mb-4">Simülasyon</div>
+                    <h2 class="text-xl font-semibold text-slate-800 mb-3 leading-snug">Dijital Laboratuvar Rehberi</h2>
+                    <p class="text-slate-500 text-sm font-light leading-relaxed line-clamp-3">
+                        Geleneksel laboratuvar imkanlarının kısıtlı olduğu durumlarda dijital simülasyonlar nasıl bir alternatif sunuyor? İşte öğretmenler için pratik bir rehber.
+                    </p>
+                </div>
+                <a href="#" class="mt-6 text-sm font-semibold text-slate-900 flex items-center gap-2 group">
+                    Devamını Oku <span class="group-hover:translate-x-1 transition-transform">→</span>
+                </a>
+            </article>
+
+            <article class="blog-card-hover bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm flex flex-col justify-between">
+                <div>
+                    <div class="text-xs font-bold text-emerald-600 uppercase tracking-widest mb-4">Metodoloji</div>
+                    <h2 class="text-xl font-semibold text-slate-800 mb-3 leading-snug">Soyut Kavramlar Nasıl Somutlaşır?</h2>
+                    <p class="text-slate-500 text-sm font-light leading-relaxed line-clamp-3">
+                        Fizik ve Kimya derslerinde öğrencilerin anlamakta en çok zorlandığı soyut kavramları interaktif araçlarla somut tecrübelere dönüştürme teknikleri.
+                    </p>
+                </div>
+                <a href="#" class="mt-6 text-sm font-semibold text-slate-900 flex items-center gap-2 group">
+                    Devamını Oku <span class="group-hover:translate-x-1 transition-transform">→</span>
+                </a>
+            </article>
+
+            <article class="blog-card-hover bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm flex flex-col justify-between">
+                <div>
+                    <div class="text-xs font-bold text-blue-600 uppercase tracking-widest mb-4">Donanım</div>
+                    <h2 class="text-xl font-semibold text-slate-800 mb-3 leading-snug">Akıllı Tahta İpuçları</h2>
+                    <p class="text-slate-500 text-sm font-light leading-relaxed line-clamp-3">
+                        Sınıfınızdaki akıllı tahtayı sadece bir ekran değil, canlı bir laboratuvar masası gibi kullanmanızı sağlayacak uygulama önerileri.
+                    </p>
+                </div>
+                <a href="#" class="mt-6 text-sm font-semibold text-slate-900 flex items-center gap-2 group">
+                    Devamını Oku <span class="group-hover:translate-x-1 transition-transform">→</span>
+                </a>
+            </article>
+
+            <article class="blog-card-hover bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm flex flex-col justify-between">
+                <div>
+                    <div class="text-xs font-bold text-red-600 uppercase tracking-widest mb-4">Öğretim</div>
+                    <h2 class="text-xl font-semibold text-slate-800 mb-3 leading-snug">Fizik Öğretiminde Yeni Yaklaşımlar</h2>
+                    <p class="text-slate-500 text-sm font-light leading-relaxed line-clamp-3">
+                        Kuvvet, hareket ve enerji gibi temel fizik konularını anlatırken oyunlaştırma (gamification) öğelerini nasıl entegre edebilirsiniz?
+                    </p>
+                </div>
+                <a href="#" class="mt-6 text-sm font-semibold text-slate-900 flex items-center gap-2 group">
+                    Devamını Oku <span class="group-hover:translate-x-1 transition-transform">→</span>
+                </a>
+            </article>
+
+            <article class="blog-card-hover bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm flex flex-col justify-between">
+                <div>
+                    <div class="text-xs font-bold text-purple-600 uppercase tracking-widest mb-4">Gelecek</div>
+                    <h2 class="text-xl font-semibold text-slate-800 mb-3 leading-snug">Eğitim Teknolojilerinin Geleceği</h2>
+                    <p class="text-slate-500 text-sm font-light leading-relaxed line-clamp-3">
+                        Yapay zeka ve VR teknolojilerinin simülasyon temelli eğitimle birleşmesi, sınıfları önümüzdeki 10 yılda nasıl değiştirecek?
+                    </p>
+                </div>
+                <a href="#" class="mt-6 text-sm font-semibold text-slate-900 flex items-center gap-2 group">
+                    Devamını Oku <span class="group-hover:translate-x-1 transition-transform">→</span>
+                </a>
+            </article>
+
+            <article class="blog-card-hover bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm flex flex-col justify-between">
+                <div>
+                    <div class="text-xs font-bold text-amber-600 uppercase tracking-widest mb-4">Biyoloji</div>
+                    <h2 class="text-xl font-semibold text-slate-800 mb-3 leading-snug">Hücre Dünyasına Yolculuk</h2>
+                    <p class="text-slate-500 text-sm font-light leading-relaxed line-clamp-3">
+                        Mikroskobik dünyayı öğrencilere anlatırken kullanılan görselleştirme tekniklerinin kalıcı öğrenme üzerindeki etkileri üzerine bir inceleme.
+                    </p>
+                </div>
+                <a href="#" class="mt-6 text-sm font-semibold text-slate-900 flex items-center gap-2 group">
+                    Devamını Oku <span class="group-hover:translate-x-1 transition-transform">→</span>
+                </a>
+            </article>
+
+        </div>
+    </main>
+
+    <footer class="bg-white border-t border-slate-200 py-12 mt-10">
+        <div class="max-w-6xl mx-auto px-6 text-center">
+            <div class="flex flex-col items-center gap-4 mb-6">
+                <img src="logo.png" alt="Teorim Logo" class="h-8 opacity-40 grayscale hover:grayscale-0 transition-all duration-500">
+            </div>
+            <p class="text-slate-400 font-light text-sm">&copy; 2026 Teorim. Tüm hakları saklıdır.</p>
+        </div>
+    </footer>
+
+</body>
+</html>
