@@ -105,14 +105,12 @@
             animation: moveTangent 3s infinite ease-in-out;
         }
 
-        /* Asal Çarpanlar (Ağaç Dallanması) */
+        /* Asal Çarpanlar (Ağaç Dallanması) YAZIM HATASI DÜZELTİLDİ */
         @keyframes pulseSplit {
             0%, 100% { transform: scale(1); opacity: 1; }
             50% { transform: scale(1.1); opacity: 0.8; }
         }
-        .anim-prime-root { width: 32px; height: 32px; background: #3B82F6; border-radius: 50%; animation: pulseSplit 2s infinite; position: relative; z-index: 2; display:flex; align-items:center; justify-center; color:white; font-size:12px; font-weight:bold; }
-        .anim-prime-leaf { width: 24px; height: 24px; background: #60A5FA; border-radius: 50%; position: absolute; top: 45px; animation: pulseSplit 2s infinite 0.5s; z-index: 2; }
-        .anim-prime-line { width: 2px; height: 35px; background: #CBD5E1; position: absolute; top: 15px; z-index: 1; }
+        .anim-prime-root { width: 32px; height: 32px; background: #3B82F6; border-radius: 50%; animation: pulseSplit 2s infinite; position: relative; z-index: 2; display:flex; align-items:center; justify-content: center; color:white; font-size:12px; font-weight:bold; }
     
         /* Çarpanlara Ayırma (Blokların Birleşmesi) */
         @keyframes slideBlocks1 { 0%, 100% { transform: translate(-5px, -5px); } 50% { transform: translate(0, 0); } }
@@ -139,19 +137,19 @@
         .anim-galton-ball { width: 10px; height: 10px; background: #3B82F6; border-radius: 50%; position: absolute; animation: fallBounce 2.5s infinite; }
         .anim-peg { width: 6px; height: 6px; background: #CBD5E1; border-radius: 50%; position: absolute; }
 
-        /* 13. İntegral (Eğri Altı Alan) */
+        /* 13. İntegral (Eğri Altı Alan) DÜZELTİLDİ */
         @keyframes fillIntegral {
-            0%, 100% { clip-path: polygon(0 0, 0 100%, 0 100%, 0 0); }
-            50% { clip-path: polygon(0 0, 0 100%, 100% 100%, 100% 0); }
+            0%, 100% { clip-path: polygon(0% 0%, 0% 100%, 0% 100%, 0% 0%); }
+            50% { clip-path: polygon(0% 0%, 0% 100%, 100% 100%, 100% 0%); }
         }
         .anim-integral-fill { animation: fillIntegral 3s infinite ease-in-out; fill: rgba(59, 130, 246, 0.15); }
 
-        /* 14. Kesirler (Pasta Dilimi) */
+        /* 14. Kesirler (Pasta Dilimi) DÜZELTİLDİ */
         @keyframes pulseSlice {
             0%, 100% { opacity: 0.4; transform: scale(1); }
             50% { opacity: 1; transform: scale(1.05); }
         }
-        .anim-fraction-slice { animation: pulseSlice 2.5s infinite ease-in-out; transform-origin: center; fill: #3B82F6; }
+        .anim-fraction-slice { animation: pulseSlice 2.5s infinite ease-in-out; transform-origin: center; transform-box: fill-box; fill: #3B82F6; }
 
         /* 15. Köklü Sayılar (İç İçe Geçiş) */
         @keyframes slideRoot {
